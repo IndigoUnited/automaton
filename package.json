@@ -1,0 +1,33 @@
+{
+  "name": "automaton",
+  "version": "0.0.1",
+  "description": "Task automation tool",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/IndigoUnited/automaton.git"
+  },
+  "keywords": [
+    "automation",
+    "automatic",
+    "task",
+    "tasks",
+    "async",
+    "build",
+    "test",
+    "minimize",
+    "declarative",
+    "concat"
+  ],
+  "author": "Indigo United",
+  "license": "BSD",
+  "dependencies": {
+    "async": "~0.1.22",
+    "dejavu": "0.0.10",
+    "amd-utils": "~0.6.0",
+    "colors": "~0.6.0-1"
+  }
+}
