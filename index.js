@@ -1,6 +1,7 @@
 var d      = require('dejavu'),
     utils  = require('amd-utils'),
-    colors = require('colors')
+    colors = require('colors'),
+    fs     = require('fs')
 ;
 
 // set up a useful set of formats
@@ -60,6 +61,21 @@ var Automaton = d.Class.declare({
             }
         }
 
+    },
+
+    loadTasks: function (folder) {
+        this._assertIsString(folder);
+
+        var filenames = fs.readdirSync(folder),
+            i
+        ;
+        folder = fs.realpathSync(folder) + '/';
+
+        for (i = filenames.length - 1; i >= 0; --i) {
+            this.addTask(require(folder + filenames[i].split(/\./)[0]));
+        }
+
+        return this;
     },
 
     _assertIsString: function (variable, errorMsg) {

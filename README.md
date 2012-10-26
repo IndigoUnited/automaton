@@ -1,7 +1,7 @@
 Automaton
 =========
 
-Javascript task automation tool
+Task automation tool built in Javascript
 
 ## Feature roadmap
 
