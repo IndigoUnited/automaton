@@ -1,8 +1,15 @@
-var d      = require('dejavu'),
-    utils  = require('amd-utils'),
-    colors = require('colors'),
-    fs     = require('fs')
+var d       = require('dejavu'),
+    utils   = require('amd-utils'),
+    colors  = require('colors'),
+    fs      = require('fs'),
+    util    = require('util'),
+    async   = require('async')
 ;
+
+inspect = function (v, levels) {
+    levels = levels || 10;
+    console.log(util.inspect(v, false, levels, true));
+};
 
 // set up a useful set of formats
 colors.setTheme({
@@ -41,25 +48,47 @@ var Automaton = d.Class.declare({
         var i,
             tasksLength = tasks.length,
             task,
-            unifiedTasks
+            batch = []
         ;
         this._assertIsArray(tasks);
 
+        // for each of the tasks that will run
         for (i = 0; i < tasksLength; ++i) {
+            // assert that the task is valid
             task = tasks[i];
             this._assertIsObject(task, 'Invalid task specified at index \'' + i + '\'');
             task.options = task.options || {};
 
-            this._assertIsString(task.id, 'Invalid task id provided \'' + id + '\'');
-            this._assertIsObject(task.options, 'Invalid options provided for task \'' + task.id + '\'');
+            // TODO: check if `task` property exists
+            this._assertIsObject(task.options, 'Invalid options provided for task \'' + task.task + '\'');
 
-            if (!utils.lang.isObject(this._tasks[task.id])) {
-                // CONTINUE HERE
-                // need to create a function that flattens the task tree
-                // after getting the flattened task tree, create separator functions that hold a reference to the next separator, in order to support skipping sub tasks
-                // once all is ready, run the tasks
-            }
+            // if no suitable task is loaded to run the requested task, fail
+            this._assertTaskLoaded(task.task);
+
+            // CONTINUE HERE
+            batch = batch.concat(this._flattenTask(task.task, task.options));
+            // need to create a function that flattens the task tree
+            // after getting the flattened task tree, create separator functions that hold a reference to the next separator, in order to support skipping sub tasks
+            // once all is ready, run the tasks
         }
+
+        var batchLength    = batch.length,
+            waterfallBatch = []
+        ;
+
+        inspect(batch);
+        for (i = 0; i < batchLength; ++i) {
+            task = batch[i];
+            waterfallBatch.push(function (next) {
+                console.log('coiso'.info);
+
+                next();
+            });
+
+            waterfallBatch.push(task.fn.$bind(this, task.options));
+        }
+
+        async.waterfall(waterfallBatch);
 
     },
 
@@ -76,6 +105,57 @@ var Automaton = d.Class.declare({
         }
 
         return this;
+    },
+
+    _flattenTask: function (taskId, options) {
+        var i,
+            task = this._tasks[taskId], // task that is being flattened
+            subtasks,                   // subtasks of the task being flattened
+            subtasksLength,             // total of subtasks of the task being flattened
+            currentSubtask,             // iteration task
+            batch = []                  // final result
+        ;
+
+        subtasks       = task.tasks;
+        subtasksLength = subtasks.length;
+
+        for (i = 0; i < subtasksLength; ++i) {
+            currentSubtask = subtasks[i];
+
+            this._assertIsObject(currentSubtask, 'Invalid task specified at index \'' + i + '\'');
+            currentSubtask.options = currentSubtask.options || {};
+            // TODO: mix-in the options arg, overriding local options?
+
+            if (!currentSubtask.task) {
+                this._throwError('Task type at index \'' + i + '\' not specified');
+            }
+
+            this._assertIsObject(currentSubtask.options, 'Invalid options provided for task \'' + currentSubtask.task + '\'');
+
+            // if it's a function, just add it to the batch
+            if (utils.lang.isFunction(currentSubtask.task)) {
+                batch.push({ 'fn': currentSubtask.task, 'options': options });
+            }
+            // it's not a function, then it 
+            else {
+                if (utils.lang.isString(currentSubtask.task)) {
+                    var subtaskOptions = currentSubtask.task;
+                    delete subtaskOptions.task;
+                    batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions));
+                }
+                else {
+                    this._throwError('Invalid subtask specified in task \'' + taskId + '\', at index \'' + i + '\'');
+                }
+            }
+        }
+
+        return batch;
+    },
+
+    _assertTaskLoaded: function (taskId) {
+        if (!utils.lang.isObject(this._tasks[taskId])) {
+            throw new Error('Could not find any task handler suitable for \'' + taskId + '\'');
+        }
     },
 
     _assertIsString: function (variable, errorMsg) {
@@ -100,6 +180,10 @@ var Automaton = d.Class.declare({
         if (!utils.lang.isArray(variable)) {
             throw new Error(errorMsg.error);
         }
+    },
+
+    _throwError: function (errorMsg) {
+        throw new Error(errorMsg.error)
     }
 });
 

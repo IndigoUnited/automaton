@@ -5,7 +5,24 @@ var task = {
     'tasks'  :
     [
         {
-            'task' : 'cp'
+            'task' : 'cp',
+            'src'  : 'the src',
+            'dest' : 'the dest'
+        },
+        {
+            'task' : 'cp',
+            'src'  : 'the src',
+            'dest' : 'the dest'
+        },
+        {
+            'task' : 'cp',
+            'src'  : 'the src',
+            'dest' : 'the dest'
+        },
+        {
+            'task' : 'cp',
+            'src'  : 'the src',
+            'dest' : 'the dest'
         }
     ],
     'incompatibilities': []
