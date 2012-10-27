@@ -6,23 +6,23 @@ var task = {
     [
         {
             'task' : 'cp',
-            'src'  : 'the src',
-            'dest' : 'the dest'
+            'src'  : 'the 1st src',
+            'dest' : 'the 1st dest'
         },
         {
             'task' : 'cp',
-            'src'  : 'the src',
-            'dest' : 'the dest'
+            'src'  : 'the 2nd src',
+            'dest' : 'the 2nd dest'
         },
         {
             'task' : 'cp',
-            'src'  : 'the src',
-            'dest' : 'the dest'
+            'src'  : 'the 3rd src',
+            'dest' : 'the 3rd dest'
         },
         {
             'task' : 'cp',
-            'src'  : 'the src',
-            'dest' : 'the dest'
+            'src'  : 'the 4th src',
+            'dest' : 'the 4th dest'
         }
     ],
     'incompatibilities': []

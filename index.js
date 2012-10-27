@@ -76,11 +76,11 @@ var Automaton = d.Class.declare({
             waterfallBatch = []
         ;
 
-        inspect(batch);
+//        inspect(batch);
         for (i = 0; i < batchLength; ++i) {
             task = batch[i];
             waterfallBatch.push(function (next) {
-                console.log('coiso'.info);
+                console.log('Iterating...'.info);
 
                 next();
             });
@@ -116,6 +116,8 @@ var Automaton = d.Class.declare({
             batch = []                  // final result
         ;
 
+        options = options || {};
+
         subtasks       = task.tasks;
         subtasksLength = subtasks.length;
 
@@ -123,25 +125,24 @@ var Automaton = d.Class.declare({
             currentSubtask = subtasks[i];
 
             this._assertIsObject(currentSubtask, 'Invalid task specified at index \'' + i + '\'');
-            currentSubtask.options = currentSubtask.options || {};
-            // TODO: mix-in the options arg, overriding local options?
+            
 
             if (!currentSubtask.task) {
                 this._throwError('Task type at index \'' + i + '\' not specified');
             }
 
-            this._assertIsObject(currentSubtask.options, 'Invalid options provided for task \'' + currentSubtask.task + '\'');
-
             // if it's a function, just add it to the batch
             if (utils.lang.isFunction(currentSubtask.task)) {
                 batch.push({ 'fn': currentSubtask.task, 'options': options });
             }
-            // it's not a function, then it 
+            // it's not a function, then it must be another task
             else {
                 if (utils.lang.isString(currentSubtask.task)) {
-                    var subtaskOptions = currentSubtask.task;
+                    // TODO: mix-in the options arg, overriding local options?
+                    var subtaskOptions = currentSubtask,
+                        subtaskId      = currentSubtask.task;
                     delete subtaskOptions.task;
-                    batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions));
+                    batch = batch.concat(this._flattenTask(subtaskId, subtaskOptions));
                 }
                 else {
                     this._throwError('Invalid subtask specified in task \'' + taskId + '\', at index \'' + i + '\'');
