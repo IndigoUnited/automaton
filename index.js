@@ -125,7 +125,6 @@ var Automaton = d.Class.declare({
             currentSubtask = subtasks[i];
 
             this._assertIsObject(currentSubtask, 'Invalid task specified at index \'' + i + '\'');
-            
 
             if (!currentSubtask.task) {
                 this._throwError('Task type at index \'' + i + '\' not specified');
@@ -139,7 +138,7 @@ var Automaton = d.Class.declare({
             else {
                 if (utils.lang.isString(currentSubtask.task)) {
                     // TODO: mix-in the options arg, overriding local options?
-                    var subtaskOptions = currentSubtask,
+                    var subtaskOptions = utils.object.mixIn({}, currentSubtask, options);
                         subtaskId      = currentSubtask.task;
                     delete subtaskOptions.task;
                     batch = batch.concat(this._flattenTask(subtaskId, subtaskOptions));
