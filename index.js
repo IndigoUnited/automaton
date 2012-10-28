@@ -46,11 +46,20 @@ var Automaton = d.Class.declare({
 
     run: function (tasks) {
         var i,
-            tasksLength = tasks.length,
+            tasksLength     = tasks.length,
             task,
-            batch = []
+            batch           = [],
+            batchDetails    = [],
+            batchDetailsPos = 0
         ;
         this._assertIsArray(tasks);
+
+        console.log('Automating...'.info);
+
+        // create context that is given to the tasks
+        var ctx = {
+            cwd: process.cwd()
+        }
 
         // for each of the tasks that will run
         for (i = 0; i < tasksLength; ++i) {
@@ -65,30 +74,49 @@ var Automaton = d.Class.declare({
             // if no suitable task is loaded to run the requested task, fail
             this._assertTaskLoaded(task.task);
 
+            // TODO: grab the task description
+
             // CONTINUE HERE
-            batch = batch.concat(this._flattenTask(task.task, task.options));
-            // need to create a function that flattens the task tree
-            // after getting the flattened task tree, create separator functions that hold a reference to the next separator, in order to support skipping sub tasks
-            // once all is ready, run the tasks
+            batchDetails[batchDetailsPos] = {
+                'description': task.description
+            };
+
+            var taskSubtasks = this._flattenTask(task.task, task.options);
+
+            batchDetailsPos += taskSubtasks.length;
+
+            batch = batch.concat(taskSubtasks);
+            // TODO: wrap tasks around a function that allows the user to disable a specific task
+            // TODO: create an argument handler, that allows the main task to receive arguments and pass them to the subtasks either by changing their arguments, or by specifying params that can be accessed in the config in some pattern, like %param_name%
         }
 
         var batchLength    = batch.length,
             waterfallBatch = []
         ;
 
-//        inspect(batch);
         for (i = 0; i < batchLength; ++i) {
             task = batch[i];
-            waterfallBatch.push(function (next) {
-                console.log('Iterating...'.info);
+            waterfallBatch.push(function (details, next) {
+//                console.log('Iterating: '.info);
+                if (details.description) {
+                    console.log('  ' + details.description.blue);
+                }
 
                 next();
-            });
+            }.$bind(this, batchDetails[i] || {}));
 
-            waterfallBatch.push(task.fn.$bind(this, task.options));
+            waterfallBatch.push(task.fn.$bind(this, ctx, task.options));
         }
 
-        async.waterfall(waterfallBatch);
+        async.waterfall(waterfallBatch, function (err) {
+            if (err) {
+                console.log('ERROR: '.error + err);
+                process.exit();
+            }
+            else {
+                console.log('Done'.info);
+            }
+        });
 
     },
 
@@ -138,6 +166,7 @@ var Automaton = d.Class.declare({
             else {
                 if (utils.lang.isString(currentSubtask.task)) {
                     // TODO: mix-in the options arg, overriding local options?
+//console.log('mixing ', currentSubtask, options);
                     var subtaskOptions = utils.object.mixIn({}, currentSubtask, options);
                         subtaskId      = currentSubtask.task;
                     delete subtaskOptions.task;
@@ -183,7 +212,7 @@ var Automaton = d.Class.declare({
     },
 
     _throwError: function (errorMsg) {
-        throw new Error(errorMsg.error)
+        throw new Error(errorMsg.error);
     }
 });
 

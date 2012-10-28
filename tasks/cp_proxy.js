@@ -7,22 +7,22 @@ var task = {
         {
             'task' : 'cp',
             'src'  : 'the 1st src',
-            'dest' : 'the 1st dest'
+            'dst' : 'the 1st dest'
         },
         {
             'task' : 'cp',
             'src'  : 'the 2nd src',
-            'dest' : 'the 2nd dest'
+            'dst' : 'the 2nd dest'
         },
         {
             'task' : 'cp',
             'src'  : 'the 3rd src',
-            'dest' : 'the 3rd dest'
+            'dst' : 'the 3rd dest'
         },
         {
             'task' : 'cp',
             'src'  : 'the 4th src',
-            'dest' : 'the 4th dest'
+            'dst' : 'the 4th dest'
         }
     ],
     'incompatibilities': []

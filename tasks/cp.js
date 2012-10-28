@@ -5,7 +5,7 @@ var task = {
     'tasks'  :
     [
         {
-            'task' : function (options, next) {
+            'task' : function (context, options, next) {
                 console.log('copying...', options);
                 next();
             }
