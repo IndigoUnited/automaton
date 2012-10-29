@@ -11,7 +11,9 @@ automaton.loadTasks(__dirname + '/../tasks');
 
 // TODO: create a proper CLI
 
-var autofile = process.argv[3] || process.cwd() + '/automaton.js';
+automaton.setCwd(process.cwd());
+
+var autofile = process.argv[2] || process.cwd() + '/automaton.js';
 autofile     = require(autofile);
     
 automaton.run(autofile.tasks);

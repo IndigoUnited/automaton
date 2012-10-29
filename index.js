@@ -26,6 +26,17 @@ var Automaton = d.Class.declare({
     $name: 'Automaton',
 
     _tasks: [],
+    _cwd: process.cwd(),
+
+    setCwd: function (path) {
+        this._cwd = path;
+
+        return this;
+    },
+
+    getCwd: function () {
+        return this._cwd;
+    },
 
     addTask: function (task) {
         this._assertIsObject(task, 'Invalid task provided');
