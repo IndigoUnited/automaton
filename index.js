@@ -123,10 +123,11 @@ var Automaton = d.Class.declare({
     loadTasks: function (folder) {
         this._assertIsString(folder);
 
+        folder = fs.realpathSync(folder) + '/';
+
         var filenames = fs.readdirSync(folder),
             i
         ;
-        folder = fs.realpathSync(folder) + '/';
 
         for (i = filenames.length - 1; i >= 0; --i) {
             this.addTask(require(folder + filenames[i].split(/\./)[0]));

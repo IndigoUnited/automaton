@@ -1,25 +1,17 @@
-var automaton = require('../index');
+#!/usr/bin/env node
+var util = require('util');
+inspect = function (v, levels) {
+    levels = levels || 10;
+    console.log(util.inspect(v, false, levels, true));
+};
 
-automaton.loadTasks('../tasks');
+var automaton = require(__dirname + '/../index');
 
-automaton.run([
-    {
-        task: 'cp',
-        description: 'first copy',
-        options: {
-            src: 'source',
-            dst: 'destination'
-        }
-    },
-    {
-        task: 'cp_proxy',
-        description: 'second copy, with proxy',
-        options: {
-            src: 'source from automaton',
-            dst: 'destination from automaton'
-        }
-    },
-    {
-        task: 'cp_proxy'
-    }
-]);
+automaton.loadTasks(__dirname + '/../tasks');
+
+// TODO: create a proper CLI
+
+var autofile = process.argv[3] || process.cwd() + '/automaton.js';
+autofile     = require(autofile);
+    
+automaton.run(autofile.tasks);
