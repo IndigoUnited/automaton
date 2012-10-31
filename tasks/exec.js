@@ -12,8 +12,7 @@ var task = {
                 next();
             }
         }
-    ],
-    'incompatibilities': []
+    ]
 };
 
 module.exports = task;

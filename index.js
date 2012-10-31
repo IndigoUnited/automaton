@@ -1,231 +1,274 @@
-var d       = require('dejavu'),
-    utils   = require('amd-utils'),
-    colors  = require('colors'),
-    fs      = require('fs'),
-    util    = require('util'),
-    async   = require('async')
-;
+(function () {
+    'use strict';
 
-inspect = function (v, levels) {
-    levels = levels || 10;
-    console.log(util.inspect(v, false, levels, true));
-};
+    var d       = require('dejavu'),
+        utils   = require('amd-utils'),
+        colors  = require('colors'),
+        fs      = require('fs'),
+        util    = require('util'),
+        async   = require('async')
+    ;
 
-// set up a useful set of formats
-colors.setTheme({
-    input:   'grey',
-    info:    'green',
-    data:    'grey',
-    help:    'cyan',
-    warning: 'yellow',
-    debug:   'blue',
-    error:   'red'
-});
+    var inspect = function (v, levels) {
+        levels = levels || 10;
+        console.log(util.inspect(v, false, levels, true));
+    };
 
-var Automaton = d.Class.declare({
-    $name: 'Automaton',
+    // set up a useful set of formats
+    colors.setTheme({
+        input:   'grey',
+        info:    'green',
+        data:    'grey',
+        help:    'cyan',
+        warning: 'yellow',
+        debug:   'blue',
+        error:   'red'
+    });
 
-    _tasks: [],
-    _cwd: process.cwd(),
+    var Automaton = d.Class.declare({
+        $name: 'Automaton',
 
-    setCwd: function (path) {
-        this._cwd = path;
+        _tasks: [],
+        _cwd: process.cwd(),
 
-        return this;
-    },
+        setCwd: function (path) {
+            this._cwd = path;
 
-    getCwd: function () {
-        return this._cwd;
-    },
+            return this;
+        },
 
-    addTask: function (task) {
-        this._assertIsObject(task, 'Invalid task provided');
-        this._assertIsString(task.id, 'You have provided a task without ID');
+        getCwd: function () {
+            return this._cwd;
+        },
 
-        this._tasks[task.id] = task;
+        addTask: function (task) {
+            this._assertIsObject(task, 'Invalid task provided');
+            this._assertIsString(task.id, 'You have provided a task without ID');
 
-        return this;
-    },
+            this._tasks[task.id] = task;
 
-    removeTask: function (id) {
-        this._assertIsString(id, 'Invalid task id provided \'' + id + '\'');
+            return this;
+        },
 
-        delete this._tasks[id];
+        removeTask: function (id) {
+            this._assertIsString(id, 'Invalid task id provided \'' + id + '\'');
 
-        return this;
-    },
+            delete this._tasks[id];
 
-    run: function (tasks) {
-        var i,
-            tasksLength     = tasks.length,
-            task,
-            batch           = [],
-            batchDetails    = [],
-            batchDetailsPos = 0
-        ;
-        this._assertIsArray(tasks);
+            return this;
+        },
 
-        console.log('Automating...'.info);
+        run: function (tasks) {
+            var i,
+                tasksLength     = tasks.length,
+                task,
+                batch           = [],
+                batchDetails    = [],
+                batchDetailsPos = 0
+            ;
+            this._assertIsArray(tasks);
 
-        // create context that is given to the tasks
-        var ctx = {
-            cwd: process.cwd()
-        }
+            console.log('Automating...'.info);
 
-        // for each of the tasks that will run
-        for (i = 0; i < tasksLength; ++i) {
-            // assert that the task is valid
-            task = tasks[i];
-            this._assertIsObject(task, 'Invalid task specified at index \'' + i + '\'');
-            task.options = task.options || {};
-
-            // TODO: check if `task` property exists
-            this._assertIsObject(task.options, 'Invalid options provided for task \'' + task.task + '\'');
-
-            // if no suitable task is loaded to run the requested task, fail
-            this._assertTaskLoaded(task.task);
-
-            // TODO: grab the task description
-
-            // CONTINUE HERE
-            batchDetails[batchDetailsPos] = {
-                'description': task.description
+            // create context that is given to the tasks
+            var ctx = {
+                cwd: process.cwd()
             };
 
-            var taskSubtasks = this._flattenTask(task.task, task.options);
+            // for each of the tasks that will run
+            for (i = 0; i < tasksLength; ++i) {
+                // assert that the task is valid
+                task = tasks[i];
+                this._assertIsObject(task, 'Invalid task specified at index \'' + i + '\'');
+                task.options = task.options || {};
 
-            batchDetailsPos += taskSubtasks.length;
+                // TODO: check if `task` property exists
+                this._assertIsObject(task.options, 'Invalid options provided for task \'' + task.task + '\'');
 
-            batch = batch.concat(taskSubtasks);
-            // TODO: wrap tasks around a function that allows the user to disable a specific task
-            // TODO: create an argument handler, that allows the main task to receive arguments and pass them to the subtasks either by changing their arguments, or by specifying params that can be accessed in the config in some pattern, like %param_name%
-        }
+                // if no suitable task is loaded to run the requested task, fail
+                this._assertTaskLoaded(task.task);
 
-        var batchLength    = batch.length,
-            waterfallBatch = []
-        ;
+                // TODO: grab the task description
 
-        for (i = 0; i < batchLength; ++i) {
-            task = batch[i];
-            waterfallBatch.push(function (details, next) {
-//                console.log('Iterating: '.info);
-                if (details.description) {
-                    console.log('  ' + details.description.blue);
-                }
+                // TODO: CONTINUE HERE THE FEEDBACK
+                batchDetails[batchDetailsPos] = {
+                    'description': task.description
+                };
 
-                next();
-            }.$bind(this, batchDetails[i] || {}));
+                var taskSubtasks = this._flattenTask(task.task, task.options);
 
-            waterfallBatch.push(task.fn.$bind(this, ctx, task.options));
-        }
+                batchDetailsPos += taskSubtasks.length;
 
-        async.waterfall(waterfallBatch, function (err) {
-            if (err) {
-                console.log('ERROR: '.error + err);
-                process.exit();
-            }
-            else {
-                console.log('Done'.info);
-            }
-        });
-
-    },
-
-    loadTasks: function (folder) {
-        this._assertIsString(folder);
-
-        folder = fs.realpathSync(folder) + '/';
-
-        var filenames = fs.readdirSync(folder),
-            i
-        ;
-
-        for (i = filenames.length - 1; i >= 0; --i) {
-            this.addTask(require(folder + filenames[i].split(/\./)[0]));
-        }
-
-        return this;
-    },
-
-    _flattenTask: function (taskId, options) {
-        var i,
-            task = this._tasks[taskId], // task that is being flattened
-            subtasks,                   // subtasks of the task being flattened
-            subtasksLength,             // total of subtasks of the task being flattened
-            currentSubtask,             // iteration task
-            batch = []                  // final result
-        ;
-
-        options = options || {};
-
-        subtasks       = task.tasks;
-        subtasksLength = subtasks.length;
-
-        for (i = 0; i < subtasksLength; ++i) {
-            currentSubtask = subtasks[i];
-
-            this._assertIsObject(currentSubtask, 'Invalid task specified at index \'' + i + '\'');
-
-            if (!currentSubtask.task) {
-                this._throwError('Task type at index \'' + i + '\' not specified');
+                batch = batch.concat(taskSubtasks);
+                // TODO: wrap tasks around a function that allows the user to disable a specific task
+                // TODO: create an argument handler, that allows the main task to receive arguments and pass them to the subtasks either by changing their arguments, or by specifying params that can be accessed in the config in some pattern, like %param_name%
             }
 
-            // if it's a function, just add it to the batch
-            if (utils.lang.isFunction(currentSubtask.task)) {
-                batch.push({ 'fn': currentSubtask.task, 'options': options });
+            var batchLength    = batch.length,
+                waterfallBatch = []
+            ;
+
+            for (i = 0; i < batchLength; ++i) {
+                task = batch[i];
+                waterfallBatch.push(function (details, next) {
+    //                console.log('Iterating: '.info);
+                    if (details.description) {
+                        console.log('  ' + details.description.blue);
+                    }
+
+                    next();
+                }.$bind(this, batchDetails[i] || {}));
+
+                waterfallBatch.push(task.fn.$bind(this, ctx, task.options));
             }
-            // it's not a function, then it must be another task
-            else {
-                if (utils.lang.isString(currentSubtask.task)) {
-                    // TODO: mix-in the options arg, overriding local options?
-//console.log('mixing ', currentSubtask, options);
-                    var subtaskOptions = utils.object.mixIn({}, currentSubtask, options);
-                        subtaskId      = currentSubtask.task;
-                    delete subtaskOptions.task;
-                    batch = batch.concat(this._flattenTask(subtaskId, subtaskOptions));
+
+            async.waterfall(waterfallBatch, function (err) {
+                if (err) {
+                    console.log('ERROR: '.error + err);
+                    process.exit();
                 }
                 else {
-                    this._throwError('Invalid subtask specified in task \'' + taskId + '\', at index \'' + i + '\'');
+                    console.log('Done'.info);
+                }
+            });
+
+        },
+
+        loadTasks: function (folder) {
+            this._assertIsString(folder);
+
+            folder = fs.realpathSync(folder) + '/';
+
+            var filenames = fs.readdirSync(folder),
+                i
+            ;
+
+            for (i = filenames.length - 1; i >= 0; --i) {
+                this.addTask(require(folder + filenames[i].split(/\./)[0]));
+            }
+
+            return this;
+        },
+
+        _flattenTask: function (taskId, options) {
+            var i,
+                task = this._tasks[taskId], // task that is being flattened
+                subtasks,                   // subtasks of the task being flattened
+                subtasksLength,             // total of subtasks of the task being flattened
+                currentSubtask,             // iteration task
+                batch = [],                 // final result
+                option
+            ;
+
+            options = options || {};
+
+            // check if all the task required options were provided
+            // if task has a definition of the options
+            if (utils.lang.isObject(task.options)) {
+                // fill in the options with default values where the option was not provided
+                for (option in task.options) {
+                    if (task.options[option].hasOwnProperty('default') && !options.hasOwnProperty(option)) {
+                        options[option] = task.options[option]['default'];
+                    }
+                }
+
+                // if task has a filter, run it before checking if all the options are ok
+                if (utils.lang.isFunction(task.filter)) {
+                    task.filter(options);
+                }
+
+                // for each option in the definition
+                for (option in task.options) {
+                    // if option was not provided to the task, abort
+                    if (!options.hasOwnProperty(option)) {
+                        this._throwError('Missing option \'' + option + '\' in \'' + taskId + '\' task');
+                    }
                 }
             }
-        }
+            else {
+                // if task has a filter, run it
+                if (utils.lang.isFunction(task.filter)) {
+                    task.filter(options);
+                }
+            }
 
-        return batch;
-    },
+            subtasks       = task.tasks;
+            subtasksLength = subtasks.length;
 
-    _assertTaskLoaded: function (taskId) {
-        if (!utils.lang.isObject(this._tasks[taskId])) {
-            throw new Error('Could not find any task handler suitable for \'' + taskId + '\'');
-        }
-    },
+            for (i = 0; i < subtasksLength; ++i) {
+                currentSubtask = subtasks[i];
 
-    _assertIsString: function (variable, errorMsg) {
-        if (!utils.lang.isString(variable)) {
+                this._assertIsObject(currentSubtask, 'Invalid task specified at index \'' + i + '\'');
+
+                if (!currentSubtask.task) {
+                    this._throwError('Task type at index \'' + i + '\' not specified');
+                }
+
+                // if it's a function, just add it to the batch
+                if (utils.lang.isFunction(currentSubtask.task)) {
+                    batch.push({ 'fn': currentSubtask.task, 'options': options });
+                }
+                // it's not a function, then it must be another task
+                else {
+                    if (utils.lang.isString(currentSubtask.task)) {
+                        // generate the options for the subtask
+                        var subtaskOptions = {},
+                            optionValue
+                        ;
+                        if (utils.lang.isObject(currentSubtask.options)) {
+                            for (option in currentSubtask.options) {
+                                optionValue = currentSubtask.options[option];
+                                // if option value is a string, replace the placeholders by its correspondent value
+                                subtaskOptions[option] = utils.lang.isString(optionValue) ? utils.string.interpolate(optionValue, options) : optionValue;
+                            }
+                        }
+
+                        batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions));
+                    }
+                    else {
+                        this._throwError('Invalid subtask specified in task \'' + taskId + '\', at index \'' + i + '\'');
+                    }
+                }
+            }
+
+            return batch;
+        },
+
+        _assertTaskLoaded: function (taskId) {
+            if (!utils.lang.isObject(this._tasks[taskId])) {
+                throw new Error('Could not find any task handler suitable for \'' + taskId + '\'');
+            }
+        },
+
+        _assertIsString: function (variable, errorMsg) {
+            if (!utils.lang.isString(variable)) {
+                throw new Error(errorMsg.error);
+            }
+        },
+
+        _assertIsObject: function (variable, errorMsg) {
+            if (!utils.lang.isObject(variable)) {
+                throw new Error(errorMsg.error);
+            }
+        },
+
+        _assertIsFunction: function (variable, errorMsg) {
+            if (!utils.lang.isFunction(variable)) {
+                throw new Error(errorMsg.error);
+            }
+        },
+
+        _assertIsArray: function (variable, errorMsg) {
+            if (!utils.lang.isArray(variable)) {
+                throw new Error(errorMsg.error);
+            }
+        },
+
+        _throwError: function (errorMsg) {
             throw new Error(errorMsg.error);
         }
-    },
+    });
 
-    _assertIsObject: function (variable, errorMsg) {
-        if (!utils.lang.isObject(variable)) {
-            throw new Error(errorMsg.error);
-        }
-    },
+    module.exports = new Automaton();
 
-    _assertIsFunction: function (variable, errorMsg) {
-        if (!utils.lang.isFunction(variable)) {
-            throw new Error(errorMsg.error);
-        }
-    },
-
-    _assertIsArray: function (variable, errorMsg) {
-        if (!utils.lang.isArray(variable)) {
-            throw new Error(errorMsg.error);
-        }
-    },
-
-    _throwError: function (errorMsg) {
-        throw new Error(errorMsg.error);
-    }
-});
-
-module.exports = new Automaton();
+})();
