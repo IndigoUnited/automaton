@@ -5,8 +5,10 @@ inspect = function (v, levels) {
     console.log(util.inspect(v, false, levels, true));
 };
 
+// load automaton
 var automaton = require(__dirname + '/../index');
 
+// load core tasks
 automaton.loadTasks(__dirname + '/../tasks');
 
 // TODO: create a proper CLI
