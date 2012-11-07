@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 var util = require('util');
-inspect = function (v, levels) {
+var inspect = function (v, levels) {
     levels = levels || 10;
     console.log(util.inspect(v, false, levels, true));
 };
