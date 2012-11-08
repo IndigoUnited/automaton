@@ -1,15 +1,29 @@
+var exec   = require('child_process').exec,
+    colors = require('colors');
+
 var task = {
-    'id'     : 'exec',
-    'author' : 'Indigo United',
-    'name'   : 'Execute',
-    'tasks'  :
+    'id'      : 'exec',
+    'author'  : 'Indigo United',
+    'name'    : 'Execute',
+    'options' : {
+        'cmd': {
+            'description': 'What command to execute'
+        }
+    },
+    'tasks'   :
     [
         {
             'task' : function (ctx, opt, next) {
-                // TODO: validate required options
-                // TODO: take into account the ctx.cwd
+                exec(opt.cmd, { cwd: ctx.cwd }, function (error, stdout, stderr) {
+                    if (error) {
+                        console.log(stderr.error);
+                        return next(error);
+                    }
 
-                next();
+                    console.log(stdout.info);
+
+                    next();
+                });
             }
         }
     ]

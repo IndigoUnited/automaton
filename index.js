@@ -58,15 +58,18 @@
             return this;
         },
 
-        run: function (tasks) {
+        run: function (task, $options) {
             var i,
-                tasksLength     = tasks.length,
-                task,
+                subtasksLength,
+                subtask,
                 batch           = [],
                 batchDetails    = [],
                 batchDetailsPos = 0
             ;
-            this._assertIsArray(tasks);
+            this._assertIsObject(task);
+            this._assertIsArray(task.tasks);
+
+            subtasksLength = task.tasks.length;
 
             console.log('Automating...'.info);
 
@@ -76,30 +79,30 @@
             };
 
             // for each of the tasks that will run
-            for (i = 0; i < tasksLength; ++i) {
+            for (i = 0; i < subtasksLength; ++i) {
                 // assert that the task is valid
-                task = tasks[i];
-                this._assertIsObject(task, 'Invalid task specified at index \'' + i + '\'');
-                task.options = task.options || {};
+                subtask = task.tasks[i];
+                this._assertIsObject(subtask, 'Invalid subtask specified at index \'' + i + '\'');
+                subtask.options = subtask.options || {};
 
                 // TODO: check if `task` property exists
-                this._assertIsObject(task.options, 'Invalid options provided for task \'' + task.task + '\'');
+                this._assertIsObject(task.options, 'Invalid options provided for subtask \'' + task.task + '\'');
 
                 // if no suitable task is loaded to run the requested task, fail
-                this._assertTaskLoaded(task.task);
+                this._assertTaskLoaded(subtask.task);
 
                 // TODO: grab the task description
 
                 // TODO: CONTINUE HERE THE FEEDBACK
                 batchDetails[batchDetailsPos] = {
-                    'description': task.description
+                    'description': subtask.description
                 };
 
-                var taskSubtasks = this._flattenTask(task.task, task.options);
+                var subtaskSubtasks = this._flattenTask(subtask.task, subtask.options);
 
-                batchDetailsPos += taskSubtasks.length;
+                batchDetailsPos += subtaskSubtasks.length;
 
-                batch = batch.concat(taskSubtasks);
+                batch = batch.concat(subtaskSubtasks);
                 // TODO: wrap tasks around a function that allows the user to disable a specific task
                 // TODO: create an argument handler, that allows the main task to receive arguments and pass them to the subtasks either by changing their arguments, or by specifying params that can be accessed in the config in some pattern, like %param_name%
             }
@@ -208,9 +211,9 @@
                 if (utils.lang.isFunction(currentSubtask.task)) {
                     batch.push({ 'fn': currentSubtask.task, 'options': options });
                 }
-                // it's not a function, then it must be another task
+                // it's not a function, then it must be another task, check if it is loaded, and flatten it
                 else {
-                    if (utils.lang.isString(currentSubtask.task)) {
+                    if (utils.lang.isString(currentSubtask.task) && this._assertTaskLoaded(currentSubtask.task)) {
                         // generate the options for the subtask
                         var subtaskOptions = {},
                             optionValue
