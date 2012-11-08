@@ -11,20 +11,19 @@ var inspect = function (v, levels) {
 // load automaton
 var automaton = require(__dirname + '/../index');
 
-// load core tasks
-automaton.loadTasks(__dirname + '/../tasks');
-
 // TODO: create a proper CLI
 
+// TODO: CWD can be passed as an arg
 automaton.setCwd(process.cwd());
 
-var autofile = process.argv[2] || process.cwd() + '/automaton.js';
+var autofile = process.argv[2] || process.cwd() + '/autofile.js';
 
 if (!fs.existsSync(autofile)) {
     console.log('Could not find autofile: '.error + autofile);
     process.exit(1);
 }
 
-autofile     = require(autofile);
+autofile = require(autofile);
     
-automaton.run(autofile.tasks);
+// TODO: pass any option to the task that was provided as a CLI arg
+automaton.run(autofile);

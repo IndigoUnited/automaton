@@ -31,6 +31,11 @@
         _tasks: [],
         _cwd: process.cwd(),
 
+        initialize: function () {
+            // load core tasks
+            this.loadTasks(__dirname + '/tasks');
+        },
+
         setCwd: function (path) {
             this._cwd = path;
 
@@ -60,53 +65,20 @@
 
         run: function (task, $options) {
             var i,
-                subtasksLength,
-                subtask,
                 batch           = [],
-                batchDetails    = [],
-                batchDetailsPos = 0
+                batchDetails    = []
             ;
             this._assertIsObject(task);
             this._assertIsArray(task.tasks);
 
-            subtasksLength = task.tasks.length;
-
             console.log('Automating...'.info);
 
-            // create context that is given to the tasks
-            var ctx = {
-                cwd: process.cwd()
-            };
+            // get context that is given to the tasks
+            var ctx = this._getCtx();
 
-            // for each of the tasks that will run
-            for (i = 0; i < subtasksLength; ++i) {
-                // assert that the task is valid
-                subtask = task.tasks[i];
-                this._assertIsObject(subtask, 'Invalid subtask specified at index \'' + i + '\'');
-                subtask.options = subtask.options || {};
+            batch = this._flattenTask(task, $options || {});
 
-                // TODO: check if `task` property exists
-                this._assertIsObject(task.options, 'Invalid options provided for subtask \'' + task.task + '\'');
-
-                // if no suitable task is loaded to run the requested task, fail
-                this._assertTaskLoaded(subtask.task);
-
-                // TODO: grab the task description
-
-                // TODO: CONTINUE HERE THE FEEDBACK
-                batchDetails[batchDetailsPos] = {
-                    'description': subtask.description
-                };
-
-                var subtaskSubtasks = this._flattenTask(subtask.task, subtask.options);
-
-                batchDetailsPos += subtaskSubtasks.length;
-
-                batch = batch.concat(subtaskSubtasks);
-                // TODO: wrap tasks around a function that allows the user to disable a specific task
-                // TODO: create an argument handler, that allows the main task to receive arguments and pass them to the subtasks either by changing their arguments, or by specifying params that can be accessed in the config in some pattern, like %param_name%
-            }
-
+            // TODO: wrap tasks around a function that allows the user to disable a specific sub task
             var batchLength    = batch.length,
                 waterfallBatch = []
             ;
@@ -114,7 +86,6 @@
             for (i = 0; i < batchLength; ++i) {
                 task = batch[i];
                 waterfallBatch.push(function (details, next) {
-    //                console.log('Iterating: '.info);
                     if (details.description) {
                         console.log('  ' + details.description.blue);
                     }
@@ -153,17 +124,28 @@
             return this;
         },
 
-        _flattenTask: function (taskId, options) {
+        _flattenTask: function (task, options) {
             var i,
-                task = this._tasks[taskId], // task that is being flattened
-                subtasks,                   // subtasks of the task being flattened
-                subtasksLength,             // total of subtasks of the task being flattened
-                currentSubtask,             // iteration task
-                batch = [],                 // final result
+                task,           // task that is being flattened
+                subtasks,       // subtasks of the task being flattened
+                subtasksLength, // total of subtasks of the task being flattened
+                currentSubtask, // iteration task
+                batch = [],     // final result
                 option
             ;
 
             options = options || {};
+
+            if (utils.lang.isString(task)) {
+                this._assertTaskLoaded(task);
+                task = this._tasks[task];
+            }
+
+            this._assertIsObject(task);
+
+            if (!utils.lang.isString(task.id)) {
+                task.id = 'Non-identified task';
+            }
 
             // check if all the task required options were provided
             // if task has a definition of the options
@@ -184,7 +166,7 @@
                 for (option in task.options) {
                     // if option was not provided to the task, abort
                     if (!options.hasOwnProperty(option)) {
-                        this._throwError('Missing option \'' + option + '\' in \'' + taskId + '\' task');
+                        this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task');
                     }
                 }
             }
@@ -213,7 +195,9 @@
                 }
                 // it's not a function, then it must be another task, check if it is loaded, and flatten it
                 else {
-                    if (utils.lang.isString(currentSubtask.task) && this._assertTaskLoaded(currentSubtask.task)) {
+                    if (utils.lang.isString(currentSubtask.task)) {
+                        this._assertTaskLoaded(currentSubtask.task)
+
                         // generate the options for the subtask
                         var subtaskOptions = {},
                             optionValue
@@ -229,12 +213,18 @@
                         batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions));
                     }
                     else {
-                        this._throwError('Invalid subtask specified in task \'' + taskId + '\', at index \'' + i + '\'');
+                        this._throwError('Invalid subtask specified in task \'' + task.id + '\', at index \'' + i + '\' (\'' + currentSubtask.task + '\')');
                     }
                 }
             }
 
             return batch;
+        },
+
+        _getCtx: function () {
+            return {
+                cwd: this._cwd
+            };
         },
 
         _assertTaskLoaded: function (taskId) {
