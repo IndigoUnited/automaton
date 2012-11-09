@@ -13,6 +13,9 @@
   "keywords": [
     "automation",
     "automatic",
+    "automaton",
+    "batch",
+    "script",
     "task",
     "tasks",
     "async",
@@ -20,7 +23,13 @@
     "test",
     "minimize",
     "declarative",
-    "concat"
+    "concat",
+    "scaffolding",
+    "uglify",
+    "minify",
+    "mkdir",
+    "cp",
+    "rm"
   ],
   "author": "Indigo United",
   "license": "BSD",
