@@ -165,7 +165,7 @@ Automaton can also be used as a node module. Here's a quick example of its usage
 ```javascript
 var automaton = require('automaton');
 
-// You can change the current working dir for automaton 
+// You can change the current working dir for automaton
 automaton.setCwd('/home/indigo/some/dir');
 
 // Since autofiles are node modules themselves, you can just require them
@@ -175,15 +175,7 @@ var myTask = require('my_autofile');
 automaton.run(myTask, { 'some_option': 'that is handy' });
 ```
 
-
-## Credits
-
-### Authors
-
-- [Marco Oliveira](http://twitter.com/sonicspot)
-- [André Cruz](http://twitter.com/satazor)
-
-### Acknowledgements
+## Acknowledgements
 
 Should be noted that this tool was inspired by already existing tools, and you should definitely take a look at them before deciding what is the right tool for the job at hand:
 
