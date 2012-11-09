@@ -1,4 +1,22 @@
-var cpr = require('cpr');
+var cpr    = require('cpr');
+var fs     = require('fs');
+var mkdirp = require('mkdirp');
+
+
+function copy(src, dst, next) {
+    cpr(src, dst, {
+        deleteFirst: false, // delete destination before
+        overwrite: true,    // if the file exists, overwrite it
+        confirm: true       // after the copy, stat all the copied files to make sure they are there
+    }, function (errs) {
+        if (errs) {
+            next(errs);
+        }
+        else {
+            next();
+        }
+    });
+}
 
 var task = {
     'id'      : 'cp',
@@ -20,20 +38,24 @@ var task = {
     [
         {
             'task' : function (ctx, opt, next) {
-                // TODO: check if src exists
-
-                // TODO: check if dst parent folder exists, and create if not
-
-                cpr(opt.src, opt.dst, {
-                    deleteFirst: false, // delete destination before
-                    overwrite: true,    // if the file exists, overwrite it
-                    confirm: true       // after the copy, stat all the copied files to make sure they are there
-                }, function(errs, files) {
-                    if (errs) {
-                        next(errs);
+                // Check if folder exists
+                fs.stat(opt.src, function (error) {
+                    if (error && error.code === 'ENOENT') {
+                        next(error);
                     }
-                    else {
-                        next();
+
+                    // Create dst folder
+                    if (opt.mkdir) {
+                        mkdirp(opt.dst, function (error) {
+                            if (error) {
+                                next(error);
+                            }
+
+                            // Finally execute the recursive copy
+                            copy(opt.src, opt.dst, next);
+                        });
+                    } else {
+                        copy(opt.src, opt.dst, next);
                     }
                 });
             }
