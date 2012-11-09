@@ -162,7 +162,7 @@ In order to run an `autofile`, you simply run `automaton`. This will look for `a
 
 Automaton can also be used as a node module. Here's a quick example of its usage:
 
-```
+```javascript
 var automaton = require('automaton');
 
 // You can change the current working dir for automaton 
