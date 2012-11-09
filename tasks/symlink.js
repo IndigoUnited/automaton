@@ -1,4 +1,5 @@
-var fs = require('fs');
+var fs   = require('fs');
+var path = require('path');
 
 var task = {
     'id'      : 'symlink',
@@ -20,8 +21,10 @@ var task = {
     [
         {
             'task' : function (ctx, opt, next) {
-                // TODO: take into account the ctx.cwd
-                fs.symlink(opt.src, opt.dst, opt.type, next);
+                var src = path.resolve(ctx.cwd, opt.src),
+                    dst = path.resolve(ctx.cwd, opt.dst);
+
+                fs.symlink(src, dst, opt.type, next);
             }
         }
     ]

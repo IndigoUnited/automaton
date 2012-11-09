@@ -1,4 +1,5 @@
 var mkdirp = require('mkdirp');
+var path   = require('path');
 
 var task = {
     'id'      : 'mkdir',
@@ -13,9 +14,9 @@ var task = {
     [
         {
             'task' : function (ctx, opt, next) {
-                // TODO: take into account the ctx.cwd
-console.log('mkdir opts', opt);
-                mkdirp(opt.dir, function (err) {
+                var dir = path.resolve(ctx.cwd, opt.dir);
+
+                mkdirp(dir, function (err) {
                     if (err) {
                         next(err);
                     }
