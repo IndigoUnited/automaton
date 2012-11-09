@@ -170,7 +170,7 @@ automaton.setCwd('/home/indigo/some/dir');
 
 // Since autofiles are node modules themselves, you can just require them
 // Note that instead, you could have instead declared the module inline, in JSON
-var myTask = require('my_autofile.js');
+var myTask = require('my_autofile');
 
 automaton.run(myTask, { 'some_option': 'that is handy' });
 ```
