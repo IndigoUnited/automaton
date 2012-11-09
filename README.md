@@ -22,7 +22,7 @@ An automaton task is a simple object, describing what the task will do.
 
 For illustration purposes, here's a simple `autofile` that just creates a folder and copies a file into it:
 
-```
+```javascript
 var myTask = {
     tasks: [
         {
@@ -48,7 +48,7 @@ module.exports = myTask;
 
 To illustrate most of the capabilities of Automaton, here's a complete `autofile` with comments along the file:
 
-```
+```javascript
 var task = {
     // this id is not mandatory but, if you want to use this task in other tasks,
     // must be provided and unique
