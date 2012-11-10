@@ -106,8 +106,7 @@ var task = {
         {
             // if you find yourself looking for something a bit more custom, you can
             // just provide a function as the task
-            'task' : function (ctx, opt, next) {
-                // the ctx provides some context information, like CWD
+            'task' : function (opt, next) {
                 // opt is a list of the options provided to the task
 
                 console.log('I can do whatever I want', ctx, opt);
@@ -135,14 +134,13 @@ module.exports = task;
 
 ### Scaffolding
 
-- append (coming soon)
-- prepend (coming soon)
-- replace (coming soon)
-- close (coming soon)
+- scaffolding.append
+- scaffolding.replace
+- scaffolding.close
 
 ### Generic
 
-- exec
+- run
 - uglify (coming soon)
 - minify (coming soon)
 - concat (coming soon)
@@ -164,9 +162,6 @@ Automaton can also be used as a node module. Here's a quick example of its usage
 
 ```javascript
 var automaton = require('automaton');
-
-// You can change the current working dir for automaton
-automaton.setCwd('/home/indigo/some/dir');
 
 // Since autofiles are node modules themselves, you can just require them
 // Note that instead, you could have instead declared the module inline, in JSON
