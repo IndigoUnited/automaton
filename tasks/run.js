@@ -30,8 +30,6 @@ var task = {
                 });
 
                 child.on('exit', function (code) {
-                    console.log('child process exited with code ' + code);
-
                     if (code === 0) {
                         next();
                     }
