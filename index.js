@@ -110,7 +110,7 @@
             return this;
         },
 
-        _flattenTask: function (task, options) {
+        _flattenTask: function (task, options, $depth) {
             var i,
                 task,           // task that is being flattened
                 subtasks,       // subtasks of the task being flattened
@@ -121,6 +121,8 @@
             ;
 
             options = options || {};
+
+            $depth = $depth || 0;
 
             if (utils.lang.isString(task)) {
                 this._assertTaskLoaded(task);
@@ -175,6 +177,22 @@
                     this._throwError('Task type at index \'' + i + '\' not specified');
                 }
 
+                // check if subtask is disabled
+                var enabled = true;
+                if (currentSubtask.hasOwnProperty('on')) {
+                    if (utils.lang.isString(currentSubtask.on)) {
+                        enabled = !!this._replacePlaceholders(currentSubtask.on, options);
+                    }
+                    else {
+                        enabled = currentSubtask.on;
+                    }
+                }
+
+                // if subtask is disabled, skip to the next subtask
+                if (!enabled) {
+                    continue;
+                }
+
                 // if it's a function, just add it to the batch
                 if (utils.lang.isFunction(currentSubtask.task)) {
                     batch.push({ 'fn': currentSubtask.task, 'options': options });
@@ -182,7 +200,7 @@
                 // it's not a function, then it must be another task, check if it is loaded, and flatten it
                 else {
                     if (utils.lang.isString(currentSubtask.task)) {
-                        this._assertTaskLoaded(currentSubtask.task)
+                        this._assertTaskLoaded(currentSubtask.task);
 
                         // generate the options for the subtask
                         var subtaskOptions = {},
@@ -192,11 +210,11 @@
                             for (option in currentSubtask.options) {
                                 optionValue = currentSubtask.options[option];
                                 // if option value is a string, replace the placeholders by its correspondent value
-                                subtaskOptions[option] = utils.lang.isString(optionValue) ? utils.string.interpolate(optionValue, options) : optionValue;
+                                subtaskOptions[option] = utils.lang.isString(optionValue) ? this._replacePlaceholders(optionValue, options) : optionValue;
                             }
                         }
 
-                        batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions));
+                        batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions, $depth));
                     }
                     else {
                         this._throwError('Invalid subtask specified in task \'' + task.id + '\', at index \'' + i + '\' (\'' + currentSubtask.task + '\')');
@@ -205,6 +223,10 @@
             }
 
             return batch;
+        },
+
+        _replacePlaceholders: function (str, options) {
+            return utils.string.interpolate(str, options);
         },
 
         _assertTaskLoaded: function (taskId) {
