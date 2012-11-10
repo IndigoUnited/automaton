@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 var util   = require('util'),
     fs     = require('fs'),
-    colors = require('colors');
+    colors = require('colors'),
+    path   = require('path');
 
 var inspect = function (v, levels) {
     levels = levels || 10;
@@ -12,8 +13,7 @@ var inspect = function (v, levels) {
 var automaton = require(__dirname + '/../index');
 
 // TODO: create a proper CLI
-
-var autofile = process.argv[2] || process.cwd() + '/autofile.js';
+var autofile = path.resolve(process.cwd(), process.argv[2] || 'autofile.js');
 
 if (!fs.existsSync(autofile)) {
     console.log('Could not find autofile: '.error + autofile);
