@@ -1,4 +1,4 @@
-var exec   = require('child_process').exec,
+var spawn   = require('child_process').spawn,
     colors = require('colors');
 
 var task = {
@@ -18,8 +18,24 @@ var task = {
     [
         {
             'task' : function (opt, next) {
-                // TODO: replace with spawn
-                exec(opt.cmd, { 'cwd': opt.cwd, stdio: ['pipe', 'pipe', 'pipe'] }, function (error, stdout, stderr) {
+                // TODO: add support for windows
+                var child = spawn('/bin/sh', ['-c', opt.cmd], { 'cwd': opt.cwd });
+
+                child.stdout.on('data', function (data) {
+                    console.log('stdout: ' + data);
+                });
+
+                child.stderr.on('data', function (data) {
+                    console.log('stderr: ' + data);
+                });
+
+                child.on('exit', function (code) {
+                    console.log('child process exited with code ' + code);
+
+                    next();
+                }.bind(this));
+
+/*                exec(opt.cmd, { 'cwd': opt.cwd, stdio: ['pipe', 'pipe', 'pipe'] }, function (error, stdout, stderr) {
                     if (error) {
                         console.log(stderr.error);
                         return next(error);
@@ -29,6 +45,7 @@ var task = {
 
                     next();
                 });
+*/
             }
         }
     ]
