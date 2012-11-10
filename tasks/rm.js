@@ -5,9 +5,8 @@ var task = {
     'tasks'  :
     [
         {
-            'task' : function (ctx, opt, next) {
-                // TODO: validate required options
-                // TODO: take into account the ctx.cwd
+            'task' : function (opt, next) {
+                // TODO: implement this
 
                 next();
             }

@@ -2,19 +2,24 @@ var exec   = require('child_process').exec,
     colors = require('colors');
 
 var task = {
-    'id'      : 'exec',
+    'id'      : 'run',
     'author'  : 'Indigo United',
-    'name'    : 'Execute',
+    'name'    : 'Run command',
     'options' : {
         'cmd': {
             'description': 'What command to execute'
+        },
+        'cwd': {
+            'description': 'Current working directory of the child process',
+            'default': null
         }
     },
     'tasks'   :
     [
         {
-            'task' : function (ctx, opt, next) {
-                exec(opt.cmd, { cwd: ctx.cwd }, function (error, stdout, stderr) {
+            'task' : function (opt, next) {
+                // TODO: replace with spawn
+                exec(opt.cmd, { 'cwd': opt.cwd, stdio: ['pipe', 'pipe', 'pipe'] }, function (error, stdout, stderr) {
                     if (error) {
                         console.log(stderr.error);
                         return next(error);

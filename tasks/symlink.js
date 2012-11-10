@@ -21,10 +21,7 @@ var task = {
     [
         {
             'task' : function (ctx, opt, next) {
-                var src = path.resolve(ctx.cwd, opt.src),
-                    dst = path.resolve(ctx.cwd, opt.dst);
-
-                fs.symlink(src, dst, opt.type, next);
+                fs.symlink(opt.src, opt.dst, opt.type, next);
             }
         }
     ]

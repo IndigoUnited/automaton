@@ -1,4 +1,4 @@
-var cpr    = require('cpr');
+var cpr    = require('cpr').cpr;
 var fs     = require('fs');
 var mkdirp = require('mkdirp');
 
@@ -37,7 +37,7 @@ var task = {
     'tasks'  :
     [
         {
-            'task' : function (ctx, opt, next) {
+            'task' : function (opt, next) {
                 // Check if folder exists
                 fs.stat(opt.src, function (error) {
                     if (error && error.code === 'ENOENT') {

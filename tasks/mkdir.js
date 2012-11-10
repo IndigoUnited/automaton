@@ -13,10 +13,8 @@ var task = {
     'tasks'   :
     [
         {
-            'task' : function (ctx, opt, next) {
-                var dir = path.resolve(ctx.cwd, opt.dir);
-
-                mkdirp(dir, function (err) {
+            'task' : function (opt, next) {
+                mkdirp(opt.dir, function (err) {
                     if (err) {
                         next(err);
                     }

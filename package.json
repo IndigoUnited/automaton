@@ -32,7 +32,7 @@
     "rm"
   ],
   "author": "Indigo United",
-  "license": "BSD",
+  "license": "MIT",
   "dependencies": {
     "async": "~0.1.22",
     "dejavu": "~0.1.4",

@@ -29,21 +29,10 @@
         $name: 'Automaton',
 
         _tasks: [],
-        _cwd: process.cwd(),
 
         initialize: function () {
             // load core tasks
             this.loadTasks(__dirname + '/tasks');
-        },
-
-        setCwd: function (path) {
-            this._cwd = path;
-
-            return this;
-        },
-
-        getCwd: function () {
-            return this._cwd;
         },
 
         addTask: function (task) {
@@ -73,9 +62,6 @@
 
             console.log('Automating...'.info);
 
-            // get context that is given to the tasks
-            var ctx = this._getCtx();
-
             batch = this._flattenTask(task, $options || {});
 
             // TODO: wrap tasks around a function that allows the user to disable a specific sub task
@@ -93,7 +79,7 @@
                     next();
                 }.$bind(this, batchDetails[i] || {}));
 
-                waterfallBatch.push(task.fn.$bind(this, ctx, task.options));
+                waterfallBatch.push(task.fn.$bind(this, task.options));
             }
 
             async.waterfall(waterfallBatch, function (err) {
@@ -219,12 +205,6 @@
             }
 
             return batch;
-        },
-
-        _getCtx: function () {
-            return {
-                cwd: this._cwd
-            };
         },
 
         _assertTaskLoaded: function (taskId) {

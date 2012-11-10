@@ -13,9 +13,6 @@ var automaton = require(__dirname + '/../index');
 
 // TODO: create a proper CLI
 
-// TODO: CWD can be passed as an arg
-automaton.setCwd(process.cwd());
-
 var autofile = process.argv[2] || process.cwd() + '/autofile.js';
 
 if (!fs.existsSync(autofile)) {
