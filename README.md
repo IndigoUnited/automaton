@@ -134,9 +134,9 @@ module.exports = task;
 
 ### Scaffolding
 
-- scaffolding.append
-- scaffolding.replace
-- scaffolding.close
+- scaffolding-append
+- scaffolding-replace
+- scaffolding-close
 
 ### Generic
 
