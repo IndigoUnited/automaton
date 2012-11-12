@@ -1,5 +1,5 @@
 var mkdirp = require('mkdirp');
-var path   = require('path');
+var fs     = require('fs');
 
 var task = {
     'id'      : 'mkdir',
@@ -14,14 +14,22 @@ var task = {
     [
         {
             'task' : function (opt, next) {
-                mkdirp(opt.dir, function (err) {
-                    if (err) {
-                        next(err);
+
+                fs.stat(opt.dir, function (err, stat) {
+                    if ((!err || err.code !== 'ENOENT') && (stat && !stat.isDirectory())) {
+                        next(new Error('Passed dir already exists and is not a directory.'));
                     }
-                    else {
-                        next();
-                    }
+
+                    mkdirp(opt.dir, function (err) {
+                        if (err) {
+                            next(err);
+                        }
+                        else {
+                            next();
+                        }
+                    });
                 });
+
             }
         }
     ]
