@@ -12,6 +12,8 @@ var inspect = function (v, levels) {
 // load automaton
 var automaton = require(__dirname + '/../index');
 
+automaton.setVerbosity(1);
+
 // TODO: create a proper CLI
 var autofile = path.resolve(process.cwd(), process.argv[2] || 'autofile.js');
 

@@ -25,14 +25,34 @@
         error:   'red'
     });
 
+    function nop(options, next) {
+        next();
+    }
+
     var Automaton = d.Class.declare({
         $name: 'Automaton',
 
+        $constants: {
+            // terminal escape character
+            ESCAPE_CODE: '\u001b',
+
+            // display attributes reset
+            RESET_CODE: '\u001b[0m',
+
+            CHECK: '✔'
+        },
+
         _tasks: [],
+
+        _verbosity: 1,
 
         initialize: function () {
             // load core tasks
             this.loadTasks(__dirname + '/tasks');
+        },
+
+        setVerbosity: function (depth) {
+            this._verbosity = depth;
         },
 
         addTask: function (task) {
@@ -55,42 +75,59 @@
         run: function (task, $options) {
             var i,
                 batch           = [],
-                batchDetails    = []
+                batchDetails
             ;
             this._assertIsObject(task);
             this._assertIsArray(task.tasks);
 
-            console.log('Automating...'.info);
+            //this._log('Automating...'.info);
 
             batch = this._flattenTask(task, $options || {});
 
-            // TODO: wrap tasks around a function that allows the user to disable a specific sub task
+            // put a control function between each of the subtasks, allowing for feedback, and other inter-subtask operations
             var batchLength    = batch.length,
-                waterfallBatch = []
+                waterfallBatch = [],
+                subtask
             ;
 
             for (i = 0; i < batchLength; ++i) {
-                task = batch[i];
+                subtask = batch[i];
+                batchDetails = {
+                    'description': subtask.description,
+                    'depth': subtask.depth,
+                    'options': subtask.options
+                };
+
                 waterfallBatch.push(function (details, next) {
                     if (details.description) {
-                        console.log('  ' + details.description.blue);
+                        this._log('  - ' + details.description.blue, details.depth, false);
                     }
 
                     next();
-                }.$bind(this, batchDetails[i] || {}));
+                }.$bind(this, batchDetails));
 
-                waterfallBatch.push(task.fn.$bind(this, task.options));
+                waterfallBatch.push(subtask.fn.$bind(this, subtask.options));
+
+/*                waterfallBatch.push(function (details, next) {
+                    if (details.description) {
+                        this._t_left(details.description.length + 2);
+                        this._log('  ' + this.$static.CHECK.green + ' ' + details.description.blue, details.depth);
+                    }
+
+                    next();
+                }.$bind(this, batchDetails));*/
             }
 
             async.waterfall(waterfallBatch, function (err) {
                 if (err) {
-                    console.log('ERROR: '.error + err);
+                    console.error('ERROR: '.error + err);
                     process.exit();
                 }
                 else {
-                    console.log('Done'.info);
+                    // task DONE
+                    this._log('Done'.info);
                 }
-            });
+            }.$bind(this));
 
         },
 
@@ -195,7 +232,12 @@
 
                 // if it's a function, just add it to the batch
                 if (utils.lang.isFunction(currentSubtask.task)) {
-                    batch.push({ 'fn': currentSubtask.task, 'options': options });
+                    batch.push({
+                        'description': currentSubtask.hasOwnProperty('description') ? this._replacePlaceholders(currentSubtask.description, options) : null,
+                        'depth': $depth,
+                        'fn': currentSubtask.task,
+                        'options': options
+                    });
                 }
                 // it's not a function, then it must be another task, check if it is loaded, and flatten it
                 else {
@@ -214,7 +256,13 @@
                             }
                         }
 
-                        batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions, $depth));
+                        batch = batch.concat({
+                            // this NOP subtask is added, so that the description shows up in the feedback
+                            'description': currentSubtask.hasOwnProperty('description') ? this._replacePlaceholders(currentSubtask.description, options) : null,
+                            'depth': $depth,
+                            'fn': nop, // no operation function
+                            'options': options
+                        }).concat(this._flattenTask(currentSubtask.task, subtaskOptions, $depth + 1));
                     }
                     else {
                         this._throwError('Invalid subtask specified in task \'' + task.id + '\', at index \'' + i + '\' (\'' + currentSubtask.task + '\')');
@@ -261,6 +309,63 @@
 
         _throwError: function (errorMsg) {
             throw new Error(errorMsg.error);
+        },
+
+        _log: function (msg, $depth, $newLine) {
+            $depth   = $depth || 0;
+            $newLine = $newLine || true;
+
+            if ($depth <= this._verbosity) {
+                if ($newLine) {
+                    util.puts(msg);
+                }
+                else {
+                    util.print(msg);
+                }
+            }
+        },
+
+        _error: function (msg, $depth) {
+            $depth = $depth || 0;
+            if ($depth <= this._verbosity) {
+                console.error(msg);
+            }
+        },
+
+        _t_reset: function () {
+            util.print(this.$static.RESET_CODE);
+
+            return this;
+        },
+
+        _t_clear: function () {
+            util.print(this.$static.ESCAPE_CODE + '[2J');
+
+            return this;
+        },
+
+        _t_up: function (n) {
+            util.print(this.$static.ESCAPE_CODE + '[' + n + 'A');
+
+            return this;
+        },
+
+        _t_down: function (n) {
+            util.print(this.$static.ESCAPE_CODE + '[' + n + 'B');
+
+            return this;
+        },
+
+        _t_left: function (n) {
+            util.print(this.$static.ESCAPE_CODE + '[' + n + 'D');
+
+            return this;
+        },
+
+        _t_right: function (n) {
+            util.print(this.$static.ESCAPE_CODE + '[' + n + 'C');
+
+            return this;
         }
     });
 

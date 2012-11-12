@@ -43,7 +43,7 @@ var task = {
                     if (error && error.code === 'ENOENT') {
                         next(error);
                     }
-
+//console.log('cp', opt);
                     // Create dst folder
                     if (opt.mkdir) {
                         mkdirp(opt.dst, function (error) {
