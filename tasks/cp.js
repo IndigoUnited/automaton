@@ -1,22 +1,6 @@
-var cpr    = require('cpr').cpr;
-var fs     = require('fs');
-var mkdirp = require('mkdirp');
 
-
-function copy(src, dst, next) {
-    cpr(src, dst, {
-        deleteFirst: false, // delete destination before
-        overwrite: true,    // if the file exists, overwrite it
-        confirm: true       // after the copy, stat all the copied files to make sure they are there
-    }, function (errs) {
-        if (errs) {
-            next(errs);
-        }
-        else {
-            next();
-        }
-    });
-}
+var fs      = require('fs');
+var fstream = require('fstream');
 
 var task = {
     'id'      : 'cp',
@@ -28,36 +12,28 @@ var task = {
         },
         'dst': {
             'description': 'Destination of the copy'
-        },
-        'mkdir': {
-            'description': 'If parent folder of the destination does not exist, create it',
-            'default': true
         }
     },
     'tasks'  :
     [
         {
             'task' : function (opt, next) {
-                // Check if folder exists
-                fs.stat(opt.src, function (error) {
-                    if (error && error.code === 'ENOENT') {
-                        next(error);
+                fs.stat(opt.src, function (err, stat) {
+                    if (err && err.code === 'ENOENT') {
+                        next(err);
                     }
-//console.log('cp', opt);
-                    // Create dst folder
-                    if (opt.mkdir) {
-                        mkdirp(opt.dst, function (error) {
-                            if (error) {
-                                next(error);
-                            }
 
-                            // Finally execute the recursive copy
-                            copy(opt.src, opt.dst, next);
-                        });
-                    } else {
-                        copy(opt.src, opt.dst, next);
-                    }
+                    var reader = fstream.Reader(opt.src).pipe(
+                        fstream.Writer({
+                            type: stat.isDirectory() ? 'Directory' : 'File',
+                            path: opt.dst
+                        })
+                    );
+
+                    reader.on('end', next);
+                    reader.on('error', next);
                 });
+
             }
         }
     ]

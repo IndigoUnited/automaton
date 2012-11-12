@@ -38,8 +38,8 @@
     "dejavu": "~0.1.4",
     "amd-utils": "~0.6.0",
     "colors": "~0.6.0-1",
-    "cpr": "0.0.6",
-    "mkdirp": "~0.3.4"
+    "mkdirp": "~0.3.4",
+    "fstream": "~0.1.19"
   },
   "preferGlobal": true,
   "bin": {
