@@ -1,5 +1,4 @@
 var spawn   = require('child_process').spawn,
-    colors  = require('colors'),
     utils   = require('amd-utils')
 ;
 
@@ -20,11 +19,15 @@ var task = {
     [
         {
             'task' : function (opt, next) {
-                // TODO: add support for windows
-                var child = spawn('/bin/sh', ['-c', opt.cmd], { 'cwd': opt.cwd });
+                var child;
+
+                if (process.platform === 'win32') {
+                    child = spawn('cmd', ['/s', '/c', opt.cmd], { cwd: opt.cwd });
+                } else {
+                    child = spawn('sh', ['-c', opt.cmd], { cwd: opt.cwd });
+                }
 
                 var separator = '\n' + utils.string.repeat('-', 30) + '\n';
-
                 console.log(separator, 'Running: '.info, opt.cmd, separator);
 
                 child.stdout.on('data', function (data) {
@@ -39,8 +42,7 @@ var task = {
                     console.log(separator);
                     if (code === 0) {
                         next();
-                    }
-                    else {
+                    } else {
                         next(new Error('Error running command: ' + opt.cmd));
                     }
                 }.bind(this));
