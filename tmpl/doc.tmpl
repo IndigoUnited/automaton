@@ -81,9 +81,9 @@ module.exports = myTask;</code></pre>
     options: {
         dir1: {
             // option description is not mandatory
-            description : &#39;The name of the folder
-                           that will hold 
-                           all the subfolders&#39;
+            description : &#39;The name of the folder &#39; +
+                          &#39;that will hold &#39; +
+                          &#39;all the subfolders&#39;
         },
         dir2: {
             // this option will not be required,
@@ -107,9 +107,9 @@ module.exports = myTask;</code></pre>
         },
         {
             task: &#39;mkdir&#39;,
-            description: &#39;create the third folder, 
-                          which was defined 
-                          by one of the filters&#39;,
+            description: &#39;create the third folder, &#39; + 
+                         &#39;which was defined &#39; +
+                         &#39;by one of the filters&#39;,
             options: {
                 dir: &#39;{{dir1}}/{{dir2}}/{{dir3}}&#39;
             }

@@ -83,9 +83,9 @@ var task = {
     options: {
         dir1: {
             // option description is not mandatory
-            description : 'The name of the folder
-                           that will hold 
-                           all the subfolders'
+            description : 'The name of the folder ' +
+                          'that will hold ' +
+                          'all the subfolders'
         },
         dir2: {
             // this option will not be required,
@@ -109,9 +109,9 @@ var task = {
         },
         {
             task: 'mkdir',
-            description: 'create the third folder, 
-                          which was defined 
-                          by one of the filters',
+            description: 'create the third folder, ' + 
+                         'which was defined ' +
+                         'by one of the filters',
             options: {
                 dir: '{{dir1}}/{{dir2}}/{{dir3}}'
             }
