@@ -48,68 +48,85 @@ module.exports = myTask;</code></pre>
 
 </p>
 <pre><code class="lang-javascript">var task = {
-    // this id is not mandatory but, if you want to use this task in other tasks,
+    // this id is not mandatory but, 
+    // if you want to use this task in other tasks,
     // must be provided and unique
     id: &#39;example_task&#39;,
 
-    // a user friendly name, just for reference, not mandatory
+    // a user friendly name, 
+    // just for reference, not mandatory
     name: &#39;Example task&#39;,
 
     // also not mandatory
     author: &#39;Indigo United&#39;,
 
-    // filter is not mandatory, but can be used to perform some operation
+    // filter is not mandatory,
+    // but can be used to perform some operation
     // on the options before running the subtasks
     filter: function (options) {
         // you can change existing options
         options.dir2 = options.dir2 + &#39;_indigo&#39;;
 
-        // and even define additional options. In this case we&#39;re defining
-        // a `dir3` option, which will be used by one of the subtasks
+        // and even define additional options. 
+        // In this case we&#39;re defining
+        // a `dir3` option, 
+        // which will be used by one of the subtasks
         options.dir3 = &#39;united&#39;;
     },
 
-    // this is also optional, but useful if you want the automaton
-    // to automatically check for required options, and some additional
-    // features, check below
+    // this is also optional,
+    // but useful if you want the automaton
+    // to automatically check for required options,
+    // and some additional features, check below
     options: {
         dir1: {
             // option description is not mandatory
-            description : &#39;The name of the folder that will hold all the subfolders&#39;
+            description : &#39;The name of the folder
+                           that will hold 
+                           all the subfolders&#39;
         },
         dir2: {
-            // this option will not be required, since it has a default value
+            // this option will not be required,
+            // since it has a default value
             &#39;default&#39;: &#39;automaton&#39;
         }
     },
 
-    // a list of subtasks that will run when the example_task runs
+    // a list of subtasks that will run
+    // when the example_task runs
     tasks: [
         {
             task: &#39;mkdir&#39;,
             description: &#39;create the root and second folder&#39;,
             options: {
-                // the option below will have its placeholders replaced by
+                // the option below 
+                // will have its placeholders replaced by
                 // the value that it receives
                 dir: &#39;{{dir1}}/{{dir2}}&#39;
             }
         },
         {
             task: &#39;mkdir&#39;,
-            description: &#39;create the third folder, which was defined by one of the filters&#39;,
+            description: &#39;create the third folder, 
+                          which was defined 
+                          by one of the filters&#39;,
             options: {
                 dir: &#39;{{dir1}}/{{dir2}}/{{dir3}}&#39;
             }
         },
         {
-            // if you find yourself looking for something a bit more custom, you can
-            // just provide a function as the task
+            // if you find yourself looking 
+            // for something a bit more custom,
+            // you can just provide a function as the task
             &#39;task&#39; : function (opt, next) {
-                // opt is a list of the options provided to the task
+                // opt is a list of the options 
+                // provided to the task
 
                 console.log(&#39;I can do whatever I want&#39;, ctx, opt);
 
-                // when the task is done, you just call next(), not like the MTV show, though…
+                // when the task is done,
+                // you just call next(),
+                // not like the MTV show, though…
                 // (- -&#39;)
                 next();
             }
@@ -155,8 +172,11 @@ module.exports = task;</code></pre>
 </p>
 <pre><code class="lang-javascript">var automaton = require(&#39;automaton&#39;);
 
-// Since autofiles are node modules themselves, you can just require them
-// Note that instead, you could have instead declared the module inline, in JSON
+// Since autofiles are node modules themselves,
+// you can just require them
+// Note that instead,
+// you could have instead declared the module inline,
+// in JSON
 var myTask = require(&#39;my_autofile&#39;);
 
 automaton.run(myTask, { &#39;some_option&#39;: &#39;that is handy&#39; });</code></pre>
