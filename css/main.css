@@ -185,11 +185,8 @@ a:hover {
 #content-wrapper {
     background-image: url('../img/pattern.png');
     background-repeat: repeat;
-    position: absolute;
-    top: 346px;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    min-height: 1500px;
+    overflow: hidden;
 }
 
 #content {
