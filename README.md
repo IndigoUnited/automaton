@@ -50,68 +50,85 @@ To illustrate most of the capabilities of Automaton, here's a complete `autofile
 
 ```javascript
 var task = {
-    // this id is not mandatory but, if you want to use this task in other tasks,
+    // this id is not mandatory but, 
+    // if you want to use this task in other tasks,
     // must be provided and unique
     id: 'example_task',
 
-    // a user friendly name, just for reference, not mandatory
+    // a user friendly name, 
+    // just for reference, not mandatory
     name: 'Example task',
 
     // also not mandatory
     author: 'Indigo United',
 
-    // filter is not mandatory, but can be used to perform some operation
+    // filter is not mandatory,
+    // but can be used to perform some operation
     // on the options before running the subtasks
     filter: function (options) {
         // you can change existing options
         options.dir2 = options.dir2 + '_indigo';
 
-        // and even define additional options. In this case we're defining
-        // a `dir3` option, which will be used by one of the subtasks
+        // and even define additional options. 
+        // In this case we're defining
+        // a `dir3` option, 
+        // which will be used by one of the subtasks
         options.dir3 = 'united';
     },
 
-    // this is also optional, but useful if you want the automaton
-    // to automatically check for required options, and some additional
-    // features, check below
+    // this is also optional,
+    // but useful if you want the automaton
+    // to automatically check for required options,
+    // and some additional features, check below
     options: {
         dir1: {
             // option description is not mandatory
-            description : 'The name of the folder that will hold all the subfolders'
+            description : 'The name of the folder
+                           that will hold 
+                           all the subfolders'
         },
         dir2: {
-            // this option will not be required, since it has a default value
+            // this option will not be required,
+            // since it has a default value
             'default': 'automaton'
         }
     },
 
-    // a list of subtasks that will run when the example_task runs
+    // a list of subtasks that will run
+    // when the example_task runs
     tasks: [
         {
             task: 'mkdir',
             description: 'create the root and second folder',
             options: {
-                // the option below will have its placeholders replaced by
+                // the option below 
+                // will have its placeholders replaced by
                 // the value that it receives
                 dir: '{{dir1}}/{{dir2}}'
             }
         },
         {
             task: 'mkdir',
-            description: 'create the third folder, which was defined by one of the filters',
+            description: 'create the third folder, 
+                          which was defined 
+                          by one of the filters',
             options: {
                 dir: '{{dir1}}/{{dir2}}/{{dir3}}'
             }
         },
         {
-            // if you find yourself looking for something a bit more custom, you can
-            // just provide a function as the task
+            // if you find yourself looking 
+            // for something a bit more custom,
+            // you can just provide a function as the task
             'task' : function (opt, next) {
-                // opt is a list of the options provided to the task
+                // opt is a list of the options 
+                // provided to the task
 
                 console.log('I can do whatever I want', ctx, opt);
 
-                // when the task is done, you just call next(), not like the MTV show, though…
+                // when the task is done,
+                // you just call next(),
+                // not like the MTV show, though…
                 // (- -')
                 next();
             }
@@ -163,8 +180,11 @@ Automaton can also be used as a node module. Here's a quick example of its usage
 ```javascript
 var automaton = require('automaton');
 
-// Since autofiles are node modules themselves, you can just require them
-// Note that instead, you could have instead declared the module inline, in JSON
+// Since autofiles are node modules themselves,
+// you can just require them
+// Note that instead,
+// you could have instead declared the module inline,
+// in JSON
 var myTask = require('my_autofile');
 
 automaton.run(myTask, { 'some_option': 'that is handy' });
