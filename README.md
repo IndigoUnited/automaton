@@ -124,7 +124,8 @@ var task = {
                 // opt is a list of the options 
                 // provided to the task
 
-                console.log('I can do whatever I want', ctx, opt);
+                console.log('I can do whatever I want',
+                            ctx,opt);
 
                 // when the task is done,
                 // you just call next(),
