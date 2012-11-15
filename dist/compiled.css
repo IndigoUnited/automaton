@@ -385,7 +385,7 @@ a:hover {
 }
 #arrows {
     height: 15px;
-    background-image: url('../img/triangle.png?v=7');
+    background-image: url('../img/triangle.png?v=8');
     background-repeat: repeat-x;
     position: absolute;
     left: 0;
@@ -402,7 +402,7 @@ a:hover {
     width: 710px;
 }
 #header .indigo {
-    background-image: url('../img/indigo_logo.png?v=7');
+    background-image: url('../img/indigo_logo.png?v=8');
     width: 145px;
     height: 50px;
     position: absolute;
@@ -426,7 +426,7 @@ a:hover {
     bottom: 0;
 }
 #header .logo {
-    background-image: url('../img/stamp.png?v=7');
+    background-image: url('../img/stamp.png?v=8');
     width: 278px;
     height: 277px;
     position: relative;
@@ -434,7 +434,7 @@ a:hover {
     margin: auto;
 }
 #content-wrapper {
-    background-image: url('../img/pattern.png?v=7');
+    background-image: url('../img/pattern.png?v=8');
     background-repeat: repeat;
     min-height: 1500px;
     overflow: hidden;
@@ -468,7 +468,7 @@ code {
     padding: 0 4px 0 4px;
     background: #3b2426;
     border: 1px solid #523637;
-    border-radius: 4px;
+    border-radius: 6px;
     font-family: 'Source Sans Pro', sans-serif;
     font-size: 14px;
     font-weight: 300;
@@ -507,10 +507,9 @@ h1, h2, h3, h4 {
     margin-top: 50px;
     margin-bottom: 0;
     position: relative;
-    text-shadow: 2px 2px #000;
-}
-h1, h2 {
+    text-shadow: 1px 1px #000;
     font-family: 'Open Sans Condensed', sans-serif;
+    font-weight: 600;
 }
 h3, h4 {
     font-size: 30px;
@@ -533,6 +532,16 @@ h1:after, h2:after {
     height: 1px;
     background: #f8bf00;
     z-index: 2;
+}
+h1:before, h2:before {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 1px;
+    right: -1px;
+    height: 1px;
+    background: #000000;
+    z-index: 1;
 }
 .block .mobile {
     font-weight: bold;
