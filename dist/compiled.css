@@ -385,7 +385,7 @@ a:hover {
 }
 #arrows {
     height: 15px;
-    background-image: url('../img/triangle.png?v=6');
+    background-image: url('../img/triangle.png?v=7');
     background-repeat: repeat-x;
     position: absolute;
     left: 0;
@@ -398,8 +398,11 @@ a:hover {
     height: 346px;
     margin: auto;
 }
+.phone #header {
+    width: 710px;
+}
 #header .indigo {
-    background-image: url('../img/indigo_logo.png?v=6');
+    background-image: url('../img/indigo_logo.png?v=7');
     width: 145px;
     height: 50px;
     position: absolute;
@@ -423,7 +426,7 @@ a:hover {
     bottom: 0;
 }
 #header .logo {
-    background-image: url('../img/stamp.png?v=6');
+    background-image: url('../img/stamp.png?v=7');
     width: 278px;
     height: 277px;
     position: relative;
@@ -431,7 +434,7 @@ a:hover {
     margin: auto;
 }
 #content-wrapper {
-    background-image: url('../img/pattern.png?v=6');
+    background-image: url('../img/pattern.png?v=7');
     background-repeat: repeat;
     min-height: 1500px;
     overflow: hidden;
@@ -441,9 +444,15 @@ a:hover {
     margin: auto;
     margin-top: 30px;
 }
+.phone #content {
+    width: 710px;
+}
 #content .left {
     float: left;
     width: 455px;
+}
+.phone #content .left {
+    width: 710px;
 }
 #content .right {
     float: right;
@@ -468,12 +477,15 @@ pre code {
     font-family: 'Source Code Pro', sans-serif;
     font-size: 12px;
     font-weight: 100;
-    width: 441px;
+    width: 439px;
     overflow: auto;
     white-space: pre;
     word-wrap: normal;
     padding: 7px;
     background: #3b2426;
+}
+.phone pre code {
+    width: 696px;
 }
 .chart {
     position: relative;
@@ -496,6 +508,9 @@ h1, h2, h3, h4 {
     margin-bottom: 0;
     position: relative;
     text-shadow: 2px 2px #000;
+}
+h1, h2 {
+    font-family: 'Open Sans Condensed', sans-serif;
 }
 h3, h4 {
     font-size: 30px;
