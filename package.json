@@ -1,49 +1,15 @@
 {
   "name": "automaton",
-  "version": "0.0.8",
-  "description": "Task automation tool",
-  "main": "index.js",
+  "version": "0.0.0",
+  "siteVersion": 3,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "preinstall": "npm install -g grunt"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/IndigoUnited/automaton.git"
-  },
-  "keywords": [
-    "automation",
-    "automatic",
-    "automaton",
-    "batch",
-    "script",
-    "task",
-    "tasks",
-    "async",
-    "build",
-    "test",
-    "minimize",
-    "declarative",
-    "concat",
-    "scaffolding",
-    "uglify",
-    "minify",
-    "mkdir",
-    "cp",
-    "rm"
-  ],
-  "author": "Indigo United",
-  "license": "MIT",
-  "dependencies": {
-    "async": "~0.1.22",
-    "dejavu": "~0.1.4",
-    "amd-utils": "~0.6.0",
-    "colors": "~0.6.0-1",
-    "mkdirp": "~0.3.4",
-    "fstream": "~0.1.19",
-    "rimraf": "~2.0.2"
-  },
-  "preferGlobal": true,
-  "bin": {
-    "automaton": "bin/automaton.js"
+  "devDependencies": {
+    "marked": "~0.2.5",
+    "grunt-contrib-requirejs": "~0.3.3",
+    "grunt-contrib-mincss": "~0.3.2",
+    "grunt-contrib-clean": "~0.3.1",
+    "grunt-remove-logging": "0.0.5"
   }
 }
