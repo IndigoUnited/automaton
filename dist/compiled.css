@@ -385,7 +385,7 @@ a:hover {
 }
 #arrows {
     height: 15px;
-    background-image: url('../img/triangle.png?v=3');
+    background-image: url('../img/triangle.png?v=6');
     background-repeat: repeat-x;
     position: absolute;
     left: 0;
@@ -399,7 +399,7 @@ a:hover {
     margin: auto;
 }
 #header .indigo {
-    background-image: url('../img/indigo_logo.png?v=3');
+    background-image: url('../img/indigo_logo.png?v=6');
     width: 145px;
     height: 50px;
     position: absolute;
@@ -423,7 +423,7 @@ a:hover {
     bottom: 0;
 }
 #header .logo {
-    background-image: url('../img/stamp.png?v=3');
+    background-image: url('../img/stamp.png?v=6');
     width: 278px;
     height: 277px;
     position: relative;
@@ -431,13 +431,10 @@ a:hover {
     margin: auto;
 }
 #content-wrapper {
-    background-image: url('../img/pattern.png?v=3');
+    background-image: url('../img/pattern.png?v=6');
     background-repeat: repeat;
-    position: absolute;
-    top: 346px;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    min-height: 1500px;
+    overflow: hidden;
 }
 #content {
     width: 950px;
