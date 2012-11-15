@@ -145,6 +145,10 @@ a:hover {
     margin: auto;
 }
 
+.phone #header {
+    width: 710px;
+}
+
 #header .indigo {
     background-image: url('../img/indigo_logo.png');
     width: 145px;
@@ -195,9 +199,17 @@ a:hover {
     margin-top: 30px;
 }
 
+.phone #content {
+    width: 710px;
+}
+
 #content .left {
     float: left;
     width: 455px;
+}
+
+.phone #content .left {
+    width: 710px;
 }
 
 #content .right {
@@ -227,12 +239,16 @@ pre code {
     font-family: 'Source Code Pro', sans-serif;
     font-size: 12px;
     font-weight: 100;
-    width: 441px;
+    width: 439px;
     overflow: auto;
     white-space: pre;
     word-wrap: normal;
     padding: 7px;
     background: #3b2426;
+}
+
+.phone pre code {
+    width: 696px;
 }
 
 .chart {
@@ -259,6 +275,10 @@ h1, h2, h3, h4 {
     margin-bottom: 0;
     position: relative;
     text-shadow: 2px 2px #000;
+}
+
+h1, h2 {
+    font-family: 'Open Sans Condensed', sans-serif;
 }
 
 h3, h4 {
