@@ -145,29 +145,37 @@ module.exports = task;
 
 ## Built-in tasks
 
+`automaton` comes bundled with a few tasks to ease your own tasks.
+
+`ROADMAP` Note that we're working to have support for `gruntjs` tasks, so you can use them just as you would with native `automaton` tasks.
+
 ### Filesystem
 
-- mkdir
-- rm
-- symlink
-- cp
+- **mkdir:** Make a directory recursively
+- **rm:** Remove a file or directory
+- **symlink:** Create symlink
+- **cp:** Copy file or dir
 
 ### Scaffolding
 
-- scaffolding-append
-- scaffolding-replace
-- scaffolding-close
+Scaffolding tasks help you perform some typical tasks, like appending, replacing, and others, to placeholders in a template file. Any text file can be a template. These tasks will look for a `{{placeholder_name}}` inside the file, and perform the option you specified on it.
+
+- **scaffolding-append:** Append something to a placeholder in a file
+- **scaffolding-replace:** Replace the placeholder with something
+- **scaffolding-close:** Close the placeholder (effectively removing the placeholder)
 
 ### Miscellaneous
 
-- run
+- **run:** Run a shell command
 - uglify (soon)
 - minify (soon)
 - concat (soon)
 
 ### Inline functions
 
-If you find yourself trying to do something that is not supported by the existing tasks, you can just provide a function, instead of the task name, and it will be used as the task. This task will receive 3 arguments, a context object (with some useful values that you can use), an options object (the options that were provided to the subtask), and a callback that must be called once the subtask is over, giving you full flexibility, since your function can do whatever you like.
+If you find yourself trying to do something that is not supported by the existing tasks, you can just provide a function, instead of the task name, and it will be used as the task.
+
+This task will receive 2 arguments, an options object (the options that were provided to the subtask), and a callback that must be called once the subtask is over, giving you full flexibility, since your function can do whatever you like.
 
 
 ## Usage
