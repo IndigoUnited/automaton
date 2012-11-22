@@ -6,9 +6,11 @@ Task automation tool built in JavaScript.
 
 ## Why?
 
-Many times you find yourself needing to do some repetitive operation, and this is usually the time to quickly bake some script does that. Still, from project to project you find yourself needing to reuse some task you had already previously created. Automaton eases this process, allowing you to quickly set up an `autofile`, which describes what you want to do, by means of a list of tasks that need to run, in order, for the task as a whole to be done.
+You often find yourself needing to do some repetitive operation, and this is usually the time to quickly bake some ad-hoc script. Still, from project to project you find yourself needing to reuse some task you had already previously created.
 
-A little detail that makes Automaton a powerful tool, is that every `autofile` you create can itself be used by another `autofile`, turning the first one into a single task (imagine tasks are boxes, and you can have boxes within boxes). If you are curious, you can take a look at the source code, and check for yourself that even the tasks that Automaton provides built-in are themselves `autofiles`.
+Automaton eases this process, allowing you to quickly set up an `autofile`, which describes what you want to do, by means of an ordered list of tasks that need to run for the task as a whole to be complete.
+
+A little detail that makes Automaton a powerful tool, is that every `autofile` you create can itself be used by another `autofile`, turning the first one into a single task (imagine boxes within boxes). If you are curious, you can take a look at the source code, and check for yourself that even the tasks that Automaton provides built-in are simple `autofiles`.
 
 
 ## Installing
@@ -138,12 +140,12 @@ module.exports = task;
 - scaffolding-replace
 - scaffolding-close
 
-### Generic
+### Miscellaneous
 
 - run
-- uglify (coming soon)
-- minify (coming soon)
-- concat (coming soon)
+- uglify (soon)
+- minify (soon)
+- concat (soon)
 
 ### Inline functions
 
