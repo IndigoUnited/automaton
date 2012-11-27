@@ -52,23 +52,23 @@ To illustrate most of the capabilities of Automaton, here's a complete `autofile
 
 ```javascript
 var task = {
-    // this id is not mandatory but, 
+    // This id is not mandatory but, 
     // if you want to use this task in other tasks,
     // must be provided and unique
     id: 'example_task',
 
-    // a user friendly name, 
+    // A user friendly name, 
     // just for reference, not mandatory
     name: 'Example task',
 
     // also not mandatory
     author: 'Indigo United',
 
-    // filter is not mandatory,
+    // Filter is not mandatory,
     // but can be used to perform some operation
     // on the options before running the subtasks
     filter: function (options) {
-        // you can change existing options
+        // You can change existing options
         options.dir2 = options.dir2 + '_indigo';
 
         // and even define additional options. 
@@ -78,25 +78,31 @@ var task = {
         options.dir3 = 'united';
     },
 
-    // this is also optional,
+    // This is also optional,
     // but useful if you want the automaton
     // to automatically check for required options,
     // and some additional features, check below
     options: {
         dir1: {
-            // option description is not mandatory
+            // Option description is not mandatory
             description : 'The name of the folder ' +
                           'that will hold ' +
                           'all the subfolders'
         },
         dir2: {
-            // this option will not be required,
-            // since it has a default value
+            // This option will not be required,
+            // since it has a default value.
+            // Check the second subtask.
             'default': 'automaton'
+        },
+        // This option is used below, for skipping
+        // subtasks. 
+        run_all: {
+            'default': false
         }
     },
 
-    // a list of subtasks that will run
+    // A list of subtasks that will run
     // when the example_task runs
     tasks: [
         {
@@ -111,6 +117,14 @@ var task = {
         },
         {
             task: 'mkdir',
+            // This 'on' attributes allows you to
+            // enable/disable a subtask just by setting it
+            // to a falsy value.
+            // In this case, we even used a placeholder,
+            // allowing us to skip this subtask depending
+            // on the run_all option. Of course, you have
+            // just setted it to something like `false`
+            on: '{{run_all}}',
             description: 'create the third folder, ' + 
                          'which was defined ' +
                          'by one of the filters',
