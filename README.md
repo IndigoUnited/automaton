@@ -52,12 +52,12 @@ To illustrate most of the capabilities of Automaton, here's a complete `autofile
 
 ```javascript
 var task = {
-    // This id is not mandatory but, 
+    // This id is not mandatory but,
     // if you want to use this task in other tasks,
     // must be provided and unique
     id: 'example_task',
 
-    // A user friendly name, 
+    // A user friendly name,
     // just for reference, not mandatory
     name: 'Example task',
 
@@ -71,9 +71,9 @@ var task = {
         // You can change existing options
         options.dir2 = options.dir2 + '_indigo';
 
-        // and even define additional options. 
+        // and even define additional options.
         // In this case we're defining
-        // a `dir3` option, 
+        // a `dir3` option,
         // which will be used by one of the subtasks
         options.dir3 = 'united';
     },
@@ -96,7 +96,7 @@ var task = {
             'default': 'automaton'
         },
         // This option is used below, for skipping
-        // subtasks. 
+        // subtasks.
         run_all: {
             'default': false
         }
@@ -109,7 +109,7 @@ var task = {
             task: 'mkdir',
             description: 'create the root and second folder',
             options: {
-                // the option below 
+                // the option below
                 // will have its placeholders replaced by
                 // the value that it receives
                 dir: '{{dir1}}/{{dir2}}'
@@ -125,7 +125,7 @@ var task = {
             // on the run_all option. Of course, you have
             // just setted it to something like `false`
             on: '{{run_all}}',
-            description: 'create the third folder, ' + 
+            description: 'create the third folder, ' +
                          'which was defined ' +
                          'by one of the filters',
             options: {
@@ -133,15 +133,14 @@ var task = {
             }
         },
         {
-            // if you find yourself looking 
+            // if you find yourself looking
             // for something a bit more custom,
             // you can just provide a function as the task
             'task' : function (opt, next) {
-                // opt is a list of the options 
+                // opt is a list of the options
                 // provided to the task
 
-                console.log('I can do whatever I want',
-                            ctx,opt);
+                console.log('I can do whatever I want', opt);
 
                 // when the task is done,
                 // you just call next(),

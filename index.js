@@ -125,7 +125,7 @@
                 }
                 else {
                     // task DONE
-                    this._log('Done'.info);
+                    //this._log('Done'.info);
                 }
             }.$bind(this));
 
@@ -149,7 +149,7 @@
 
         _flattenTask: function (task, options, $depth) {
             var i,
-                task,           // task that is being flattened
+//                task,           // task that is being flattened
                 subtasks,       // subtasks of the task being flattened
                 subtasksLength, // total of subtasks of the task being flattened
                 currentSubtask, // iteration task

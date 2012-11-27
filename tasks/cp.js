@@ -18,6 +18,8 @@ var task = {
     [
         {
             'task' : function (opt, next) {
+//console.log('copying', opt.src, opt.dst);
+
                 fs.stat(opt.src, function (err, stat) {
                     if (err && err.code === 'ENOENT') {
                         next(err);

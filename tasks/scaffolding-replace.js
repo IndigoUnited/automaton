@@ -27,7 +27,6 @@ var task = {
                 // if type is file, then read its contents first
                 if (opt.type === 'file') {
                     // TODO: check if file exists
-console.log(opt['with'].red);
                     _with = fs.readFileSync(opt['with'], 'utf8');
                 }
                 else {
