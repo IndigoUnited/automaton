@@ -31,7 +31,7 @@
 
     var Automaton = d.Class.declare({
         $name: 'Automaton',
-
+/*
         $constants: {
             // terminal escape character
             ESCAPE_CODE: '\u001b',
@@ -41,7 +41,7 @@
 
             CHECK: '✔'
         },
-
+*/
         _tasks: [],
 
         _verbosity: 1,
@@ -147,6 +147,12 @@
             return this;
         },
 
+        getTask: function (taskId) {
+            this._assertTaskLoaded(taskId);
+
+            return this._tasks[taskId];
+        },
+
         _flattenTask: function (task, options, $depth) {
             var i,
 //                task,           // task that is being flattened
@@ -191,7 +197,7 @@
                 for (option in task.options) {
                     // if option was not provided to the task, abort
                     if (!options.hasOwnProperty(option)) {
-                        this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task');
+                        this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task', true);
                     }
                 }
             }
@@ -307,7 +313,12 @@
             }
         },
 
-        _throwError: function (errorMsg) {
+        _throwError: function (errorMsg, $pretty) {
+            if ($pretty) {
+                console.error('\n' + errorMsg.error + '\n');
+                process.exit(1);
+            }
+
             throw new Error(errorMsg.error);
         },
 
@@ -330,8 +341,8 @@
             if ($depth <= this._verbosity) {
                 console.error(msg);
             }
-        },
-
+        }
+/*
         _t_reset: function () {
             util.print(this.$static.RESET_CODE);
 
@@ -367,6 +378,7 @@
 
             return this;
         }
+*/
     });
 
     module.exports = new Automaton();
