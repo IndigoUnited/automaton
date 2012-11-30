@@ -69,7 +69,6 @@ if (!window.siteVersion) {
     function addBlock(els) {
         els = $(els);
 
-        console.log(els);
         var title = getBlockTitle(els),
             slug = title.replace(/\s+/g, '-').replace(/\?/g, '').toLowerCase(),
             aEl = $('<a href="#' + slug + '" id="' + slug + '"></a>'),
@@ -151,6 +150,11 @@ $(document).ready(function () {
     // Download the tmpl
     var promise = $.get('tmpl/doc.tmpl?v=' + siteVersion, {
         timeout: 15000
+    }),
+        contentEl = $('#content');
+
+    promise.complete(function () {
+        contentEl.removeClass('loading');
     });
     promise.fail(function () {
         $('#content .left').html('Oops, something went wrong.');

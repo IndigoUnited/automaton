@@ -194,9 +194,14 @@ a:hover {
 }
 
 #content {
+    min-height: 1500px;
     width: 1100px;
     margin: auto;
     margin-top: 30px;
+}
+
+#content.loading {
+    background: url('../img/loaders/loader_square.gif') center 100px no-repeat;
 }
 
 .phone #content {
