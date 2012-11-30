@@ -1,10 +1,17 @@
+/*jshint regexp:false*/
 /*global Documentation*/
+
+// Website version
+if (!window.siteVersion) {
+    window.siteVersion = +(new Date());
+}
 
 // Documentation parsing
 (function () {
     var leftColumnEl,
         rightColumnEl,
-        isPhone;
+        isPhone,
+        hash;
 
     isPhone = (function () {
         var uAgent = navigator.userAgent.toLowerCase(),
@@ -23,10 +30,23 @@
         // Exclude if is tablet
         if (/ipad|android 3|dell streak|sch-i800|sgh-t849|gt-p1010|playbook|tablet|silk|kindle fire/.test(uAgent)) {
             return false;
-        };
+        }
 
         return true;
     }());
+
+    // Reach to hash chages
+    function reactToHash() {
+        var newHash = location.hash.replace(/#(section\-)?/, '');
+        if (hash === newHash) {
+            return;
+        }
+
+        hash = newHash;
+        if (hash) {
+            $.smoothScroll({ scrollTarget: '#' + newHash });
+        }
+    }
 
     function parseBlock(els) {
         var blockEl = $('<div class="block"></div>');
@@ -49,11 +69,28 @@
     function addBlock(els) {
         els = $(els);
 
+        console.log(els);
+        var title = getBlockTitle(els),
+            slug = title.replace(/\s+/g, '-').replace(/\?/g, '').toLowerCase(),
+            aEl = $('<a href="#' + slug + '" id="' + slug + '"></a>'),
+            titleEl = els.eq(0);
+
+        aEl.get(0).innerHTML = titleEl.get(0).innerHTML;
+        titleEl.empty().append(aEl);
+
         if (leftColumnEl.height() < rightColumnEl.height()) {
             leftColumnEl.append(parseBlock(els));
         } else {
             rightColumnEl.append(parseBlock(els));
         }
+
+        // Finally add smooth scroll (for the headers)
+        aEl.smoothScroll({
+            afterScroll: function () {
+                hash = slug;
+                location.hash = '#section-' + slug;
+            }
+        });
     }
 
     function parseDoc(str) {
@@ -75,9 +112,10 @@
             tag,
             curr;
 
-        el.find('h1').eq(0).remove();   // Remove the first header
-        el.find('p').eq(0).remove();    // Remove first paragraph (the build status image)
-        el.find('hr').remove();         // Remove all hr's
+        el.find('h1').eq(0).remove();          // Remove the first header
+        el.find('p').eq(0).remove();           // Remove first paragraph
+        el.find('hr').remove();                // Remove all hr's
+        el.find('a').attr('target', '_blank'); // All links should open a new window
 
         children = el.children(),
         length = children.length,
@@ -86,7 +124,7 @@
         for (x = 0; x < length; x += 1) {
             curr = children.get(x);
             tag = curr.tagName.toLowerCase();
-            if ((tag === 'h1' || tag === 'h2' || tag === 'h3') && els.length) {
+            if ((tag === 'h1' || tag === 'h2'/* || tag === 'h3'*/) && els.length) {
                 addBlock(els);
                 els = [];
             }
@@ -97,6 +135,9 @@
         if (els.length) {
             addBlock(els);
         }
+
+        reactToHash();
+        $(window).on('hashchange', reactToHash);
     }
 
     window.Documentation = {
@@ -108,7 +149,7 @@
 $(document).ready(function () {
 
     // Download the tmpl
-    var promise = $.get('tmpl/doc.tmpl', {
+    var promise = $.get('tmpl/doc.tmpl?v=' + siteVersion, {
         timeout: 15000
     });
     promise.fail(function () {
@@ -119,12 +160,15 @@ $(document).ready(function () {
         Documentation.parse(promise.responseText);
 
         // Highlight code
-        var blocks = $('pre code'),
-            length = blocks.length,
-            x;
+        // Do not highlight in <=IE8 because highlightjs throws errors on it
+        if (!$.browser.msie || $.browser.version > 8)  {
+            var blocks = $('pre code'),
+                length = blocks.length,
+                x;
 
-        for (x = 0; x < length; x += 1) {
-            hljs.highlightBlock(blocks.get(x));
+            for (x = 0; x < length; x += 1) {
+                hljs.highlightBlock(blocks.get(x));
+            }
         }
     });
 });

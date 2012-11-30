@@ -231,7 +231,7 @@ table {
 pre code {
   display: block; padding: 0.5em;
   color: #DCCF8F;
-  background: url(./pojoaque.jpg) repeat scroll left top #181914;
+  background: url(./pojoaque.jpg?v=12) repeat scroll left top #181914;
 }
 pre .comment,
 pre .template_comment,
@@ -385,7 +385,7 @@ a:hover {
 }
 #arrows {
     height: 15px;
-    background-image: url('../img/triangle.png?v=11');
+    background-image: url('../img/triangle.png?v=12');
     background-repeat: repeat-x;
     position: absolute;
     left: 0;
@@ -394,7 +394,7 @@ a:hover {
 }
 #header {
     position: relative;
-    width: 950px;
+    width: 1100px;
     height: 346px;
     margin: auto;
 }
@@ -402,7 +402,7 @@ a:hover {
     width: 710px;
 }
 #header .indigo {
-    background-image: url('../img/indigo_logo.png?v=11');
+    background-image: url('../img/indigo_logo.png?v=12');
     width: 145px;
     height: 50px;
     position: absolute;
@@ -426,7 +426,7 @@ a:hover {
     bottom: 0;
 }
 #header .logo {
-    background-image: url('../img/stamp.png?v=11');
+    background-image: url('../img/stamp.png?v=12');
     width: 278px;
     height: 277px;
     position: relative;
@@ -434,13 +434,13 @@ a:hover {
     margin: auto;
 }
 #content-wrapper {
-    background-image: url('../img/pattern.png?v=11');
+    background-image: url('../img/pattern.png?v=12');
     background-repeat: repeat;
     min-height: 1500px;
     overflow: hidden;
 }
 #content {
-    width: 950px;
+    width: 1100px;
     margin: auto;
     margin-top: 30px;
 }
@@ -449,14 +449,14 @@ a:hover {
 }
 #content .left {
     float: left;
-    width: 455px;
+    width: 525px;
 }
 .phone #content .left {
     width: 710px;
 }
 #content .right {
     float: right;
-    width: 455px;
+    width: 525px;
 }
 ul, ol {
     padding: 0 0 0 15px;
@@ -469,15 +469,13 @@ code {
     background: #3b2426;
     border: 1px solid #523637;
     border-radius: 6px;
-    font-family: 'Source Sans Pro', sans-serif;
-    font-size: 14px;
+    font-family: 'Source Code Pro', sans-serif;
+    font-size: 12px;
     font-weight: 300;
 }
 pre code {
-    font-family: 'Source Code Pro', sans-serif;
-    font-size: 12px;
     font-weight: 100;
-    width: 439px;
+    width: 514px;
     overflow: auto;
     white-space: pre;
     word-wrap: normal;
@@ -486,18 +484,6 @@ pre code {
 }
 .phone pre code {
     width: 696px;
-}
-.chart {
-    position: relative;
-    left: -12px;
-}
-.benchmark {
-    width: 470px;
-    height: 515px;
-}
-.benchmark-mobile {
-    width: 470px;
-    height: 350px;
 }
 h1, h2, h3, h4 {
     color: #f8bf00;

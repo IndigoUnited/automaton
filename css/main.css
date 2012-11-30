@@ -140,7 +140,7 @@ a:hover {
 
 #header {
     position: relative;
-    width: 950px;
+    width: 1100px;
     height: 346px;
     margin: auto;
 }
@@ -194,7 +194,7 @@ a:hover {
 }
 
 #content {
-    width: 950px;
+    width: 1100px;
     margin: auto;
     margin-top: 30px;
 }
@@ -205,7 +205,7 @@ a:hover {
 
 #content .left {
     float: left;
-    width: 455px;
+    width: 525px;
 }
 
 .phone #content .left {
@@ -214,7 +214,7 @@ a:hover {
 
 #content .right {
     float: right;
-    width: 455px;
+    width: 525px;
 }
 
 ul, ol {
@@ -230,16 +230,14 @@ code {
     background: #3b2426;
     border: 1px solid #523637;
     border-radius: 6px;
-    font-family: 'Source Sans Pro', sans-serif;
-    font-size: 14px;
+    font-family: 'Source Code Pro', sans-serif;
+    font-size: 12px;
     font-weight: 300;
 }
 
 pre code {
-    font-family: 'Source Code Pro', sans-serif;
-    font-size: 12px;
     font-weight: 100;
-    width: 439px;
+    width: 514px;
     overflow: auto;
     white-space: pre;
     word-wrap: normal;
@@ -249,21 +247,6 @@ pre code {
 
 .phone pre code {
     width: 696px;
-}
-
-.chart {
-    position: relative;
-    left: -12px;
-}
-
-.benchmark {
-    width: 470px;
-    height: 515px;
-}
-
-.benchmark-mobile {
-    width: 470px;
-    height: 350px;
 }
 
 h1, h2, h3, h4 {

@@ -53,9 +53,14 @@ module.exports = function (grunt) {
 
         grunt.log.writeln('Will bump version to: ' +  version);
 
+        // Update js version
+        var js = fs.readFileSync('dist/compiled.js').toString();
+        js = 'var siteVersion = ' + version + ';\n\n' + js;
+        fs.writeFileSync('dist/compiled.js', js);
+
         // Update css url's
         var css = fs.readFileSync('dist/compiled.css').toString();
-        css = css.replace(/(url\s*\(["'])(.*?)(["']\))/ig, function (match, start, url, end) {
+        css = css.replace(/(url\s*\(["']?)(.*?)(["']?\))/ig, function (match, start, url, end) {
             url = start + url.split('?', 2)[0] + '?v=' + version + end;
             return url;
         });
@@ -70,6 +75,7 @@ module.exports = function (grunt) {
 
         // Update package.json
         fs.writeFileSync('package.json', JSON.stringify(json, null, '  '));
+
         grunt.log.ok();
     });
 
@@ -89,7 +95,11 @@ module.exports = function (grunt) {
 
         concat: {
             dist: {
-                src: ['js/vendor/highlight.pack.js', 'js/main.js'],
+                src: [
+                    'js/vendor/highlight.pack.js',
+                    'js/vendor/jquery.smooth-scroll.js',
+                    'js/main.js'
+                ],
                 dest: 'dist/compiled.js'
             }
         },

@@ -1,11 +1,13 @@
 {
     "predef": [
         "console",
-        "require",
-        "define"
+        "$",
+        "google",
+        "hljs",
+        "siteVersion"
     ],
 
-    "node": true,
+    "browser": true,
     "devel": true,
 
     "bitwise": true,
