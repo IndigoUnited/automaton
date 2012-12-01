@@ -72,11 +72,17 @@
             return this;
         },
 
-        run: function (task, $options) {
+        run: function (task, $options, $callback) {
             var i,
-                batch           = [],
+                batch        = [],
                 batchDetails
             ;
+
+            if (utils.lang.isString(task)) {
+                this._assertTaskLoaded(task);
+                task = this.getTask(task);
+            }
+
             this._assertIsObject(task);
             this._assertIsArray(task.tasks);
 
@@ -120,10 +126,18 @@
 
             async.waterfall(waterfallBatch, function (err) {
                 if (err) {
-                    console.error('ERROR: '.error + err);
-                    process.exit();
+                    if (utils.lang.isFunction($callback)) {
+                        $callback('ERROR: '.error + err);
+                    }
+                    else {
+                        console.error('ERROR: '.error + err);
+                        process.exit();
+                    }
                 }
                 else {
+                    if (utils.lang.isFunction($callback)) {
+                        $callback();
+                    }
                     // task DONE
                     //this._log('Done'.info);
                 }

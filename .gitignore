@@ -57,3 +57,4 @@ npm-debug.*
 ######################
 components
 vendor
+test/tmp
