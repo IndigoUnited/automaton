@@ -43,11 +43,11 @@ var firstColumnWidth = 20,
             desc: 'Get help. If you specify a task, you\'ll be given the task usage.'
         },
         {
-            opt: '--task-dir, -d [dir]',
+            opt: '--task-dir, -d <dir>',
             desc: 'Task include dir. All the tasks within the folder will be loaded.'
         },
         {
-            opt: '--verbosity, -V [depth]',
+            opt: '--verbosity, -V <depth>',
             desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
         },
         {
@@ -175,11 +175,11 @@ function showUsage() {
         }
 
         return prev;
-    }, 0) + 4;
+    }, 0) + 6;
 
     for (i = 0; i < totalCommands; ++i) {
         cmd = commands[i];
-        console.log(utils.string.rpad('  ' + cmd.cmd, firstColumnWidth).grey + cmd.desc);
+        console.log(utils.string.rpad('    ' + cmd.cmd, firstColumnWidth).grey + cmd.desc);
     }
 
     console.log('\n  Options:\n');
@@ -189,10 +189,10 @@ function showUsage() {
         }
 
         return prev;
-    }, 0) + 4;
+    }, 0) + 6;
     for (i = 0; i < totalOptions; ++i) {
         opt = automatonOptions[i];
-        console.log(utils.string.rpad('  ' + opt.opt, firstColumnWidth).grey + opt.desc);
+        console.log(utils.string.rpad('    ' + opt.opt, firstColumnWidth).grey + opt.desc);
     }
     
     console.log('');
@@ -200,20 +200,33 @@ function showUsage() {
 
 function showTaskUsage(task) {
     var optionName,
-        option
+        option,
+        leftCol,
+        usage = [],
+        k
     ;
 
     console.log('\n  Usage: ' + argv.$0.cyan, task.id, '[--option1 value1 --option2 value2]'.grey);
     console.log('\n  Options:\n');
 
-    if (task.options) {
-        firstColumnWidth = utils.array.max(utils.object.keys(task.options), function (v) {
-            return v.length;
-        }).length + 6;
+    var firstColumnWidth = 0;
 
+    if (task.options) {
         for (optionName in task.options) {
             option = task.options[optionName];
-            console.log(utils.string.rpad('    ' + optionName + (option.hasOwnProperty('default') ? (' (' + option['default'] + ')') : ''), firstColumnWidth).grey + option.description);
+            leftCol = optionName + (option.hasOwnProperty('default') ? (' (' + option['default'] + ')') : '');
+            usage.push({
+                opt:  leftCol,
+                desc: option.description
+            });
+
+            if (leftCol.length > firstColumnWidth) {
+                firstColumnWidth = leftCol.length + 6;
+            }
+        }
+
+        for (k in usage) {
+            console.log(utils.string.rpad('    ' + usage[k].opt, firstColumnWidth).grey + (usage[k].desc ? usage[k].desc : ''));
         }
     }
     
