@@ -43,7 +43,7 @@ var firstColumnWidth = 20,
             desc: 'Get help. If you specify a task, you\'ll be given the task usage.'
         },
         {
-            opt: '--task-dir, -d',
+            opt: '--task-dir, -d [dir]',
             desc: 'Task include dir. All the tasks within the folder will be loaded.'
         },
         {
@@ -179,7 +179,7 @@ function showUsage() {
 
     for (i = 0; i < totalCommands; ++i) {
         cmd = commands[i];
-        console.log(utils.string.rpad('  ' + cmd.cmd, firstColumnWidth).grey + ' ' + cmd.desc);
+        console.log(utils.string.rpad('  ' + cmd.cmd, firstColumnWidth).grey + cmd.desc);
     }
 
     console.log('\n  Options:\n');
@@ -192,7 +192,7 @@ function showUsage() {
     }, 0) + 4;
     for (i = 0; i < totalOptions; ++i) {
         opt = automatonOptions[i];
-        console.log(utils.string.rpad('  ' + opt.opt, firstColumnWidth).grey + ' ' + opt.desc);
+        console.log(utils.string.rpad('  ' + opt.opt, firstColumnWidth).grey + opt.desc);
     }
     
     console.log('');
