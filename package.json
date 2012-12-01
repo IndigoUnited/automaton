@@ -1,7 +1,7 @@
 {
   "name": "automaton",
   "version": "0.0.0",
-  "siteVersion": 15,
+  "siteVersion": 18,
   "scripts": {
     "preinstall": "npm install -g grunt"
   },

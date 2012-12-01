@@ -7,6 +7,9 @@ Automaton website
 - Run `grunt run`
 - Open `index_dev.html`
 
+# Updating doc #
+- Run `grunt doc`
+
 # Bulding #
 - Run `npm install`
 - Run `grunt build`
