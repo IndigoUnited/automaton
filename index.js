@@ -127,7 +127,7 @@
             async.waterfall(waterfallBatch, function (err) {
                 if (err) {
                     if (utils.lang.isFunction($callback)) {
-                        $callback('ERROR: '.error + err);
+                        $callback(new Error('ERROR: '.error + err));
                     }
                     else {
                         console.error('ERROR: '.error + err);

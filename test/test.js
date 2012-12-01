@@ -2,26 +2,34 @@
 /*global describe:true, it:true*/
 var expect    = require('expect.js'),
     automaton = require('../index'),
-    fs        = require('fs')
+    fs        = require('fs'),
+    rimraf    = require('rimraf')
 ;
 
+function cleanUpTmp() {
+    rimraf.sync(__dirname + '/tmp');
+}
+
 // start by cleaning up the "tmp" folder
+cleanUpTmp();
 
 describe('Tasks', function () {
     describe('cp', function () {
         it('should copy a file', function (done) {
-            expect(1).to.not.be.ok();
+//            expect(1).to.not.be.ok();
             automaton.run('cp', {
-                src: 'assets/file1.json',
+                src: __dirname + '/assets/file1.json',
                 // TODO: add support for only specifying the dest folder, and filename is kept
-                dst: 'tmp/file1.json'
+                dst: __dirname + '/tmp/file1.json'
             }, function (err) {
                 if (err) {
+                    cleanUpTmp();
                     done(err);
                 }
 
-                expect(fs.existsSync('tmp/file1.json')).to.be(true);
+                expect(fs.existsSync(__dirname + '/tmp/file1.json')).to.be(true);
 
+                cleanUpTmp();
                 done();
             });
         });
