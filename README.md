@@ -195,6 +195,8 @@ This task will receive 2 arguments, an options object (the options that were pro
 
 ### CLI
 
+All you need to use the CLI can be found by executing `automaton -h`. This will show you how to use `automaton`, and any of the loaded tasks.
+
 In order to run an `autofile`, you simply run `automaton`. This will look for `autofile.js` in the current working dir. Instead, you can also run `automaton some_dir/my_autofile.js`, enabling you to specify what `autofile` you want to run.
 
 ### Node.js
