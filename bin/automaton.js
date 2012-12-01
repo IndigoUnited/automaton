@@ -47,7 +47,6 @@ var firstColumnWidth = 20,
             desc: 'Task include dir. All the tasks within the folder will be loaded.'
         },
         {
-            // TODO:
             opt: '--verbosity, -V [depth]',
             desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
         },
@@ -57,6 +56,8 @@ var firstColumnWidth = 20,
         }
     ]
 ;
+
+// TODO: list available tasks
 
 // ---------------------------------- BOOT -------------------------------------
 
