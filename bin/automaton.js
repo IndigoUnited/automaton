@@ -26,32 +26,33 @@ function inspect(v, levels) {
 
 // ----------------------------- USAGE PARAMETERS ------------------------------
 
-/*
-Options:
-TODO:
-  - task dir
-  - verbosity
-  - help
-  - version
-
-*/
-
-var firstColumnWidth = 25,
+var firstColumnWidth = 20,
     commands = [
         {
             cmd: '[autofile]',
-            desc: 'Run an autofile. Defaults to "autofile.js"'
+            desc: 'Run an autofile. Defaults to "autofile.js".'
         },
         {
             cmd: 'init [autofile]',
-            desc: 'Create a blank autofile. Defaults to "autofile.js"'
+            desc: 'Create a blank autofile. Defaults to "autofile.js".'
+        }
+    ],
+    automatonOptions = [
+        {
+            opt: '--help, -h [task]',
+            desc: 'Get help. If you specify a task, you\'ll be given the task usage.'
         },
         {
-            cmd: 'help [task]',
-            desc: 'Get the usage. Specify a task to get the usage of that specific task'
+            opt: '--task-dir, -d',
+            desc: 'Task include dir. All the tasks within the folder will be loaded.'
         },
         {
-            cmd: '--version, -v',
+            // TODO:
+            opt: '--verbosity, -V [depth]',
+            desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
+        },
+        {
+            opt: '--version, -v',
             desc: 'Get version'
         }
     ]
@@ -63,12 +64,18 @@ var firstColumnWidth = 25,
 var automaton = require(__dirname + '/../index');
 
 // if task directory includes were defined, load the tasks
-if (argv['task-dir']) {
-    var taskDir = argv['task-dir'];
+var taskDir = (argv['task-dir'] !== true ? argv['task-dir'] : false) || (argv.d !== true ? argv.d : false);
+if (taskDir) {
     // if task dir exists, load tasks
     if (fs.existsSync(taskDir) && fs.statSync(taskDir).isDirectory()) {
         automaton.loadTasks(taskDir);
     }
+}
+
+// if verbosity was defined, set it
+var verbosity = (argv.verbosity !== true ? argv.verbosity : false) || (argv.V !== true ? argv.V : false);
+if (verbosity) {
+    automaton.setVerbosity(verbosity);
 }
 
 // --------------- CHECK WHAT THE USER REQUESTED, AND ACT ON IT ----------------
@@ -80,9 +87,33 @@ if (argv.version || argv.v) {
     process.exit();
 }
 
-// if help was requested by option, just show the usage
+// if help was requested, just show the usage
 if (argv.help || argv.h) {
-    showUsage();
+    var taskId = (argv.help === true ? false : argv.help) || (argv.h === true ? false : argv.h),
+        task
+    ;
+
+    // if a task was specified, show the task usage
+    if (taskId) {
+        // if there is no autofile in the current directory
+        // with that name, check if there is a task suitable
+        if (!(task = getTaskFromFile(taskId))) {
+            task = automaton.getTask(taskId);
+        }
+
+        // try to show usage
+        try {
+            showTaskUsage(task);
+        // unknown task requested
+        } catch (err) {
+            console.error(('\nCould not find any task or autofile "' + taskId + '"\n').error);
+        }
+    }
+    // no task was specified, show overall usage
+    else {
+        showUsage();
+    }
+
     process.exit();
 }
 
@@ -91,33 +122,6 @@ if (argv._.length) {
     switch (argv._[0]) {
     case 'init':
         initTask(argv._[1]);
-        break;
-
-    case 'help':
-        // if a task was specified, show the task usage
-        if ((argv._[1])) {
-            var taskId = argv._[1],
-                task
-            ;
-
-            // if there is no autofile in the current directory
-            // with that name, check if there is a task suitable
-            if (!(task = getTaskFromFile(taskId))) {
-                task = automaton.getTask(taskId);
-            }
-
-            // try to show usage
-            try {
-                showTaskUsage(task);
-            // unknown task requested
-            } catch (err) {
-                console.error(('\nCould not find any task or autofile "' + taskId + '"\n').error);
-            }
-        }
-        // no task was specified, show overall usage
-        else {
-            showUsage();
-        }
         break;
 
     default:
@@ -136,14 +140,16 @@ if (argv._.length) {
         }
 
         // run the task
-        runTask(task, getTaskOptFromArgv(task));
+        //runTask(task, getTaskOptFromArgv(task));
+        runTask(task, argv);
     }
 }
 // no command was specified, try to run autofile.js in the cwd
 else {
     var task = getTaskFromFile();
 
-    runTask(task, getTaskOptFromArgv(task));
+    //runTask(task, getTaskOptFromArgv(task));
+    runTask(task, argv);
 }
 
 
@@ -154,13 +160,38 @@ else {
 function showUsage() {
     var i,
         totalCommands = commands.length,
-        cmd;
+        totalOptions = automatonOptions.length,
+        cmd,
+        opt,
+        firstColumnWidth;
 
-    console.log('\n  Usage: ' + argv.$0.cyan, '[command]', '[options]\n'.grey);
+    console.log('\n  Usage: ' + argv.$0.cyan, '[command]', '[options]'.grey);
+
+    console.log('\n  Commands:\n');
+    firstColumnWidth = commands.reduce(function (prev, curr) {
+        if (curr.cmd.length > prev) {
+            return curr.cmd.length;
+        }
+
+        return prev;
+    }, 0) + 4;
 
     for (i = 0; i < totalCommands; ++i) {
         cmd = commands[i];
         console.log(utils.string.rpad('  ' + cmd.cmd, firstColumnWidth).grey + ' ' + cmd.desc);
+    }
+
+    console.log('\n  Options:\n');
+    firstColumnWidth = automatonOptions.reduce(function (prev, curr) {
+        if (curr.opt.length > prev) {
+            return curr.opt.length;
+        }
+
+        return prev;
+    }, 0) + 4;
+    for (i = 0; i < totalOptions; ++i) {
+        opt = automatonOptions[i];
+        console.log(utils.string.rpad('  ' + opt.opt, firstColumnWidth).grey + ' ' + opt.desc);
     }
     
     console.log('');
@@ -175,9 +206,13 @@ function showTaskUsage(task) {
     console.log('\n  Options:\n');
 
     if (task.options) {
+        firstColumnWidth = utils.array.max(utils.object.keys(task.options), function (v) {
+            return v.length;
+        }).length + 6;
+
         for (optionName in task.options) {
             option = task.options[optionName];
-            console.log(utils.string.rpad('    ' + optionName + (option.hasOwnProperty('default') ? (' (' + option['default'] + ')') : ''), firstColumnWidth).grey + ' ' + option.description);
+            console.log(utils.string.rpad('    ' + optionName + (option.hasOwnProperty('default') ? (' (' + option['default'] + ')') : ''), firstColumnWidth).grey + option.description);
         }
     }
     
@@ -209,26 +244,4 @@ function runTask(task, options) {
     }
 
     automaton.run(task, options);
-}
-
-function getTaskOptFromArgv(task) {
-    var optionName,
-        option,
-        finalOptions = {},
-        optionValue
-    ;
-
-    if (task.options) {
-        for (optionName in task.options) {
-            option = task.options[optionName];
-
-            optionValue = argv[optionName] || option['default'];
-
-            if (optionValue !== undefined) {
-                finalOptions[optionName] = optionValue;
-            }
-        }
-    }
-
-    return finalOptions;
 }

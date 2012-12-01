@@ -88,7 +88,7 @@ var task = {
                 // provided to the task
 
                 console.log('I can do whatever I want.',
-                    'Here\'s the list of options', opt);
+                    'Here\'s the list of options\n', opt);
 
                 // when the task is done,
                 // you just call next(),

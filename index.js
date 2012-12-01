@@ -325,7 +325,7 @@
         _log: function (msg, $depth, $newLine) {
             $depth   = $depth || 0;
             $newLine = $newLine || true;
-
+console.log('testing verbosity', $depth, this._verbosity);
             if ($depth <= this._verbosity) {
                 if ($newLine) {
                     util.puts(msg);

@@ -29,7 +29,8 @@ var task = {
                     });
                 });
 
-            }
+            },
+            description: 'make dir "{{dir}}"'
         }
     ]
 };
