@@ -5,6 +5,7 @@ Task automation tool built in JavaScript.
 
 [![Build Status](https://secure.travis-ci.org/IndigoUnited/automaton.png)](http://travis-ci.org/IndigoUnited/automaton)
 
+![Automaton](http://indigounited.github.com/automaton/img/stamp.png)
 
 ## Why?
 
