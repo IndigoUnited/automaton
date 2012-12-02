@@ -3,6 +3,8 @@ Automaton
 
 Task automation tool built in JavaScript.
 
+[![Build Status](https://secure.travis-ci.org/IndigoUnited/automaton.png)](http://travis-ci.org/IndigoUnited/automaton)
+
 
 ## Why?
 
