@@ -136,6 +136,7 @@
                 }
                 else {
                     if (utils.lang.isFunction($callback)) {
+                        // TODO: maybe provide automaton output here?
                         $callback();
                     }
                     // task DONE
