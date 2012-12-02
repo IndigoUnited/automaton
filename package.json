@@ -48,6 +48,7 @@
     "automaton": "bin/automaton.js"
   },
   "devDependencies": {
-    "expect.js": "~0.2.0"
+    "expect.js": "~0.2.0",
+    "mocha": "~1.7.3"
   }
 }
