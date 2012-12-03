@@ -36,7 +36,6 @@ describe('Automaton', function () {
 describe('Tasks', function () {
     describe('cp', function () {
         it('should copy a file', function (done) {
-//            expect(1).to.not.be.ok();
             automaton.run('cp', {
                 src: __dirname + '/assets/file1.json',
                 // TODO: add support for only specifying the dest folder, and filename is kept
