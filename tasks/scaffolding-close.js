@@ -1,5 +1,6 @@
 var fs     = require('fs'),
-    utils  = require('amd-utils')
+    utils  = require('amd-utils'),
+    path   = require('path')
 ;
 
 var task = {
@@ -16,11 +17,12 @@ var task = {
         {
             'task' : function (opt, next) {
                 // check if a placeholder was specified
-                if (opt.placeholder.indexOf(':') > -1) {
+                var where = path.basename(opt.where);
+                if (where.indexOf(':') > -1) {
                     // append to placeholder
-                    var tmp = opt.placeholder.split(':', 2);
-                    var filename    = tmp[0],
-                        placeholder = tmp[1],
+                    var tmp = opt.where.lastIndexOf(':');
+                    var filename    = opt.where.substr(0, tmp),
+                        placeholder = opt.where.substr(tmp),
                         processedData,
                         placeholderData = {}
                     ;
