@@ -17,18 +17,18 @@ var task = {
         {
             'task' : function (opt, next) {
                 // check if a placeholder was specified
-                var where = path.basename(opt.where);
-                if (where.indexOf(':') > -1) {
-                    // append to placeholder
-                    var tmp = opt.where.lastIndexOf(':');
-                    var filename    = opt.where.substr(0, tmp),
-                        placeholder = opt.where.substr(tmp),
+                var placeholder = path.basename(opt.placeholder);
+                if (placeholder.indexOf(':') > -1) {
+                    // close placeholder
+                    var tmp = opt.placeholder.lastIndexOf(':');
+                    var filename     = opt.placeholder.substr(0, tmp),
+                        _placeholder = opt.placeholder.substr(tmp + 1),
                         processedData,
                         placeholderData = {}
                     ;
 
                     // generate the placeholder data
-                    placeholderData[placeholder] = '';
+                    placeholderData[_placeholder] = '';
 
                     processedData = utils.string.interpolate(fs.readFileSync(filename, 'utf8'), placeholderData);
 

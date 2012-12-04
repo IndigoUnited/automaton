@@ -6,7 +6,8 @@
         colors  = require('colors'),
         fs      = require('fs'),
         util    = require('util'),
-        async   = require('async')
+        async   = require('async'),
+        path    = require('path')
     ;
 
     var inspect = function (v, levels) {
@@ -156,7 +157,7 @@
             ;
 
             for (i = filenames.length - 1; i >= 0; --i) {
-                this.addTask(require(folder + filenames[i].split(/\./)[0]));
+                this.addTask(require(folder + path.basename(filenames[i], '.js')));
             }
 
             return this;

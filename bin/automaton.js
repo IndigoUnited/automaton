@@ -117,12 +117,13 @@ if (argv.help || argv.h) {
 
     process.exit();
 }
-
+console.log(argv);
 // if a command was specified, run it
 if (argv._.length) {
     switch (argv._[0]) {
     case 'init':
-        initTask(argv._[1]);
+        var taskId = argv._[1] || 'autofile';
+        initTask(taskId);
         break;
 
     default:
@@ -148,6 +149,11 @@ if (argv._.length) {
 // no command was specified, try to run autofile.js in the cwd
 else {
     var task = getTaskFromFile();
+
+    if (!task) {
+        showUsage();
+        process.exit();
+    }
 
     //runTask(task, getTaskOptFromArgv(task));
     runTask(task, argv);
@@ -234,7 +240,16 @@ function showTaskUsage(task) {
 }
 
 function initTask(taskId) {
-    console.log('initing', taskId);
+    runTask('task-init', {
+        'name': taskId
+    }, function (err) {
+        if (err) {
+            console.error('Unable to create task');
+            process.exit(1);
+        }
+
+        console.log('Task initialized'.info);
+    });
 }
 
 function getTaskFromFile(file) {

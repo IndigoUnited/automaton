@@ -41,7 +41,7 @@ var task = {
                     // append to placeholder
                     var tmp = opt.where.lastIndexOf(':');
                     var filename    = opt.where.substr(0, tmp),
-                        placeholder = opt.where.substr(tmp),
+                        placeholder = opt.where.substr(tmp + 1),
                         processedData,
                         placeholderData = {}
                     ;
