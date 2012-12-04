@@ -41,7 +41,8 @@
     "mkdirp": "~0.3.4",
     "fstream": "~0.1.19",
     "rimraf": "~2.0.2",
-    "optimist": "~0.3.5"
+    "optimist": "~0.3.5",
+    "glob": "~3.1.14"
   },
   "preferGlobal": true,
   "bin": {
