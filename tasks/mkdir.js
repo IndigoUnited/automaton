@@ -15,8 +15,12 @@ var task = {
         {
             'task' : function (opt, next) {
                 fs.stat(opt.dir, function (err, stat) {
-                    if ((!err || err.code !== 'ENOENT') && (stat && !stat.isDirectory())) {
-                        next(new Error('Passed dir already exists and is not a directory.'));
+                    if (!err || err.code !== 'ENOENT') {
+                        if (stat && !stat.isDirectory()) {
+                            next(new Error('Passed dir already exists and is not a directory.'));
+                        } else {
+                            next(err);
+                        }
                     }
 
                     mkdirp(opt.dir, function (err) {
