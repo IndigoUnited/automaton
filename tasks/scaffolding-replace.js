@@ -24,7 +24,7 @@ var task = {
         {
             'task' : function (opt, next) {
                 var _with;
-
+console.log(opt);
                 // if type is file, then read its contents first
                 if (opt.type === 'file') {
                     // TODO: check if file exists
@@ -35,26 +35,26 @@ var task = {
                 }
 
                 // check if a placeholder was specified
-                var where = path.basename(opt.where);
-                if (where.indexOf(':') > -1) {
-                    // append to placeholder
-                    var tmp = opt.where.lastIndexOf(':');
-                    var filename    = opt.where.substr(0, tmp),
-                        placeholder = opt.where.substr(tmp),
+                var what = path.basename(opt.what);
+                if (what.indexOf(':') > -1) {
+                    // replace placeholder
+                    var tmp = opt.what.lastIndexOf(':');
+                    var filename    = opt.what.substr(0, tmp),
+                        placeholder = opt.what.substr(tmp + 1),
                         processedData,
                         placeholderData = {}
                     ;
 
                     // generate the placeholder data
                     placeholderData[placeholder] = _with;
-
+console.log(filename, placeholder, placeholderData);
                     processedData = utils.string.interpolate(fs.readFileSync(filename, 'utf8'), placeholderData);
 
                     fs.writeFileSync(filename, processedData, 'utf8');
                 }
                 else {
                     // just replace the file, if it exists
-                    fs.writeFileSync(opt.where, _with, 'utf8');
+                    fs.writeFileSync(opt.what, _with, 'utf8');
                 }
 
                 next();

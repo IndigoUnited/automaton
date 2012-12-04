@@ -13,7 +13,7 @@
     "eqeqeq": true,
     "forin": false,
     "immed": true,
-    "latedef": true,
+    "latedef": false,
     "newcap": true,
     "noarg": true,
     "noempty": false,
