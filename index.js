@@ -185,7 +185,9 @@
             if (utils.lang.isObject(task.options)) {
                 // fill in the options with default values where the option was not provided
                 for (option in task.options) {
-                    options[option] = options[option] || task.options[option]['default'];
+                    if (options[option] === undefined) {
+                        options[option] = task.options[option]['default'];
+                    }
                 }
 
                 // if task has a filter, run it before checking if all the options are ok
