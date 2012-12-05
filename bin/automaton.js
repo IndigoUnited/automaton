@@ -110,7 +110,7 @@ if (argv.help || argv.h) {
 
     process.exit();
 }
-console.log(argv);
+
 // if a command was specified, run it
 if (argv._.length) {
     switch (argv._[0]) {
