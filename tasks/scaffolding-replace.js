@@ -47,7 +47,6 @@ var task = {
 
                     // generate the placeholder data
                     placeholderData[placeholder] = _with;
-console.log(filename, placeholder, placeholderData);
                     processedData = utils.string.interpolate(fs.readFileSync(filename, 'utf8'), placeholderData);
 
                     fs.writeFileSync(filename, processedData, 'utf8');

@@ -79,8 +79,8 @@
                 task = this.getTask(task);
             }
 
-            this._assertIsObject(task);
-            this._assertIsArray(task.tasks);
+            this._assertIsObject(task, 'Expected task to be an object');
+            this._assertIsArray(task.tasks, 'Expected tasks to be an array');
 
             //this._log('Automating...'.info);
 
@@ -102,22 +102,13 @@
 
                 waterfallBatch.push(function (details, next) {
                     if (details.description) {
-                        this._log('  - ' + details.description.blue, details.depth, false);
+                        this._log('  - ' + details.description.cyan, details.depth, false);
                     }
 
                     next();
                 }.$bind(this, batchDetails));
 
                 waterfallBatch.push(subtask.fn.$bind(this, subtask.options));
-
-/*                waterfallBatch.push(function (details, next) {
-                    if (details.description) {
-                        this._t_left(details.description.length + 2);
-                        this._log('  ' + this.$static.CHECK.green + ' ' + details.description.blue, details.depth);
-                    }
-
-                    next();
-                }.$bind(this, batchDetails));*/
             }
 
             async.waterfall(waterfallBatch, function (err) {
@@ -143,7 +134,7 @@
         },
 
         loadTasks: function (folder) {
-            this._assertIsString(folder);
+            this._assertIsString(folder, 'Expected folder to be a string');
 
             folder = fs.realpathSync(folder) + '/';
 
@@ -183,7 +174,7 @@
                 task = this._tasks[task];
             }
 
-            this._assertIsObject(task);
+            this._assertIsObject(task, 'Expected task to be an object');
 
             if (!utils.lang.isString(task.id)) {
                 task.id = 'Non-identified task';
@@ -257,7 +248,7 @@
                 // it's not a function, then it must be another task, check if it is loaded, and flatten it
                 else {
                     if (utils.lang.isString(currentSubtask.task)) {
-                        this._assertTaskLoaded(currentSubtask.task);
+                        this._assertTaskLoaded(currentSubtask.task, 'Expected task to be an object');
 
                         // generate the options for the subtask
                         var subtaskOptions = {},
@@ -300,25 +291,25 @@
 
         _assertIsString: function (variable, errorMsg) {
             if (!utils.lang.isString(variable)) {
-                throw new Error(errorMsg.error);
+                throw new Error(errorMsg);
             }
         },
 
         _assertIsObject: function (variable, errorMsg) {
             if (!utils.lang.isObject(variable)) {
-                throw new Error(errorMsg.error);
+                throw new Error(errorMsg);
             }
         },
 
         _assertIsFunction: function (variable, errorMsg) {
             if (!utils.lang.isFunction(variable)) {
-                throw new Error(errorMsg.error);
+                throw new Error(errorMsg);
             }
         },
 
         _assertIsArray: function (variable, errorMsg) {
             if (!utils.lang.isArray(variable)) {
-                throw new Error(errorMsg.error);
+                throw new Error(errorMsg);
             }
         },
 
@@ -328,7 +319,7 @@
                 process.exit(1);
             }
 
-            throw new Error(errorMsg.error);
+            throw new Error(errorMsg);
         },
 
         _log: function (msg, $depth, $newLine) {

@@ -1,6 +1,5 @@
 var fs        = require('fs'),
     utils     = require('amd-utils'),
-    path      = require('path'),
     glob      = require('glob'),
     async     = require('async')
 ;
@@ -51,9 +50,7 @@ var task = {
                         });
 
 
-                        //console.log(matches);
                         // Foreach file found, rename it (has to be in series)
-                        //console.log(filesToRename);
                         async.forEachSeries(filesToRename, function (obj, next) {
                             fs.rename(obj.before, obj.after, function (err) {
                                 if (!err || err.code === 'ENOENT') {
