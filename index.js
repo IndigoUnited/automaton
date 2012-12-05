@@ -10,11 +10,6 @@
         path    = require('path')
     ;
 
-    var inspect = function (v, levels) {
-        levels = levels || 10;
-        console.log(util.inspect(v, false, levels, true));
-    };
-
     // set up a useful set of formats
     colors.setTheme({
         input:   'grey',
@@ -339,7 +334,7 @@
         _log: function (msg, $depth, $newLine) {
             $depth   = $depth || 0;
             $newLine = $newLine || true;
-console.log('testing verbosity', $depth, this._verbosity);
+
             if ($depth <= this._verbosity) {
                 if ($newLine) {
                     util.puts(msg);
