@@ -199,9 +199,7 @@
             if (utils.lang.isObject(task.options)) {
                 // fill in the options with default values where the option was not provided
                 for (option in task.options) {
-                    if (task.options[option].hasOwnProperty('default') && !options.hasOwnProperty(option)) {
-                        options[option] = task.options[option]['default'];
-                    }
+                    options[option] = options[option] || task.options[option]['default'];
                 }
 
                 // if task has a filter, run it before checking if all the options are ok
@@ -212,7 +210,7 @@
                 // for each option in the definition
                 for (option in task.options) {
                     // if option was not provided to the task, abort
-                    if (!options.hasOwnProperty(option)) {
+                    if (options[option] === undefined) {
                         this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task', true);
                     }
                 }
@@ -238,7 +236,7 @@
 
                 // check if subtask is disabled
                 var enabled = true;
-                if (currentSubtask.hasOwnProperty('on')) {
+                if (currentSubtask.on) {
                     if (utils.lang.isString(currentSubtask.on)) {
                         enabled = !!this._replacePlaceholders(currentSubtask.on, options);
                     }
@@ -255,7 +253,7 @@
                 // if it's a function, just add it to the batch
                 if (utils.lang.isFunction(currentSubtask.task)) {
                     batch.push({
-                        'description': currentSubtask.hasOwnProperty('description') ? this._replacePlaceholders(currentSubtask.description, options) : null,
+                        'description': currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
                         'depth': $depth,
                         'fn': currentSubtask.task,
                         'options': options
@@ -280,7 +278,7 @@
 
                         batch = batch.concat({
                             // this NOP subtask is added, so that the description shows up in the feedback
-                            'description': currentSubtask.hasOwnProperty('description') ? this._replacePlaceholders(currentSubtask.description, options) : null,
+                            'description': currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
                             'depth': $depth,
                             'fn': nop, // no operation function
                             'options': options

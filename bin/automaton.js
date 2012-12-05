@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-var util    = require('util'),
-    utils   = require('amd-utils'),
+var utils   = require('amd-utils'),
     fs      = require('fs'),
     colors  = require('colors'),
     path    = require('path'),
@@ -19,15 +18,9 @@ colors.setTheme({
     error:   'red'
 });
 
-function inspect(v, levels) {
-    levels = levels || 10;
-    console.log(util.inspect(v, false, levels, true));
-}
-
 // ----------------------------- USAGE PARAMETERS ------------------------------
 
-var firstColumnWidth = 20,
-    commands = [
+var commands = [
         {
             cmd: '[autofile]',
             desc: 'Run an autofile. Defaults to "autofile.js".'
@@ -200,7 +193,7 @@ function showUsage() {
         opt = automatonOptions[i];
         console.log(utils.string.rpad('    ' + opt.opt, firstColumnWidth).grey + opt.desc);
     }
-    
+
     console.log('');
 }
 
@@ -220,7 +213,7 @@ function showTaskUsage(task) {
     if (task.options) {
         for (optionName in task.options) {
             option = task.options[optionName];
-            leftCol = optionName + (option.hasOwnProperty('default') ? (' (' + option['default'] + ')') : '');
+            leftCol = optionName + (option['default'] !== undefined ? ' (' + option['default'] + ')' : '');
             usage.push({
                 opt:  leftCol,
                 desc: option.description
@@ -235,7 +228,7 @@ function showTaskUsage(task) {
             console.log(utils.string.rpad('    ' + usage[k].opt, firstColumnWidth).grey + (usage[k].desc ? usage[k].desc : ''));
         }
     }
-    
+
     console.log('');
 }
 

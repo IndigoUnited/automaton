@@ -24,7 +24,7 @@ var task = {
         {
             'task' : function (opt, next) {
                 var _with;
-console.log(opt);
+
                 // if type is file, then read its contents first
                 if (opt.type === 'file') {
                     // TODO: check if file exists
