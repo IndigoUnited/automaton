@@ -168,7 +168,7 @@
 
             options = options || {};
 
-            $depth = $depth || 0;
+            $depth = $depth || 1;
 
             if (utils.lang.isString(task)) {
                 this._assertTaskLoaded(task);
