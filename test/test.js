@@ -1,23 +1,128 @@
 /*jshint strict:false, node:true, onevar:false*/
-/*global describe:true, it:true*/
+/*global describe:true, it:true, beforeEach:true, after:true, before:true, afterEach:true*/
 var expect    = require('expect.js'),
     automaton = require('../index'),
     fs        = require('fs'),
     rimraf    = require('rimraf')
 ;
 
-function cleanUpTmp() {
-    rimraf.sync(__dirname + '/tmp');
+// disable output
+automaton.setVerbosity(0);
+
+function cleanUpTmp(done) {
+    rimraf(__dirname + '/tmp', done);
 }
 
-// start by cleaning up the "tmp" folder
-cleanUpTmp();
+function prepareTmp(done) {
+    cleanUpTmp(function (err) {
+        if (err) {
+            return done(err);
+        }
+
+        fs.mkdir(__dirname + '/tmp', 0777, done);
+    });
+}
 
 describe('Automaton', function () {
-    describe('subtasks', function () {
-        // test single subtask
+    beforeEach(prepareTmp);
+    after(cleanUpTmp);
 
-        // test multiple subtask
+    describe('subtasks', function () {
+        it('should run a task with a single subtask', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname
+                        }
+                    }
+                ]
+            }, {}, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(fs.existsSync(dirname)).to.be(true);
+                done();
+            });
+        });
+
+        it('should run a task with multiple subtasks, and different options', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+            
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 0
+                        }
+                    },
+                    {
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 1
+                        }
+                    },
+                    {
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 2
+                        }
+                    }
+                ]
+            }, {}, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(fs.existsSync(dirname + 0)).to.be(true);
+                expect(fs.existsSync(dirname + 1)).to.be(true);
+                expect(fs.existsSync(dirname + 2)).to.be(true);
+                done();
+            });
+        });
+
+        // test inline subtask
+        it('should run a task with inline subtasks', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: function (opt, next) {
+                            fs.mkdir(dirname, 0777, next);
+                        }
+                    }
+                ]
+            }, {}, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(fs.existsSync(dirname)).to.be(true);
+                done();
+            });
+        });
+
+        // test "automaton.run" by providing the task id
+        it('should run a task by its id', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+
+            automaton.run('mkdir', {
+                dir: dirname
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(fs.existsSync(dirname)).to.be(true);
+                done();
+            });
+        });
 
         // test "on" field
 
@@ -28,12 +133,16 @@ describe('Automaton', function () {
         // test placeholder on "on"
     });
 
+    // test filter
     describe('filter', function () {
 
     });
 });
 
 describe('Tasks', function () {
+    beforeEach(prepareTmp);
+    after(cleanUpTmp);
+
     describe('cp', function () {
         it('should copy a file', function (done) {
             automaton.run('cp', {
@@ -42,13 +151,10 @@ describe('Tasks', function () {
                 dst: __dirname + '/tmp/file1.json'
             }, function (err) {
                 if (err) {
-                    cleanUpTmp();
-                    done(err);
+                    return done(err);
                 }
 
                 expect(fs.existsSync(__dirname + '/tmp/file1.json')).to.be(true);
-
-                cleanUpTmp();
                 done();
             });
         });

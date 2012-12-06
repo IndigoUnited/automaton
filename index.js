@@ -7,7 +7,8 @@
         fs      = require('fs'),
         util    = require('util'),
         async   = require('async'),
-        path    = require('path')
+        path    = require('path'),
+        stringLib = require('./lib/string')
     ;
 
     // set up a useful set of formats
@@ -80,7 +81,8 @@
             }
 
             this._assertIsObject(task, 'Expected task to be an object');
-            this._assertIsArray(task.tasks, 'Expected tasks to be an array');
+            // TODO: is the check below necessary? Maybe I should check this in flattenTask
+            this._assertIsArray(task.tasks, 'Expected subtasks to be an array');
 
             //this._log('Automating...'.info);
 
@@ -157,7 +159,6 @@
 
         _flattenTask: function (task, options, $depth) {
             var i,
-//                task,           // task that is being flattened
                 subtasks,       // subtasks of the task being flattened
                 subtasksLength, // total of subtasks of the task being flattened
                 currentSubtask, // iteration task
@@ -213,6 +214,8 @@
             subtasks       = task.tasks;
             subtasksLength = subtasks.length;
 
+            var subtaskOptions;
+
             for (i = 0; i < subtasksLength; ++i) {
                 currentSubtask = subtasks[i];
 
@@ -240,6 +243,7 @@
 
                 // if it's a function, just add it to the batch
                 if (utils.lang.isFunction(currentSubtask.task)) {
+
                     batch.push({
                         'description': currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
                         'depth': $depth,
@@ -253,19 +257,10 @@
                         this._assertTaskLoaded(currentSubtask.task, 'Expected task to be an object');
 
                         // generate the options for the subtask
-                        var subtaskOptions = {},
-                            optionValue
-                        ;
-                        if (utils.lang.isObject(currentSubtask.options)) {
-                            for (option in currentSubtask.options) {
-                                optionValue = currentSubtask.options[option];
-                                // if option value is a string, replace the placeholders by its correspondent value
-                                subtaskOptions[option] = utils.lang.isString(optionValue) ? this._replacePlaceholders(optionValue, options) : optionValue;
-                            }
-                        }
+                        subtaskOptions = this._parseSubtaskOptions(currentSubtask, options);
 
                         batch = batch.concat({
-                            // this NOP subtask is added, so that the description shows up in the feedback
+                            // this NOP subtask is added, representing a meta-task, which is then flattened. Still, the NOP is useful in order to provide feedback of the meta-task
                             'description': currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
                             'depth': $depth,
                             'fn': nop, // no operation function
@@ -281,8 +276,25 @@
             return batch;
         },
 
+        _parseSubtaskOptions: function (subtask, mainTaskOptions) {
+            var subOptions = {},
+                k,
+                v
+            ;
+
+            if (utils.lang.isObject(subtask.options)) {
+                for (k in subtask.options) {
+                    v = subtask.options[k];
+                    // if option value is a string, replace the placeholders by its correspondent value
+                    subOptions[k] = utils.lang.isString(v) ? this._replacePlaceholders(v, mainTaskOptions) : v;
+                }
+            }
+
+            return subOptions;
+        },
+
         _replacePlaceholders: function (str, options) {
-            return utils.string.interpolate(str, options);
+            return stringLib.interpolate(str, options);
         },
 
         _assertTaskLoaded: function (taskId) {

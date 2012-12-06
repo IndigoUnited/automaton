@@ -1,7 +1,8 @@
 var fs        = require('fs'),
     utils     = require('amd-utils'),
     glob      = require('glob'),
-    async     = require('async')
+    async     = require('async'),
+    stringLib = require('../lib/string')
 ;
 
 var task = {
@@ -39,7 +40,7 @@ var task = {
                         var filesToRename = [];
                         matches.forEach(function (match) {
                             var before = match;
-                            var after = utils.string.interpolate(match, replacements);
+                            var after = stringLib.interpolate(match, replacements);
 
                             if (before !== after) {
                                 matches.forEach(function (match, i) {

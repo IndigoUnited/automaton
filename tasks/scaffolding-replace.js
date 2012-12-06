@@ -1,6 +1,6 @@
-var fs     = require('fs'),
-    utils  = require('amd-utils'),
-    path   = require('path')
+var fs        = require('fs'),
+    path      = require('path'),
+    stringLib = require('../lib/string')
 ;
 
 var task = {
@@ -47,7 +47,7 @@ var task = {
 
                     // generate the placeholder data
                     placeholderData[placeholder] = _with;
-                    processedData = utils.string.interpolate(fs.readFileSync(filename, 'utf8'), placeholderData);
+                    processedData = stringLib.interpolate(fs.readFileSync(filename, 'utf8'), placeholderData);
 
                     fs.writeFileSync(filename, processedData, 'utf8');
                 }
