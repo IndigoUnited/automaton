@@ -32,7 +32,7 @@ var task = {
                     fs.stat(dir, function (err, stat) {
                         if (!err || err.code !== 'ENOENT') {
                             if (stat && !stat.isDirectory()) {
-                                next(new Error('Passed dir already exists and is not a directory.'));
+                                next(new Error(dir + ' already exists and is not a directory.'));
                             } else {
                                 next(err);
                             }
