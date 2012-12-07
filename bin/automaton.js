@@ -188,7 +188,10 @@ function showUsage() {
         }
 
         return prev;
-    }, 0) + 6;
+    }, 0);
+
+    firstColumnWidth += 6;
+
     for (i = 0; i < totalOptions; ++i) {
         opt = automatonOptions[i];
         console.log(utils.string.rpad('    ' + opt.opt, firstColumnWidth).grey + opt.desc);
@@ -220,9 +223,11 @@ function showTaskUsage(task) {
             });
 
             if (leftCol.length > firstColumnWidth) {
-                firstColumnWidth = leftCol.length + 6;
+                firstColumnWidth = leftCol.length;
             }
         }
+
+        firstColumnWidth += 6;
 
         for (k in usage) {
             console.log(utils.string.rpad('    ' + usage[k].opt, firstColumnWidth).grey + (usage[k].desc ? usage[k].desc : ''));

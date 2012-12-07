@@ -40,7 +40,7 @@ describe('Automaton', function () {
                         }
                     }
                 ]
-            }, {}, function (err) {
+            }, null, function (err) {
                 if (err) {
                     return done(err);
                 }
@@ -74,7 +74,7 @@ describe('Automaton', function () {
                         }
                     }
                 ]
-            }, {}, function (err) {
+            }, null, function (err) {
                 if (err) {
                     return done(err);
                 }
@@ -98,7 +98,7 @@ describe('Automaton', function () {
                         }
                     }
                 ]
-            }, {}, function (err) {
+            }, null, function (err) {
                 if (err) {
                     return done(err);
                 }
@@ -125,12 +125,83 @@ describe('Automaton', function () {
         });
 
         // test "on" field
+        it('should skip a task when its "on" attribute has a falsy placeholder', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+            
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 0
+                        }
+                    },
+                    {
+                        on: '{{run_all}}',
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 1
+                        }
+                    },
+                    {
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 2
+                        }
+                    }
+                ]
+            }, { run_all: false }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(fs.existsSync(dirname + 0)).to.be(true);
+                expect(fs.existsSync(dirname + 1)).to.be(false);
+                expect(fs.existsSync(dirname + 2)).to.be(true);
+                done();
+            });
+        });
+
+        it('should skip a task when its "on" attribute is falsy', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+            
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 0
+                        }
+                    },
+                    {
+                        on: false,
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 1
+                        }
+                    },
+                    {
+                        task: 'mkdir',
+                        options: {
+                            dir: dirname + 2
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(fs.existsSync(dirname + 0)).to.be(true);
+                expect(fs.existsSync(dirname + 1)).to.be(false);
+                expect(fs.existsSync(dirname + 2)).to.be(true);
+                done();
+            });
+        });
 
         // test placeholder on descriptions
 
         // test placeholder on options
-
-        // test placeholder on "on"
     });
 
     // test filter
