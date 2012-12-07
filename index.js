@@ -28,19 +28,8 @@
 
     var Automaton = d.Class.declare({
         $name: 'Automaton',
-/*
-        $constants: {
-            // terminal escape character
-            ESCAPE_CODE: '\u001b',
 
-            // display attributes reset
-            RESET_CODE: '\u001b[0m',
-
-            CHECK: '✔'
-        },
-*/
         _tasks: [],
-
         _verbosity: 1,
 
         initialize: function () {
@@ -63,7 +52,6 @@
 
         removeTask: function (id) {
             this._assertIsString(id, 'Invalid task id provided \'' + id + '\'');
-
             delete this._tasks[id];
 
             return this;
@@ -97,9 +85,9 @@
             for (i = 0; i < batchLength; ++i) {
                 subtask = batch[i];
                 batchDetails = {
-                    'description': subtask.description,
-                    'depth': subtask.depth,
-                    'options': subtask.options
+                    description: subtask.description,
+                    depth: subtask.depth,
+                    options: subtask.options
                 };
 
                 waterfallBatch.push(function (details, next) {
@@ -161,7 +149,9 @@
                 subtasksLength, // total of subtasks of the task being flattened
                 currentSubtask, // iteration task
                 batch = [],     // final result
-                option
+                option,
+                subtaskOptions,
+                description
             ;
 
             options = options || {};
@@ -213,8 +203,6 @@
             subtasks       = task.tasks;
             subtasksLength = subtasks.length;
 
-            var subtaskOptions;
-
             for (i = 0; i < subtasksLength; ++i) {
                 currentSubtask = subtasks[i];
 
@@ -239,10 +227,12 @@
                     continue;
                 }
 
+                description = this._parseDescription(currentSubtask.description, options);
+
                 // if it's a function, just add it to the batch
                 if (utils.lang.isFunction(currentSubtask.task)) {
                     batch.push({
-                        description: currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
+                        description: description,
                         depth: $depth,
                         fn: currentSubtask.task,
                         options: options
@@ -256,10 +246,9 @@
 
                     batch.push({
                         // this NOP subtask is added, representing a meta-task, which is then flattened. Still, the NOP is useful in order to provide feedback of the meta-task
-                        description: currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
+                        description: description,
                         depth: $depth,
-                        fn: nop, // no operation function
-                        options: options
+                        fn: nop // no operation function
                     });
                     batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions, $depth + 1));
                 }
@@ -290,6 +279,16 @@
             // TODO: option values can contain things different than string..
             //       how to handle those?
             return stringLib.interpolate(str, options);
+        },
+
+        _parseDescription: function (description, options) {
+            if (utils.lang.isFunction(description)) {
+                description = description(options);
+            } else if (description != null) {
+                description = this._replacePlaceholders(description, options);
+            }
+
+            return description;
         },
 
         _assertTaskLoaded: function (taskId) {
@@ -350,43 +349,6 @@
                 console.error(msg);
             }
         }
-/*
-        _t_reset: function () {
-            util.print(this.$static.RESET_CODE);
-
-            return this;
-        },
-
-        _t_clear: function () {
-            util.print(this.$static.ESCAPE_CODE + '[2J');
-
-            return this;
-        },
-
-        _t_up: function (n) {
-            util.print(this.$static.ESCAPE_CODE + '[' + n + 'A');
-
-            return this;
-        },
-
-        _t_down: function (n) {
-            util.print(this.$static.ESCAPE_CODE + '[' + n + 'B');
-
-            return this;
-        },
-
-        _t_left: function (n) {
-            util.print(this.$static.ESCAPE_CODE + '[' + n + 'D');
-
-            return this;
-        },
-
-        _t_right: function (n) {
-            util.print(this.$static.ESCAPE_CODE + '[' + n + 'C');
-
-            return this;
-        }
-*/
     });
 
     module.exports = new Automaton();
