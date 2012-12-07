@@ -104,10 +104,9 @@
             async.waterfall(waterfallBatch, function (err) {
                 if (err) {
                     if (utils.lang.isFunction($callback)) {
-                        $callback(new Error('ERROR: '.error + err));
+                        $callback(new Error(err));
                     } else {
-                        console.error('ERROR: '.error + err);
-                        process.exit();
+                        this._throwError(err);
                     }
                 } else {
                     if (utils.lang.isFunction($callback)) {
@@ -214,12 +213,10 @@
 
                 // check if subtask is disabled
                 var enabled = true;
-                if (currentSubtask.on) {
-                    if (utils.lang.isString(currentSubtask.on)) {
-                        enabled = !!this._replacePlaceholders(currentSubtask.on, options);
-                    } else {
-                        enabled = currentSubtask.on;
-                    }
+                if (currentSubtask.hasOwnProperty('on')) {
+                    enabled = utils.lang.isString(currentSubtask.on) ?
+                        !this._replacePlaceholders(currentSubtask.on, options)
+                        : currentSubtask.on;
                 }
 
                 // if subtask is disabled, skip to the next subtask
