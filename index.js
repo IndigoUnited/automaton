@@ -117,13 +117,11 @@
                 if (err) {
                     if (utils.lang.isFunction($callback)) {
                         $callback(new Error('ERROR: '.error + err));
-                    }
-                    else {
+                    } else {
                         console.error('ERROR: '.error + err);
                         process.exit();
                     }
-                }
-                else {
+                } else {
                     if (utils.lang.isFunction($callback)) {
                         // TODO: maybe provide automaton output here?
                         $callback();
@@ -200,16 +198,17 @@
                 for (option in task.options) {
                     // if option was not provided to the task, abort
                     if (options[option] === undefined) {
-                        this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task', true);
+                        this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task');
                     }
                 }
-            }
-            else {
+            } else {
                 // if task has a filter, run it
                 if (utils.lang.isFunction(task.filter)) {
                     task.filter(options);
                 }
             }
+
+            this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + task.id + '\' task');
 
             subtasks       = task.tasks;
             subtasksLength = subtasks.length;
@@ -219,10 +218,10 @@
             for (i = 0; i < subtasksLength; ++i) {
                 currentSubtask = subtasks[i];
 
-                this._assertIsObject(currentSubtask, 'Invalid task specified at index \'' + i + '\'');
+                this._assertIsObject(currentSubtask, 'Invalid subtask specified at index \'' + i + '\' in \'' + task.id + '\' task');
 
-                if (!currentSubtask.task) {
-                    this._throwError('Task type at index \'' + i + '\' not specified');
+                if (!utils.lang.isString(currentSubtask.task) && !utils.lang.isFunction(currentSubtask.task)) {
+                    this._throwError('Subtask type at index \'' + i + '\' must be a function or an object in \'' + task.id + '\' task');
                 }
 
                 // check if subtask is disabled
@@ -230,8 +229,7 @@
                 if (currentSubtask.on) {
                     if (utils.lang.isString(currentSubtask.on)) {
                         enabled = !!this._replacePlaceholders(currentSubtask.on, options);
-                    }
-                    else {
+                    } else {
                         enabled = currentSubtask.on;
                     }
                 }
@@ -243,92 +241,89 @@
 
                 // if it's a function, just add it to the batch
                 if (utils.lang.isFunction(currentSubtask.task)) {
+                    batch.push({
+                        description: currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
+                        depth: $depth,
+                        fn: currentSubtask.task,
+                        options: options
+                    });
+                // it's not a function, then it must be another task, check if it is loaded, and flatten it
+                } else if (utils.lang.isString(currentSubtask.task)) {
+                    this._assertTaskLoaded(currentSubtask.task);
+
+                    // generate the options for the subtask
+                    subtaskOptions = this._replaceOptions(currentSubtask.options, options);
 
                     batch.push({
-                        'description': currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
-                        'depth': $depth,
-                        'fn': currentSubtask.task,
-                        'options': options
+                        // this NOP subtask is added, representing a meta-task, which is then flattened. Still, the NOP is useful in order to provide feedback of the meta-task
+                        description: currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
+                        depth: $depth,
+                        fn: nop, // no operation function
+                        options: options
                     });
-                }
-                // it's not a function, then it must be another task, check if it is loaded, and flatten it
-                else {
-                    if (utils.lang.isString(currentSubtask.task)) {
-                        this._assertTaskLoaded(currentSubtask.task, 'Expected task to be an object');
-
-                        // generate the options for the subtask
-                        subtaskOptions = this._parseSubtaskOptions(currentSubtask, options);
-
-                        batch = batch.concat({
-                            // this NOP subtask is added, representing a meta-task, which is then flattened. Still, the NOP is useful in order to provide feedback of the meta-task
-                            'description': currentSubtask.description != null ? this._replacePlaceholders(currentSubtask.description, options) : null,
-                            'depth': $depth,
-                            'fn': nop, // no operation function
-                            'options': options
-                        }).concat(this._flattenTask(currentSubtask.task, subtaskOptions, $depth + 1));
-                    }
-                    else {
-                        this._throwError('Invalid subtask specified in task \'' + task.id + '\', at index \'' + i + '\' (\'' + currentSubtask.task + '\')');
-                    }
+                    batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions, $depth + 1));
                 }
             }
 
             return batch;
         },
 
-        _parseSubtaskOptions: function (subtask, mainTaskOptions) {
-            var subOptions = {},
-                k,
-                v
-            ;
+        _replaceOptions: function (target, options) {
+            var k;
 
-            if (utils.lang.isObject(subtask.options)) {
-                for (k in subtask.options) {
-                    v = subtask.options[k];
-                    // if option value is a string, replace the placeholders by its correspondent value
-                    subOptions[k] = utils.lang.isString(v) ? this._replacePlaceholders(v, mainTaskOptions) : v;
+            if (utils.lang.isObject(target)) {
+                for (k in target) {
+                    target[k] = this._replaceOptions(target[k], options);
                 }
+            } else if (utils.lang.isArray(target)) {
+                for (k = target.length - 1; k >= 0; --k) {
+                    target[k] = this._replaceOptions(target[k], options);
+                }
+            } else if (utils.lang.isString(target)) {
+                target = this._replacePlaceholders(target, options);
             }
 
-            return subOptions;
+            return target;
         },
 
         _replacePlaceholders: function (str, options) {
+            // TODO: option values can contain things different than string..
+            //       how to handle those?
             return stringLib.interpolate(str, options);
         },
 
         _assertTaskLoaded: function (taskId) {
             if (!utils.lang.isObject(this._tasks[taskId])) {
-                throw new Error('Could not find any task handler suitable for \'' + taskId + '\'');
+                this._throwError('Could not find any task handler suitable for \'' + taskId + '\'');
             }
         },
 
         _assertIsString: function (variable, errorMsg) {
             if (!utils.lang.isString(variable)) {
-                throw new Error(errorMsg);
+                this._throwError(errorMsg);
             }
         },
 
         _assertIsObject: function (variable, errorMsg) {
             if (!utils.lang.isObject(variable)) {
-                throw new Error(errorMsg);
+                this._throwError(errorMsg);
             }
         },
 
         _assertIsFunction: function (variable, errorMsg) {
             if (!utils.lang.isFunction(variable)) {
-                throw new Error(errorMsg);
+                this._throwError(errorMsg);
             }
         },
 
         _assertIsArray: function (variable, errorMsg) {
             if (!utils.lang.isArray(variable)) {
-                throw new Error(errorMsg);
+                this._throwError(errorMsg);
             }
         },
 
-        _throwError: function (errorMsg, $pretty) {
-            if ($pretty) {
+        _throwError: function (errorMsg, $verbose) {
+            if (!$verbose) {
                 console.error('\n' + errorMsg.error + '\n');
                 process.exit(1);
             }
@@ -343,8 +338,7 @@
             if ($depth <= this._verbosity) {
                 if ($newLine) {
                     util.puts(msg);
-                }
-                else {
+                } else {
                     util.print(msg);
                 }
             }
