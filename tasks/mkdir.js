@@ -32,10 +32,9 @@ var task = {
                     fs.stat(dir, function (err, stat) {
                         if (!err || err.code !== 'ENOENT') {
                             if (stat && !stat.isDirectory()) {
-                                next(new Error(dir + ' already exists and is not a directory.'));
-                            } else {
-                                next(err);
+                                return next(new Error(dir + ' already exists and is not a directory.'));
                             }
+                            return next(err);
                         }
 
                         mkdirp(dir, opt.mode, next);

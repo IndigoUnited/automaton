@@ -21,7 +21,7 @@ var task = {
                 async.forEach(files, function (file, next) {
                     glob(file, function (err, files) {
                         if (err) {
-                            next(err);
+                            return next(err);
                         }
 
                         async.forEach(files, function (file) {

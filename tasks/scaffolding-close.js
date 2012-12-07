@@ -37,19 +37,30 @@ var task = {
                 async.forEach(files, function (file, next) {
                     glob(file, function (err, files) {
                         if (err) {
-                            next(err);
+                            return next(err);
                         }
 
                         // For each file in the glob result,
                         // close the placeholders
                         async.forEach(files, function (file, next) {
-                            fs.readFile(file, function (err, contents) {
+                            // Only apply to files
+                            fs.stat(file, function (err, stat) {
                                 if (err) {
-                                    next(err);
+                                    return next(err);
                                 }
 
-                                contents = stringLib.interpolate(contents.toString(), data, opt.cleanup);
-                                fs.writeFile(file, contents, next);
+                                if (!stat.isFile()) {
+                                    return next();
+                                }
+
+                                fs.readFile(file, function (err, contents) {
+                                    if (err) {
+                                        return next(err);
+                                    }
+
+                                    contents = stringLib.interpolate(contents.toString(), data, opt.cleanup);
+                                    fs.writeFile(file, contents, next);
+                                });
                             });
                         }, next);
                     });

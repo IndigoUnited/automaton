@@ -49,10 +49,9 @@ var task = {
                         async.forEachSeries(filesToRename, function (obj, next) {
                             fs.rename(obj.before, obj.after, function (err) {
                                 if (!err || err.code === 'ENOENT') {
-                                    next();
-                                } else {
-                                    next(err);
+                                    return next();
                                 }
+                                next(err);
                             });
                         }, next);
                     });

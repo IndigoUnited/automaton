@@ -19,7 +19,7 @@ var task = {
             task : function (opt, next) {
                 fs.stat(opt.src, function (err, stat) {
                     if (err && err.code === 'ENOENT') {
-                        next(err);
+                        return next(err);
                     }
 
                     var reader = fstream.Reader(opt.src).pipe(

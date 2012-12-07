@@ -41,10 +41,10 @@ var task = {
                 child.on('exit', function (code) {
                     console.log(separator);
                     if (code === 0) {
-                        next();
-                    } else {
-                        next(new Error('Error running command: ' + opt.cmd));
+                        return next();
                     }
+
+                    next(new Error('Error running command: ' + opt.cmd));
                 }.bind(this));
             }
         }
