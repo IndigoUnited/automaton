@@ -30,13 +30,15 @@ var task = {
                 var separator = '\n' + utils.string.repeat('-', 30) + '\n';
                 console.log(separator, 'Running: '.info, opt.cmd, separator);
 
-                child.stdout.on('data', function (data) {
-                    process.stdout.write(data.toString());
-                });
+                // Added colors support with the customFds option
+                // If that is removed, we have access to the .stdout and .stderr again
+                //child.stdout.on('data', function (data) {
+                //    process.stdout.write(data.toString());
+                //});
 
-                child.stderr.on('data', function (data) {
-                    process.stderr.write(data.toString());
-                });
+                //child.stderr.on('data', function (data) {
+                //    process.stderr.write(data.toString());
+                //});
 
                 child.on('exit', function (code) {
                     console.log(separator);
