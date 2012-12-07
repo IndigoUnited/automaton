@@ -83,7 +83,7 @@ var task = {
             // if you find yourself looking
             // for something a bit more custom,
             // you can just provide a function as the task
-            'task' : function (opt, next) {
+            task : function (opt, next) {
                 // opt is a list of the options
                 // provided to the task
 
