@@ -4,7 +4,7 @@ var utils = require('amd-utils');
 var task = {
     id      : 'init',
     author  : 'Indigo United',
-    name    : 'Init task',
+    name    : 'Init',
     options : {
         filename: {
             description: 'The task filename',
