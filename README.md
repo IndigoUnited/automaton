@@ -128,9 +128,11 @@ var task = {
             // on the run_all option. Of course, you have
             // just setted it to something like `false`
             on: '{{run_all}}',
-            description: 'create the third folder, ' +
-                         'which was defined ' +
-                         'by one of the filters',
+            // Description messages can be generated according to the options
+            // by using a function instead of a static description
+            description: function (opt) {
+                return 'Creating ' + opt.dir1 + '/' + opt.dir2 + '/' + opt.dir3
+            },
             options: {
                 dir: '{{dir1}}/{{dir2}}/{{dir3}}'
             }
@@ -139,7 +141,7 @@ var task = {
             // if you find yourself looking
             // for something a bit more custom,
             // you can just provide a function as the task
-            'task' : function (opt, next) {
+            task : function (opt, next) {
                 // opt is a list of the options
                 // provided to the task
 
@@ -167,10 +169,12 @@ module.exports = task;
 
 ### Filesystem
 
-- **mkdir:** Make a directory recursively
-- **rm:** Remove a file or directory
+- **chmod:** Change mode of files
+- **cp:** Copy files and directories
+- **mkdir:** Make directories recursively
+- **rm:** Remove several files or directories
 - **symlink:** Create symlink
-- **cp:** Copy file or dir
+
 
 ### Scaffolding
 
@@ -179,6 +183,7 @@ Scaffolding tasks help you perform some typical tasks, like appending, replacing
 - **scaffolding-append:** Append something to a placeholder in a file
 - **scaffolding-replace:** Replace the placeholder with something
 - **scaffolding-close:** Close the placeholder (effectively removing the placeholder)
+- **scafolding-file-rename:** Rename files, replacing placeholders within directories
 
 ### Miscellaneous
 
