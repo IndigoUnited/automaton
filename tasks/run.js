@@ -3,28 +3,28 @@ var spawn   = require('child_process').spawn,
 ;
 
 var task = {
-    'id'      : 'run',
-    'author'  : 'Indigo United',
-    'name'    : 'Run command',
-    'options' : {
-        'cmd': {
-            'description': 'What command to execute'
+    id     : 'run',
+    author : 'Indigo United',
+    name   : 'Run command',
+    options: {
+        cmd: {
+            description: 'What command to execute'
         },
-        'cwd': {
-            'description': 'Current working directory of the child process',
+        cwd: {
+            description: 'Current working directory of the child process',
             'default': null
         }
     },
-    'tasks'   :
+    tasks  :
     [
         {
-            'task' : function (opt, next) {
+            task : function (opt, next) {
                 var child;
 
                 if (process.platform === 'win32') {
-                    child = spawn('cmd', ['/s', '/c', opt.cmd], { cwd: opt.cwd });
+                    child = spawn('cmd', ['/s', '/c', opt.cmd], { cwd: opt.cwd, customFds: [0, 1, 2] });
                 } else {
-                    child = spawn('sh', ['-c', opt.cmd], { cwd: opt.cwd });
+                    child = spawn('sh', ['-c', opt.cmd], { cwd: opt.cwd, customFds: [0, 1, 2] });
                 }
 
                 var separator = '\n' + utils.string.repeat('-', 30) + '\n';

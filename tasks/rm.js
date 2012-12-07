@@ -1,25 +1,34 @@
 var rimraf = require('rimraf');
+var utils  = require('amd-utils');
+var async  = require('async');
+var glob   = require('glob');
 
 var task = {
-    'id'     : 'rm',
-    'author' : 'Indigo United',
-    'name'   : 'Remove',
-    'options' : {
-        'file': {
-            'description': 'The file or directory you want to remove'
+    id     : 'rm',
+    author : 'Indigo United',
+    name   : 'Remove',
+    options: {
+        file: {
+            description: 'The file(s) to remove'
         }
     },
-    'tasks'  :
+    tasks  :
     [
         {
-            'task' : function (opt, next) {
-                rimraf(opt.file, function (err) {
-                    if (err) {
-                        next(err);
-                    } else {
-                        next();
-                    }
-                });
+            task : function (opt, next) {
+                var files = utils.lang.isArray(opt.file) ? opt.file : [opt.file];
+
+                async.forEach(files, function (file, next) {
+                    glob(file, function (err, files) {
+                        if (err) {
+                            next(err);
+                        }
+
+                        async.forEach(files, function (file) {
+                            rimraf(file, next);
+                        }, next);
+                    });
+                }, next);
             }
         }
     ]

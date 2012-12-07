@@ -1,25 +1,22 @@
-
 var fs      = require('fs');
 var fstream = require('fstream');
 
 var task = {
-    'id'      : 'cp',
-    'author'  : 'Indigo United',
-    'name'    : 'Copy',
-    'options' : {
-        'src': {
-            'description': 'What should be copied'
+    id      : 'cp',
+    author  : 'Indigo United',
+    name    : 'Copy',
+    options : {
+        src: {
+            description: 'What should be copied'
         },
-        'dst': {
-            'description': 'Destination of the copy'
+        dst: {
+            description: 'Destination of the copy'
         }
     },
-    'tasks'  :
+    tasks  :
     [
         {
-            'task' : function (opt, next) {
-//console.log('copying', opt.src, opt.dst);
-
+            task : function (opt, next) {
                 fs.stat(opt.src, function (err, stat) {
                     if (err && err.code === 'ENOENT') {
                         next(err);

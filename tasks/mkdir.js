@@ -41,8 +41,7 @@ var task = {
                         mkdirp(dir, opt.mode, next);
                     });
                 }, next);
-            },
-            description: 'Make directory'
+            }
         }
     ]
 };

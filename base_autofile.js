@@ -1,12 +1,12 @@
 var task = {
     id: '{{name}}',
-    author: '',
+    author: 'Task author',
     name: '{{name}}',
 
     options: {
         opt1: {
-            description: '',
-            'default': null
+            description: 'Opt1 description',
+            'default': 'foo'                 // if mandatory, remove the default
         }
     },
 

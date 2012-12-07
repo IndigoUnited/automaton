@@ -233,7 +233,7 @@ function showTaskUsage(task) {
 }
 
 function initTask(taskId) {
-    runTask('task-init', {
+    runTask('init', {
         'name': taskId
     }, function (err) {
         if (err) {
