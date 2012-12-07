@@ -35,7 +35,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "~0.1.22",
-    "dejavu": "~0.1.4",
+    "dejavu": "~0.1.22",
     "amd-utils": "~0.6.0",
     "colors": "~0.6.0-1",
     "mkdirp": "~0.3.4",
