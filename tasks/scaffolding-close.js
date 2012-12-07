@@ -1,44 +1,59 @@
 var fs         = require('fs'),
     stringLib  = require('../lib/string'),
-    path       = require('path')
+    glob       = require('glob'),
+    async      = require('async'),
+    utils      = require('amd-utils')
 ;
 
 var task = {
-    'id'      : 'scaffolding-close',
-    'author'  : 'Indigo United',
-    'name'    : 'Scaffolding: close placeholder',
-    'options' : {
-        'placeholder': {
-            'description': 'What placeholder you want to close, in the format filename:placeholder'
+    id      : 'scaffolding-close',
+    author  : 'Indigo United',
+    name    : 'Scaffolding: close placeholder',
+    options : {
+        file: {
+            description: 'The file(s) to apply the close (supports minimatch patterns)'
+        },
+        placeholders: {
+            description: 'Which placeholder(s) to close'
+        },
+        cleanup: {
+            description: 'Cleans leading or trailing spaces',
+            'default': true
         }
     },
-    'tasks'   :
+    tasks   :
     [
         {
-            'task' : function (opt, next) {
-                // check if a placeholder was specified
-                var placeholder = path.basename(opt.placeholder);
-                if (placeholder.indexOf(':') > -1) {
-                    // close placeholder
-                    var tmp = opt.placeholder.lastIndexOf(':');
-                    var filename     = opt.placeholder.substr(0, tmp),
-                        _placeholder = opt.placeholder.substr(tmp + 1),
-                        processedData,
-                        placeholderData = {}
-                    ;
+            task : function (opt, next) {
+                var files = !utils.lang.isArray(opt.file) ? [opt.file] : opt.file;
+                var data = {};
 
-                    // generate the placeholder data
-                    placeholderData[_placeholder] = '';
+                opt.placeholders.forEach(function (placeholder) {
+                    data[placeholder] = '';
+                });
 
-                    processedData = stringLib.interpolate(fs.readFileSync(filename, 'utf8'), placeholderData);
+                // data is done at this time
+                // For each item in the files array, perform a glob
+                async.forEach(files, function (file, next) {
+                    glob(file, function (err, files) {
+                        if (err) {
+                            next(err);
+                        }
 
-                    fs.writeFileSync(filename, processedData, 'utf8');
-                }
-                else {
-                    return next(new Error('Invalid placeholder specified'));
-                }
+                        // For each file in the glob result,
+                        // close the placeholders
+                        async.forEach(files, function (file, next) {
+                            fs.readFile(file, function (err, contents) {
+                                if (err) {
+                                    next(err);
+                                }
 
-                next();
+                                contents = stringLib.interpolate(contents.toString(), data, opt.cleanup);
+                                fs.writeFile(file, contents, next);
+                            });
+                        }, next);
+                    });
+                }, next);
             }
         }
     ]

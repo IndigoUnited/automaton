@@ -1,64 +1,72 @@
 var fs         = require('fs'),
     stringLib  = require('../lib/string'),
-    path       = require('path')
+    glob       = require('glob'),
+    async      = require('async'),
+    utils      = require('amd-utils')
 ;
 
 var task = {
-    'id'      : 'scaffolding-append',
-    'author'  : 'Indigo United',
-    'name'    : 'Scaffolding: append',
-    'options' : {
-        'what': {
-            'description': 'What you want to append'
+    id      : 'scaffolding-append',
+    author  : 'Indigo United',
+    name    : 'Scaffolding: append',
+    options : {
+        file: {
+            description: 'The file(s) to apply the append (supports minimatch patterns)'
         },
-        'type': {
-            'description': 'What you are trying to append. Accepts "file" (default) and "string"',
-            'default': 'file'
+        data: {
+            description: 'The data to append. Keys are placeholders and values the content of each placeholder.'
         },
-        'where': {
-            'description': 'Where you want to append. Note that you can specify a file in the form filename:placeholder, or just ommit the placeholder'
+        type: {
+            description: 'The type of the data. Accepts "string" (default) and "file"',
+            'default': 'string'
         }
     },
-    'tasks'   :
+    task    :
     [
         {
-            'task' : function (opt, next) {
-                var what;
+            task: function (opt, next) {
+                var files = !utils.lang.isArray(opt.file) ? [opt.file] : opt.file;
+                var data = {};
+                var keys = Object.keys(opt.data);
 
-                // if type is file, then read its contents first
-                if (opt.type === 'file') {
-                    // TODO: check if file exists
+                async.forEach(keys, function (key, next) {
+                    if (opt.type === 'file') {
+                        fs.readFile(opt.data[key], function (err, contents) {
+                            if (err) {
+                                next(err);
+                            }
 
-                    what = fs.readFileSync(opt.what, 'utf8');
-                }
-                else {
-                    what = opt.what;
-                }
+                            data[key] = contents + '{{' + key + '}}';
+                            next();
+                        });
+                    } else {
+                        data[key] = opt.data[key] + '{{' + key + '}}';
+                        next();
+                    }
+                }, function () {
+                    // data is done at this time
+                    // For each item in the files array, perform a glob
+                    async.forEach(files, function (file, next) {
+                        glob(file, function (err, files) {
+                            if (err) {
+                                next(err);
+                            }
 
-                // check if a placeholder was specified
-                var where = path.basename(opt.where);
-                if (where.indexOf(':') > -1) {
-                    // append to placeholder
-                    var tmp = opt.where.lastIndexOf(':');
-                    var filename    = opt.where.substr(0, tmp),
-                        placeholder = opt.where.substr(tmp + 1),
-                        processedData,
-                        placeholderData = {}
-                    ;
+                            // For each file in the glob result,
+                            // perform the interpolation
+                            async.forEach(files, function (file, next) {
+                                fs.readFile(file, function (err, contents) {
+                                    if (err) {
+                                        next(err);
+                                    }
 
-                    // generate the placeholder data
-                    placeholderData[placeholder] = what + '{{' + placeholder + '}}';
-
-                    processedData = stringLib.interpolate(fs.readFileSync(filename, 'utf8'), placeholderData);
-
-                    fs.writeFileSync(filename, processedData, 'utf8');
-                }
-                else {
-                    // just append the file
-                    fs.appendFileSync(opt.where, what, 'utf8');
-                }
-
-                next();
+                                    contents = stringLib.interpolate(contents.toString(), data);
+                                    fs.writeFile(file, contents, next);
+                                });
+                            }, next);
+                        });
+                    }, next);
+                });
             }
         }
     ]

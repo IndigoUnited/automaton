@@ -1,62 +1,72 @@
-var fs        = require('fs'),
-    path      = require('path'),
-    stringLib = require('../lib/string')
+var fs         = require('fs'),
+    stringLib  = require('../lib/string'),
+    glob       = require('glob'),
+    async      = require('async'),
+    utils      = require('amd-utils')
 ;
 
 var task = {
-    'id'      : 'scaffolding-replace',
-    'author'  : 'Indigo United',
-    'name'    : 'Scaffolding: replace',
-    'options' : {
-        'what': {
-            'description': 'What you want to replace. Note that you can specify a file in the form filename:placeholder, or just ommit the placeholder'
+    id      : 'scaffolding-replace',
+    author  : 'Indigo United',
+    name    : 'Scaffolding: replace',
+    options : {
+        file: {
+            description: 'The file(s) to apply the replace (supports minimatch patterns)'
         },
-        'with': {
-            'description': 'What you want to replace it with'
+        data: {
+            description: 'The data to replace. Keys are placeholders and values the content of each placeholder.'
         },
-        'type': {
-            'description': 'Accepts "file" (default) and "string"',
-            'default': 'file'
+        type: {
+            description: 'The type of the data. Accepts "string" (default) and "file"',
+            'default': 'string'
         }
     },
-    'tasks'   :
+    tasks   :
     [
         {
-            'task' : function (opt, next) {
-                var _with;
+            task: function (opt, next) {
+                var files = !utils.lang.isArray(opt.file) ? [opt.file] : opt.file;
+                var data = {};
+                var keys = Object.keys(opt.data);
 
-                // if type is file, then read its contents first
-                if (opt.type === 'file') {
-                    // TODO: check if file exists
-                    _with = fs.readFileSync(opt['with'], 'utf8');
-                }
-                else {
-                    _with = opt['with'];
-                }
+                async.forEach(keys, function (key, next) {
+                    if (opt.type === 'file') {
+                        fs.readFile(opt.data[key], function (err, contents) {
+                            if (err) {
+                                next(err);
+                            }
 
-                // check if a placeholder was specified
-                var what = path.basename(opt.what);
-                if (what.indexOf(':') > -1) {
-                    // replace placeholder
-                    var tmp = opt.what.lastIndexOf(':');
-                    var filename    = opt.what.substr(0, tmp),
-                        placeholder = opt.what.substr(tmp + 1),
-                        processedData,
-                        placeholderData = {}
-                    ;
+                            data[key] = contents;
+                            next();
+                        });
+                    } else {
+                        data[key] = opt.data[key];
+                        next();
+                    }
+                }, function () {
+                    // data is done at this time
+                    // For each item in the files array, perform a glob
+                    async.forEach(files, function (file, next) {
+                        glob(file, function (err, files) {
+                            if (err) {
+                                next(err);
+                            }
 
-                    // generate the placeholder data
-                    placeholderData[placeholder] = _with;
-                    processedData = stringLib.interpolate(fs.readFileSync(filename, 'utf8'), placeholderData);
+                            // For each file in the glob result,
+                            // perform the interpolation
+                            async.forEach(files, function () {
+                                fs.readFile(file, function (err, contents) {
+                                    if (err) {
+                                        next(err);
+                                    }
 
-                    fs.writeFileSync(filename, processedData, 'utf8');
-                }
-                else {
-                    // just replace the file, if it exists
-                    fs.writeFileSync(opt.what, _with, 'utf8');
-                }
-
-                next();
+                                    contents = stringLib.interpolate(contents.toString(), data);
+                                    fs.writeFile(file, contents, next);
+                                });
+                            }, next);
+                        });
+                    }, next);
+                });
             }
         }
     ]
