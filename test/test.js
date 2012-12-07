@@ -202,8 +202,6 @@ describe('Automaton', function () {
         // test placeholder on descriptions
 
         // test placeholder on options
-
-        // test placeholder on "on"
     });
 
     // test filter
