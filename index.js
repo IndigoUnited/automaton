@@ -8,7 +8,7 @@
         util    = require('util'),
         async   = require('async'),
         path    = require('path'),
-        stringLib = require('./lib/string')
+        inter   = require('./lib/castInterpolate')
     ;
 
     // set up a useful set of formats
@@ -215,7 +215,7 @@
                 var enabled = true;
                 if (currentSubtask.hasOwnProperty('on')) {
                     enabled = utils.lang.isString(currentSubtask.on) ?
-                        !this._replacePlaceholders(currentSubtask.on, options)
+                        !!this._replacePlaceholders(currentSubtask.on, options)
                         : currentSubtask.on;
                 }
 
@@ -273,9 +273,7 @@
         },
 
         _replacePlaceholders: function (str, options) {
-            // TODO: option values can contain things different than string..
-            //       how to handle those?
-            return stringLib.interpolate(str, options);
+            return inter(str, options);
         },
 
         _parseDescription: function (description, options) {

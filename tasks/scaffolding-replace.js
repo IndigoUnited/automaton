@@ -1,8 +1,8 @@
-var fs         = require('fs'),
-    stringLib  = require('../lib/string'),
-    glob       = require('glob'),
-    async      = require('async'),
-    utils      = require('amd-utils')
+var fs     = require('fs'),
+    interp = require('../lib/interpolate'),
+    glob   = require('glob'),
+    async  = require('async'),
+    utils  = require('amd-utils')
 ;
 
 var task = {
@@ -70,7 +70,7 @@ var task = {
                                             return next(err);
                                         }
 
-                                        contents = stringLib.interpolate(contents.toString(), data);
+                                        contents = interp(contents.toString(), data);
                                         fs.writeFile(file, contents, next);
                                     });
                                 });

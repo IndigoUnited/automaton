@@ -1,8 +1,8 @@
-var fs        = require('fs'),
-    glob      = require('glob'),
-    async     = require('async'),
-    utils     = require('amd-utils'),
-    stringLib = require('../lib/string')
+var fs     = require('fs'),
+    glob   = require('glob'),
+    async  = require('async'),
+    utils  = require('amd-utils'),
+    interp = require('../lib/interpolate')
 ;
 
 var task = {
@@ -34,7 +34,7 @@ var task = {
                         var filesToRename = [];
                         matches.forEach(function (match) {
                             var before = match;
-                            var after = stringLib.interpolate(match, opt.data);
+                            var after = interp(match, opt.data);
 
                             if (before !== after) {
                                 matches.forEach(function (match, i) {
