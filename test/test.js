@@ -177,6 +177,7 @@ describe('Automaton', function () {
                     },
                     {
                         task: 'callback',
+                        on: '{{truthy}}',
                         options: {
                             callback: function () {
                                 stack.push(3);
@@ -184,7 +185,7 @@ describe('Automaton', function () {
                         }
                     }
                 ]
-            }, { falsy1: false, falsy2: undefined, falsy3: null }, function (err) {
+            }, { falsy1: false, falsy2: undefined, falsy3: null, truthy: 'foo' }, function (err) {
                 if (err) {
                     return done(err);
                 }
@@ -236,6 +237,7 @@ describe('Automaton', function () {
                     },
                     {
                         task: 'callback',
+                        on: true,
                         options: {
                             callback: function () {
                                 stack.push(3);
