@@ -70,7 +70,7 @@ var task = {
     // Filter is not mandatory,
     // but can be used to perform some operation
     // on the options before running the subtasks
-    filter: function (options) {
+    filter: function (options, next) {
         // You can change existing options
         options.dir2 = options.dir2 + '_indigo';
 
@@ -79,6 +79,8 @@ var task = {
         // a `dir3` option,
         // which will be used by one of the subtasks
         options.dir3 = 'united';
+
+        next();
     },
 
     // This is also optional,
@@ -160,6 +162,8 @@ var task = {
 module.exports = task;
 ```
 
+Please note that placeholders can be escaped with backslashes:
+`'\\{\\{dir1\\}\\}'`
 
 ## Built-in tasks
 
