@@ -161,20 +161,18 @@
          * @param {Object}        [$options] The task options
          */
         _batchTask: function (task, options) {
-            var i,
-                subtasks,         // subtasks of the task being batched
-                subtasksLength,   // total of subtasks of the task being batched
-                currentSubtask,   // iteration task
-                batch = [],       // batch of tasks
+            var batch = [],       // batch of tasks
                 option,
-                subtaskBatch,
                 filter,
                 parentOptions = arguments[2] || {},
                 depth = arguments[3] != null ? arguments[3] : 1
             ;
 
             options = options || {};
-            // If task is an id, grab its real definition
+
+            ///////////////////////////////////////////////////////////////
+
+            // if task is an id, grab its real definition
             if (utils.lang.isString(task)) {
                 this._assertTaskLoaded(task);
                 task = this._tasks[task];
@@ -234,13 +232,11 @@
                 batch.push(filter);
             }
 
+            ///////////////////////////////////////////////////////////////
+
             this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + task.id + '\' task');
-
-            subtasks       = task.tasks;
-            subtasksLength = subtasks.length;
-
-            for (i = 0; i < subtasksLength; ++i) {
-                currentSubtask = subtasks[i];
+            task.tasks.forEach(function (currentSubtask, i) {
+                var subtaskBatch;
 
                 this._assertIsObject(currentSubtask, 'Invalid subtask specified at index \'' + i + '\' in \'' + task.id + '\' task');
 
@@ -279,7 +275,7 @@
                         async.waterfall(subtaskBatch, next);
                     }.$bind(this, currentSubtask, subtaskBatch));
                 }
-            }
+            }, this);
 
             return batch;
         },
