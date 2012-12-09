@@ -183,7 +183,6 @@
                 this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + task.id + '\' task');
             }
 
-
             if (task.options) {
                 this._assertIsObject(task.options, 'Expected options to be an object in \'' + task.id + '\' task');
 
