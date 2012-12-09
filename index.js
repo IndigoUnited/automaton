@@ -101,16 +101,11 @@
 
             async.waterfall(batch, function (err) {
                 if (err) {
-                    if (utils.lang.isFunction($callback)) {
-                        $callback(new Error(err));
-                    } else {
-                        this._throwError(err.message);
-                    }
-                } else {
-                    // TODO: all done, should we output something?
-                    if (utils.lang.isFunction($callback)) {
-                        $callback();
-                    }
+                    this._throwError(err.message);
+                }
+
+                if ($callback) {
+                    $callback(err);
                 }
             }.$bind(this));
 
