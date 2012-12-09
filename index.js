@@ -162,8 +162,8 @@
          */
         _batchTask: function (task, options) {
             var i,
-                subtasks,         // subtasks of the task being flattened
-                subtasksLength,   // total of subtasks of the task being flattened
+                subtasks,         // subtasks of the task being batched
+                subtasksLength,   // total of subtasks of the task being batched
                 currentSubtask,   // iteration task
                 batch = [],       // batch of tasks
                 option,
@@ -267,7 +267,7 @@
                         // TODO: the this of the task could be a logging interface
                         subtask.task.call(this, options, next);
                     }.$bind(this, currentSubtask));
-                // it's not a function, then it must be another task, check if it is loaded, and flatten it
+                // it's not a function, then it must be another task, check if it is loaded, and batch it
                 } else if (utils.lang.isString(currentSubtask.task)) {
                     this._assertTaskLoaded(currentSubtask.task);
 
