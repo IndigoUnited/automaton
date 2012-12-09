@@ -359,6 +359,8 @@ describe('Automaton', function () {
                 done(err);
             });
         });
+
+        it.skip('should ignore escaped placeholders');
     });
 
     // test filter

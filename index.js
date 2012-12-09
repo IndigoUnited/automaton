@@ -197,7 +197,7 @@
                     // besides adding the filter to the batch, we need to validate
                     // the required options afterwards
                     filter = function (next) {
-                        this._replaceOptions(options, parentOptions);
+                        this._replaceOptions(options, parentOptions, { skipUnescape : true });
                         async.waterfall([
                             // TODO: this could be a loggin interface
                             task.filter.$bind(this, options),
@@ -210,7 +210,7 @@
                 } else {
                     filter = function (next) {
                         // no filter, so we only replace options and validate the required options
-                        this._replaceOptions(options, parentOptions);
+                        this._replaceOptions(options, parentOptions, { skipUnescape : true });
                         this._validateTaskOptions(task, options);
                         next();
                     }.$bind(this);
@@ -300,7 +300,7 @@
         _isTaskEnabled: function (task, options) {
             if (task.hasOwnProperty('on')) {
                 return utils.lang.isString(task.on) ?
-                    !!this._replacePlaceholders(task.on, options, true)
+                    !!this._replacePlaceholders(task.on, options, { purge: true })
                     : task.on;
             }
 
@@ -312,40 +312,41 @@
          * If the target is an array or an object, it will replace them
          * recursively.
          *
-         * @param {Mixed}  target  The target which will get its values replaced
-         * @param {Object} options The options
+         * @param {Mixed}  target     The target which will get its values replaced
+         * @param {Object} values     The values
+         * @param {Object} [$options] The interpolation options
          *
          * @return {Mixed} The passed target
          */
-        _replaceOptions: function (target, options) {
+        _replaceOptions: function (target, values, $options) {
             var k;
 
             if (utils.lang.isObject(target)) {
                 for (k in target) {
-                    target[k] = this._replaceOptions(target[k], options);
+                    target[k] = this._replaceOptions(target[k], values, $options);
                 }
             } else if (utils.lang.isArray(target)) {
                 for (k = target.length - 1; k >= 0; --k) {
-                    target[k] = this._replaceOptions(target[k], options);
+                    target[k] = this._replaceOptions(target[k], values, $options);
                 }
             } else if (utils.lang.isString(target)) {
-                target = this._replacePlaceholders(target, options);
+                target = this._replacePlaceholders(target, values, $options);
             }
 
             return target;
         },
 
         /**
-         * Replace placeholders in a string with their correspondent options value
+         * Replace placeholders in a string with their correspondent values
          *
-         * @param {String} str                   The string
-         * @param {Object} options               The options
-         * @param {Boolean} [$removeUnspecified] True to remove placeholders that had no matchings, false otherwise
+         * @param {String} str         The string
+         * @param {Object} values      The values
+         * @param {Object} [$options] The interpolation options
          *
          * @return {String} The replaced string
          */
-        _replacePlaceholders: function (str, options, removeUnspecified) {
-            return inter(str, options, removeUnspecified);
+        _replacePlaceholders: function (str, values, $options) {
+            return inter(str, values, $options);
         },
 
         /**
@@ -364,7 +365,7 @@
             if (utils.lang.isFunction(description)) {
                 description = description(options);
             } else if (description != null) {
-                description = this._replacePlaceholders(description, options, true);
+                description = this._replacePlaceholders(description, options, { purge: true });
             }
 
             return description;
