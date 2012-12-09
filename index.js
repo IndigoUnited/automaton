@@ -254,7 +254,7 @@
                         if (!this._isTaskEnabled(subtask, options)) {
                             return next();
                         }
-                        this._reportNextTask(this, subtask, options, depth);
+                        this._reportNextTask(subtask, options, depth);
                         // TODO: the this of the task could be a logging interface
                         subtask.task.call(this, options, next);
                     }.$bind(this, currentSubtask));
@@ -271,7 +271,7 @@
                         if (!this._isTaskEnabled(subtask, options)) {
                             return next();
                         }
-                        this._reportNextTask(this, subtask, options, depth);
+                        this._reportNextTask(subtask, options, depth);
                         async.waterfall(subtaskBatch, next);
                     }.$bind(this, currentSubtask, subtaskBatch));
                 }
