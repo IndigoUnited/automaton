@@ -22,25 +22,47 @@
         error:   'red'
     });
 
-    function nop(options, next) {
-        next();
-    }
-
     var Automaton = d.Class.declare({
         $name: 'Automaton',
 
         _tasks: [],
         _verbosity: 1,
 
+        /**
+         * Constructor.
+         */
         initialize: function () {
             // load core tasks
             this.loadTasks(__dirname + '/tasks');
         },
 
+        /**
+         * Set verbosity level.
+         *
+         * 0 means no logging.
+         * 1 means only 1 deep level tasks are able to log.
+         * 2 means 1 and 2 deep level tasks are able to log.
+         * And so on..
+         *
+         * @param {Number} depth The depth
+         *
+         * @return {Automaton} Chainable!
+         */
         setVerbosity: function (depth) {
             this._verbosity = depth;
+
+            return this;
         },
 
+        /**
+         * Add new task.
+         * If the task already exists, it will be replaced.
+         * The task will be validaded only when its run.
+         *
+         * @param {Object} task The task definition
+         *
+         * @return {Automaton} Chainable!
+         */
         addTask: function (task) {
             this._assertIsObject(task, 'Invalid task provided');
             this._assertIsString(task.id, 'You have provided a task without ID');
@@ -50,6 +72,13 @@
             return this;
         },
 
+        /**
+         * Remove task.
+         *
+         * @param {String} id The task id
+         *
+         * @return {Automaton} Chainable!
+         */
         removeTask: function (id) {
             this._assertIsString(id, 'Invalid task id provided \'' + id + '\'');
             delete this._tasks[id];
@@ -57,51 +86,20 @@
             return this;
         },
 
+        /**
+         * Run a task.
+         * The callback follows the node style.
+         *
+         * @param {String|Object} task        The task id or definition
+         * @param {Object}        [$options]  The task options
+         * @param {Function}      [$callback] A callback to be called when the task completes
+         *
+         * @return {Automaton} Chainable!
+         */
         run: function (task, $options, $callback) {
-            var i,
-                batch        = [],
-                batchDetails
-            ;
+            var batch  = this._batchTask(task, $options);
 
-            if (utils.lang.isString(task)) {
-                this._assertTaskLoaded(task);
-                task = this.getTask(task);
-            }
-
-            this._assertIsObject(task, 'Expected task to be an object');
-            // TODO: is the check below necessary? Maybe I should check this in flattenTask
-            this._assertIsArray(task.tasks, 'Expected subtasks to be an array');
-
-            //this._log('Automating...'.info);
-
-            batch = this._flattenTask(task, $options || {});
-
-            // put a control function between each of the subtasks, allowing for feedback, and other inter-subtask operations
-            var batchLength    = batch.length,
-                waterfallBatch = [],
-                subtask
-            ;
-
-            for (i = 0; i < batchLength; ++i) {
-                subtask = batch[i];
-                batchDetails = {
-                    description: subtask.description,
-                    depth: subtask.depth,
-                    options: subtask.options
-                };
-
-                waterfallBatch.push(function (details, next) {
-                    if (details.description) {
-                        this._log('  - ' + details.description.cyan, details.depth, false);
-                    }
-
-                    next();
-                }.$bind(this, batchDetails));
-
-                waterfallBatch.push(subtask.fn.$bind(this, subtask.options));
-            }
-
-            async.waterfall(waterfallBatch, function (err) {
+            async.waterfall(batch, function (err) {
                 if (err) {
                     if (utils.lang.isFunction($callback)) {
                         $callback(new Error(err));
@@ -109,17 +107,23 @@
                         this._throwError(err);
                     }
                 } else {
+                    // TODO: all done, should we output something?
                     if (utils.lang.isFunction($callback)) {
-                        // TODO: maybe provide automaton output here?
                         $callback();
                     }
-                    // task DONE
-                    //this._log('Done'.info);
                 }
             }.$bind(this));
 
+            return this;
         },
 
+        /**
+         * Load tasks in a given folder.
+         *
+         * @param {String} folder The folder to search for tasks
+         *
+         * @return {Automaton} Chainable!
+         */
         loadTasks: function (folder) {
             this._assertIsString(folder, 'Expected folder to be a string');
 
@@ -136,27 +140,41 @@
             return this;
         },
 
+        /**
+         * Retrieve a task definition by its id.
+         *
+         * @param {String} taskId The task id
+         *
+         * @return {Object} The task definition
+         */
         getTask: function (taskId) {
             this._assertTaskLoaded(taskId);
 
             return this._tasks[taskId];
         },
 
-        _flattenTask: function (task, options, $depth) {
+        /**
+         * Create a batch for a task.
+         * The batch is a sequence of functions that form the task.
+         *
+         * @param {String|Object} task       The task id or definition
+         * @param {Object}        [$options] The task options
+         */
+        _batchTask: function (task, options) {
             var i,
-                subtasks,       // subtasks of the task being flattened
-                subtasksLength, // total of subtasks of the task being flattened
-                currentSubtask, // iteration task
-                batch = [],     // final result
+                subtasks,         // subtasks of the task being flattened
+                subtasksLength,   // total of subtasks of the task being flattened
+                currentSubtask,   // iteration task
+                batch = [],       // batch of tasks
                 option,
-                subtaskOptions,
-                description
+                subtaskBatch,
+                filter,
+                parentOptions = arguments[2] || {},
+                depth = arguments[3] != null ? arguments[3] : 1
             ;
 
             options = options || {};
-
-            $depth = $depth || 1;
-
+            // If task is an id, grab its real definition
             if (utils.lang.isString(task)) {
                 this._assertTaskLoaded(task);
                 task = this._tasks[task];
@@ -168,33 +186,57 @@
                 task.id = 'Non-identified task';
             }
 
+            if (task.filter) {
+                this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + task.id + '\' task');
+            }
+
             // check if all the task required options were provided
             // if task has a definition of the options
-            if (utils.lang.isObject(task.options)) {
+            if (task.options) {
+                this._assertIsObject(task.options, 'Expected options to be an object in \'' + task.id + '\' task');
+
                 // fill in the options with default values where the option was not provided
                 for (option in task.options) {
-                    if (options[option] === undefined) {
+                    if (options[option] === undefined && task.options[option]['default'] !== undefined) {
                         options[option] = task.options[option]['default'];
                     }
                 }
 
-                // if task has a filter, run it before checking if all the options are ok
-                if (utils.lang.isFunction(task.filter)) {
-                    task.filter(options);
-                }
+                if (task.filter) {
+                    // Replace options (handle placeholders) because we need to
+                    // pass the parsed options to the filter
+                    this._replaceOptions(options, parentOptions);
 
-                // for each option in the definition
-                for (option in task.options) {
-                    // if option was not provided to the task, abort
-                    if (options[option] === undefined) {
-                        this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task');
-                    }
+                    // The filter function is actually a custom one
+                    // because besides calling the filter, we need to validate
+                    // the required options afterwards.
+                    filter = function (next) {
+                        async.waterfall([
+                            // TODO: this could be a loggin interface
+                            task.filter.$bind(this, options),
+                            function (next) {
+                                this._validateTaskOptions(task, options);
+                                next();
+                            }.$bind(this)
+                        ], next);
+                    }.$bind(this);
+                } else {
+                    // Replace options (handle placeholders) because we need to
+                    // pass the parsed options to the filter
+                    this._replaceOptions(options, parentOptions);
+
+                    filter = function (next) {
+                        this._validateTaskOptions(task, options);
+                        next();
+                    }.$bind(this);
                 }
-            } else {
-                // if task has a filter, run it
-                if (utils.lang.isFunction(task.filter)) {
-                    task.filter(options);
-                }
+            } else if (task.filter) {
+                // TODO: this could be a loggin interface
+                filter = task.filter.$bind(this, options);
+            }
+
+            if (filter) {
+                batch.push(filter);
             }
 
             this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + task.id + '\' task');
@@ -211,49 +253,88 @@
                     this._throwError('Subtask type at index \'' + i + '\' must be a function or an object in \'' + task.id + '\' task');
                 }
 
-                // check if subtask is disabled
-                var enabled = true;
-                if (currentSubtask.hasOwnProperty('on')) {
-                    enabled = utils.lang.isString(currentSubtask.on) ?
-                        !!this._replacePlaceholders(currentSubtask.on, options)
-                        : currentSubtask.on;
-                }
-
-                // if subtask is disabled, skip to the next subtask
-                if (!enabled) {
-                    continue;
-                }
-
-                description = this._parseDescription(currentSubtask.description, options);
-
                 // if it's a function, just add it to the batch
                 if (utils.lang.isFunction(currentSubtask.task)) {
-                    batch.push({
-                        description: description,
-                        depth: $depth,
-                        fn: currentSubtask.task,
-                        options: options
-                    });
+                    batch.push(function (subtask, next) {
+                        // we need to replace options again because parent filter might have
+                        // added options that are placeholders
+                        this._replaceOptions(options, parentOptions);
+                        // skip task if disabled
+                        if (!this._isTaskEnabled(subtask, options)) {
+                            return next();
+                        }
+                        this._reportNextTask(this, subtask, options, depth);
+                        // TODO: the this of the task could be a logging interface
+                        subtask.task.call(this, options, next);
+                    }.$bind(this, currentSubtask));
                 // it's not a function, then it must be another task, check if it is loaded, and flatten it
                 } else if (utils.lang.isString(currentSubtask.task)) {
                     this._assertTaskLoaded(currentSubtask.task);
 
-                    // generate the options for the subtask
-                    subtaskOptions = this._replaceOptions(currentSubtask.options, options);
-
-                    batch.push({
-                        // this NOP subtask is added, representing a meta-task, which is then flattened. Still, the NOP is useful in order to provide feedback of the meta-task
-                        description: description,
-                        depth: $depth,
-                        fn: nop // no operation function
-                    });
-                    batch = batch.concat(this._flattenTask(currentSubtask.task, subtaskOptions, $depth + 1));
+                    subtaskBatch = this._batchTask(currentSubtask.task, currentSubtask.options, options, depth + 1);
+                    batch.push(function (subtask, subtaskBatch, next) {
+                        // we need to replace options again because parent filter might have
+                        // added options that are placeholders
+                        this._replaceOptions(options, parentOptions);
+                        // skip task if disabled
+                        if (!this._isTaskEnabled(subtask, options)) {
+                            return next();
+                        }
+                        this._reportNextTask(this, subtask, options, depth);
+                        async.waterfall(subtaskBatch, next);
+                    }.$bind(this, currentSubtask, subtaskBatch));
                 }
             }
 
             return batch;
         },
 
+        /**
+         * Validate the task options.
+         * Detects if a task is missing required options.
+         *
+         * @param {Object} task    The task definition
+         * @param {Object} options The task options
+         */
+        _validateTaskOptions: function (task, options) {
+            // for each option in the definition
+            for (var option in task.options) {
+                // if option was not provided to the task, abort
+                if (options[option] === undefined) {
+                    this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task');
+                }
+            }
+        },
+
+        /**
+         * Check if a task is enabled.
+         * Disabled tasks should be skipped.
+         *
+         * Detects if a task is missing required options.
+         *
+         * @param {Object} task    The task definition
+         * @param {Object} options The task options
+         */
+        _isTaskEnabled: function (task, options) {
+            if (task.hasOwnProperty('on')) {
+                return utils.lang.isString(task.on) ?
+                    !!this._replacePlaceholders(task.on, options, true)
+                    : task.on;
+            }
+
+            return true;
+        },
+
+        /**
+         * Replace target placeholders with their correspondent options value.
+         * If the target is an array or an object, it will replace them
+         * recursively.
+         *
+         * @param {Mixed}  target  The target which will get its values replaced
+         * @param {Object} options The options
+         *
+         * @return {Mixed} The passed target
+         */
         _replaceOptions: function (target, options) {
             var k;
 
@@ -272,50 +353,117 @@
             return target;
         },
 
-        _replacePlaceholders: function (str, options) {
-            return inter(str, options);
+        /**
+         * Replace placeholders in a string with their correspondent options value
+         *
+         * @param {String} str                   The string
+         * @param {Object} options               The options
+         * @param {Boolean} [$removeUnspecified] True to remove placeholders that had no matchings, false otherwise
+         *
+         * @return {String} The replaced string
+         */
+        _replacePlaceholders: function (str, options, removeUnspecified) {
+            return inter(str, options, removeUnspecified);
         },
 
+        /**
+         * Parses a task description.
+         * The description can be a string or a function.
+         * If it's a function, it will be called with the options, in order to
+         * generate a complex description based on the them.
+         * Placeholders will be handled with Automaton#_replacePlaceholders.
+         *
+         * @param  {String|Function} description The task description
+         * @param  {Object}          options     The task options
+         *
+         * @return {String} The parsed description
+         */
         _parseDescription: function (description, options) {
             if (utils.lang.isFunction(description)) {
                 description = description(options);
             } else if (description != null) {
-                description = this._replacePlaceholders(description, options);
+                description = this._replacePlaceholders(description, options, true);
             }
 
             return description;
         },
 
+        /**
+         * Report the next task that will run.
+         *
+         * @param {Object} task    The task definition
+         * @param {Object} options The task options
+         * @param {Number} depth   The task depth
+         */
+        _reportNextTask: function (task, options, depth) {
+            if (task.description) {
+                this._log('  - ' + task.description.cyan, depth, false);
+            }
+        },
+
+        /**
+         * Assert task is loaded.
+         *
+         * @param {String} taskId The task id
+         */
         _assertTaskLoaded: function (taskId) {
             if (!utils.lang.isObject(this._tasks[taskId])) {
                 this._throwError('Could not find any task handler suitable for \'' + taskId + '\'');
             }
         },
 
+        /**
+         * Assert string.
+         *
+         * @param {Mixed} variable  The target to assert
+         * @param {String} errorMsg The error message to show if the assert fails
+         */
         _assertIsString: function (variable, errorMsg) {
             if (!utils.lang.isString(variable)) {
                 this._throwError(errorMsg);
             }
         },
 
+        /**
+         * Assert object.
+         *
+         * @param {Mixed} variable  The target to assert
+         * @param {String} errorMsg The error message to show if the assert fails
+         */
         _assertIsObject: function (variable, errorMsg) {
             if (!utils.lang.isObject(variable)) {
                 this._throwError(errorMsg);
             }
         },
 
+        /**
+         * Assert function.
+         *
+         * @param {Mixed} variable  The target to assert
+         * @param {String} errorMsg The error message to show if the assert fails
+         */
         _assertIsFunction: function (variable, errorMsg) {
             if (!utils.lang.isFunction(variable)) {
                 this._throwError(errorMsg);
             }
         },
 
+        /**
+         * Assert array.
+         *
+         * @param {Mixed} variable  The target to assert
+         * @param {String} errorMsg The error message to show if the assert fails
+         */
         _assertIsArray: function (variable, errorMsg) {
             if (!utils.lang.isArray(variable)) {
                 this._throwError(errorMsg);
             }
         },
 
+        // TODO: the functions bellow are not stable..
+        //       streams will be added and we can't do
+        //       process.exit() because we won't be able to use
+        //       automaton programatically
         _throwError: function (errorMsg, $verbose) {
             if (!$verbose) {
                 console.error('\n' + errorMsg.error + '\n');

@@ -1,22 +1,10 @@
 #!/usr/bin/env node
 var utils   = require('amd-utils'),
     fs      = require('fs'),
-    colors  = require('colors'),
     path    = require('path'),
     argv    = require('optimist').argv,
     pkg     = require('../package.json')
 ;
-
-// set up a useful set of formats
-colors.setTheme({
-    input:   'grey',
-    info:    'green',
-    data:    'grey',
-    help:    'cyan',
-    warning: 'yellow',
-    debug:   'blue',
-    error:   'red'
-});
 
 // ----------------------------- USAGE PARAMETERS ------------------------------
 

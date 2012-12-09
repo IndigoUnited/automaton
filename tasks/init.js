@@ -19,10 +19,11 @@ var task = {
             'default': process.cwd()
         }
     },
-    filter: function (opt) {
+    filter: function (opt, next) {
         if (!utils.string.endsWith(opt.filename, '.js')) {
             opt.filename += '.js';
         }
+        next();
     },
     tasks  :
     [

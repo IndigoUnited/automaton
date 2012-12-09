@@ -11,8 +11,9 @@ module.exports = {
             'default': 'default'
         }
     },
-    filter: function (opt) {
+    filter: function (opt, next) {
         opt.filterCallback(opt);
+        next();
     },
     tasks: [
         {

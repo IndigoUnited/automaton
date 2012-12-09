@@ -17,17 +17,17 @@ var task = {
 
         }
     },
-    filter: function (opt) {
+    filter: function (opt, next) {
         if (!utils.lang.isNumber(opt.mode)) {
             opt.mode = parseInt(opt.mode, 8);
         }
+        next();
     },
     tasks :
     [
         {
             task : function (opt, next) {
                 var dirs = utils.lang.isArray(opt.dir) ? opt.dir : [opt.dir];
-
                 async.forEach(dirs, function (dir, next) {
                     fs.stat(dir, function (err, stat) {
                         if (!err || err.code !== 'ENOENT') {

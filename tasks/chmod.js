@@ -16,10 +16,11 @@ var task = {
             'default': parseInt('0777', 8)
         }
     },
-    filter: function (opt) {
+    filter: function (opt, next) {
         if (!utils.lang.isNumber(opt.mode)) {
             opt.mode = parseInt(opt.mode, 8);
         }
+        next();
     },
     tasks  :
     [

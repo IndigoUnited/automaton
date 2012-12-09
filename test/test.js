@@ -35,14 +35,16 @@ describe('Automaton', function () {
 
     describe('subtasks', function () {
         it('should run a task with a single subtask', function (done) {
-            var dirname = __dirname + '/tmp/dir';
+            var called = false;
 
             automaton.run({
                 tasks: [
                     {
-                        task: 'mkdir',
+                        task: 'callback',
                         options: {
-                            dir: dirname
+                            callback: function () {
+                                called = true;
+                            }
                         }
                     }
                 ]
@@ -51,7 +53,7 @@ describe('Automaton', function () {
                     return done(err);
                 }
 
-                expect(fs.existsSync(dirname)).to.be(true);
+                expect(called).to.be(true);
                 done();
             });
         });
@@ -138,7 +140,12 @@ describe('Automaton', function () {
         it('should skip a task when its "on" attribute has a falsy placeholder', function (done) {
             var stack = [];
 
+            // TODO: test infered on filter
             automaton.run({
+                filter: function (opt, next) {
+                    opt.truthy2 = true;
+                    next();
+                },
                 tasks: [
                     {
                         task: 'callback',
@@ -147,6 +154,12 @@ describe('Automaton', function () {
                                 stack.push(1);
                             }
                         }
+                    },
+                    {
+                        task: function () {
+                            stack.push(2);
+                        },
+                        on: '{{falsy1}}'
                     },
                     {
                         task: 'callback',
@@ -177,20 +190,38 @@ describe('Automaton', function () {
                     },
                     {
                         task: 'callback',
-                        on: '{{truthy}}',
+                        on: '{{non_existent}}',
+                        options: {
+                            callback: function () {
+                                stack.push(4);
+                            }
+                        }
+                    },
+                    {
+                        task: 'callback',
+                        on: '{{truthy1}}',
                         options: {
                             callback: function () {
                                 stack.push(3);
                             }
                         }
+                    },
+                    {
+                        task: 'callback',
+                        on: '{{truthy2}}',
+                        options: {
+                            callback: function () {
+                                stack.push(4);
+                            }
+                        }
                     }
                 ]
-            }, { falsy1: false, falsy2: undefined, falsy3: null, truthy: 'foo' }, function (err) {
+            }, { falsy1: false, falsy2: undefined, falsy3: null, truthy1: 'foo' }, function (err) {
                 if (err) {
                     return done(err);
                 }
 
-                expect(stack).to.eql([1, 3]);
+                expect(stack).to.eql([1, 3, 4]);
                 done();
             });
         });
@@ -255,6 +286,8 @@ describe('Automaton', function () {
             });
         });
 
+        it.skip('show fail if all required options have not been passed');
+        it.skip('should assume default options if absent');
 
         it.skip('should have placeholders replaced in its description');
 
@@ -326,10 +359,15 @@ describe('Automaton', function () {
 
         it('should be able to modify options and infer new ones', function (done) {
             automaton.run({
+                filter: function (opt, next) {
+                    opt.very = 'awesome';
+                    next();
+                },
                 tasks: [
                     {
                         task: 'callback',
                         options: {
+                            very: '{{very}}',
                             filterCallback: function (opt) {
                                 opt.foo = 'bar';
                                 opt.someOption = 'baz';
@@ -337,6 +375,7 @@ describe('Automaton', function () {
                             callback: function (opt) {
                                 expect(opt.foo).to.equal('bar');
                                 expect(opt.someOption).to.equal('baz');
+                                expect(opt.very).to.be.equal('awesome');
                             }
                         }
                     }
