@@ -188,8 +188,7 @@
                 this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + task.id + '\' task');
             }
 
-            // check if all the task required options were provided
-            // if task has a definition of the options
+
             if (task.options) {
                 this._assertIsObject(task.options, 'Expected options to be an object in \'' + task.id + '\' task');
 
@@ -201,11 +200,10 @@
                 }
 
                 if (task.filter) {
-                    // besides calling the filter, we need to validate the required options afterwards.
+                    // besides adding the filter to the batch, we need to validate
+                    // the required options afterwards
                     filter = function (next) {
-                        // replace the options
                         this._replaceOptions(options, parentOptions);
-                        // run the filter and validate task afterwards
                         async.waterfall([
                             // TODO: this could be a loggin interface
                             task.filter.$bind(this, options),
@@ -288,7 +286,6 @@
          * @param {Object} options The task options
          */
         _validateTaskOptions: function (task, options) {
-            // for each option in the definition
             for (var option in task.options) {
                 // if option was not provided to the task, abort
                 if (options[option] === undefined) {
