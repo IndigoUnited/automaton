@@ -8,7 +8,7 @@
         util    = require('util'),
         async   = require('async'),
         path    = require('path'),
-        inter   = require('./lib/castInterpolate')
+        inter   = require('./lib/cast-interpolate')
     ;
 
     // set up a useful set of formats
