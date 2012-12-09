@@ -203,14 +203,11 @@
                 }
 
                 if (task.filter) {
-                    // Replace options (handle placeholders) because we need to
-                    // pass the parsed options to the filter
-                    this._replaceOptions(options, parentOptions);
-
-                    // The filter function is actually a custom one
-                    // because besides calling the filter, we need to validate
-                    // the required options afterwards.
+                    // besides calling the filter, we need to validate the required options afterwards.
                     filter = function (next) {
+                        // replace the options
+                        this._replaceOptions(options, parentOptions);
+                        // run the filter and validate task afterwards
                         async.waterfall([
                             // TODO: this could be a loggin interface
                             task.filter.$bind(this, options),
@@ -221,11 +218,9 @@
                         ], next);
                     }.$bind(this);
                 } else {
-                    // Replace options (handle placeholders) because we need to
-                    // pass the parsed options to the filter
-                    this._replaceOptions(options, parentOptions);
-
                     filter = function (next) {
+                        // no filter, so we only replace options and validate the required options
+                        this._replaceOptions(options, parentOptions);
                         this._validateTaskOptions(task, options);
                         next();
                     }.$bind(this);

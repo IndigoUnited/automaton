@@ -33,8 +33,10 @@ describe('Automaton', function () {
     beforeEach(prepareTmp);
     after(cleanUpTmp);
 
-    describe('subtasks', function () {
-        it('should run a task with a single subtask', function (done) {
+    describe('tasks', function () {
+        it.skip('should throw if they have an invalid definition');
+
+        it('should run a single subtask', function (done) {
             var called = false;
 
             automaton.run({
@@ -58,7 +60,7 @@ describe('Automaton', function () {
             });
         });
 
-        it('should run a task with multiple subtasks, and different options, by the correct order', function (done) {
+        it('should run multiple subtasks, and different options, by the correct order', function (done) {
             var stack = [];
 
             automaton.run({
@@ -98,8 +100,61 @@ describe('Automaton', function () {
             });
         });
 
+        // test "automaton.run" by providing the task id
+        it('should be able to run by id', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+
+            automaton.run('mkdir', {
+                dir: dirname
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(fs.existsSync(dirname)).to.be(true);
+                done();
+            });
+        });
+
+        // test if options are shared
+        it('should be run in an isolated way', function (done) {
+            var counter = 0;
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            callback: function () {
+                                ++counter;
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                automaton.run({
+                    tasks: [
+                        {
+                            task: 'callback'  // same task but with no options!
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    expect(counter).to.equal(1);
+                    done();
+                });
+            });
+        });
+
         // test inline subtask
-        it('should run a task with inline subtasks', function (done) {
+        it('should be able to run inline subtasks', function (done) {
             var dirname = __dirname + '/tmp/dir';
 
             automaton.run({
@@ -120,24 +175,8 @@ describe('Automaton', function () {
             });
         });
 
-        // test "automaton.run" by providing the task id
-        it('should run a task by its id', function (done) {
-            var dirname = __dirname + '/tmp/dir';
-
-            automaton.run('mkdir', {
-                dir: dirname
-            }, function (err) {
-                if (err) {
-                    return done(err);
-                }
-
-                expect(fs.existsSync(dirname)).to.be(true);
-                done();
-            });
-        });
-
         // test "on" field
-        it('should skip a task when its "on" attribute has a falsy placeholder', function (done) {
+        it('should skip a subtask when its "on" attribute has a falsy placeholder', function (done) {
             var stack = [];
 
             // TODO: test infered on filter
@@ -361,12 +400,14 @@ describe('Automaton', function () {
             automaton.run({
                 filter: function (opt, next) {
                     opt.very = 'awesome';
+                    opt.ultra = 'awesome';
                     next();
                 },
                 tasks: [
                     {
                         task: 'callback',
                         options: {
+                            ultra: '{{ultra}}',
                             very: '{{very}}',
                             filterCallback: function (opt) {
                                 opt.foo = 'bar';
@@ -376,20 +417,25 @@ describe('Automaton', function () {
                                 expect(opt.foo).to.equal('bar');
                                 expect(opt.someOption).to.equal('baz');
                                 expect(opt.very).to.be.equal('awesome');
+                                expect(opt.ultra).to.be.equal('awesome');
                             }
                         }
                     }
                 ]
-            }, null, function (err) {
+            }, { ultra: 'cool' }, function (err) {
                 done(err);
             });
         });
     });
 });
 
-describe('Tasks', function () {
+describe('Built in tasks', function () {
     beforeEach(prepareTmp);
     after(cleanUpTmp);
+
+    describe('chmod', function () {
+        it.skip('should change mode of files');
+    });
 
     describe('cp', function () {
         it('should copy a file', function (done) {
@@ -422,14 +468,16 @@ describe('Tasks', function () {
 
             // multiple depth folder
         });
+
+        it.skip('should create folder with desired mode');
     });
 
     describe('rm', function () {
-        it.skip('should remove folder', function () {
+        it.skip('should remove files', function () {
 
         });
 
-        it.skip('should remove file', function () {
+        it.skip('should remove folders', function () {
 
         });
     });
@@ -464,6 +512,8 @@ describe('Tasks', function () {
         it.skip('should close placeholder', function () {
 
         });
+
+        it.skip('should replace filename placeholders with string');
     });
 
     describe('symlink', function () {
