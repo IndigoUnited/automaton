@@ -16,8 +16,8 @@ var task = {
         placeholders: {
             description: 'Which placeholder(s) to close'
         },
-        cleanup: {
-            description: 'Cleans leading or trailing spaces',
+        trim: {
+            description: 'Trim leading or trailing spaces',
             'default': true
         }
     },
@@ -58,7 +58,7 @@ var task = {
                                         return next(err);
                                     }
 
-                                    contents = interp(contents.toString(), data, opt.cleanup);
+                                    contents = interp(contents.toString(), data, opt.trim);
                                     fs.writeFile(file, contents, next);
                                 });
                             });
