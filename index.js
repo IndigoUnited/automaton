@@ -104,7 +104,7 @@
                     if (utils.lang.isFunction($callback)) {
                         $callback(new Error(err));
                     } else {
-                        this._throwError(err);
+                        this._throwError(err.message);
                     }
                 } else {
                     // TODO: all done, should we output something?
