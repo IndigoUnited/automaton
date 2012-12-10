@@ -2,10 +2,13 @@
 /*global describe, it, before, beforeEach, after*/
 
 var expect    = require('expect.js'),
-    automaton = require('../index'),
+    Automaton = require('../index'),
     fs        = require('fs'),
-    rimraf    = require('rimraf')
+    rimraf    = require('rimraf'),
+    automaton
 ;
+
+automaton = new Automaton();
 
 // disable output
 automaton.setVerbosity(0);

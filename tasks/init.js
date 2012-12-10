@@ -6,13 +6,9 @@ var task = {
     author  : 'Indigo United',
     name    : 'Init',
     options : {
-        filename: {
-            description: 'The task filename',
-            'default': 'autofile.js'
-        },
         name: {
             description: 'The task name',
-            'default': 'your-task'
+            'default': 'autofile'
         },
         dst: {
             description: 'Directory where the task will be created',
@@ -20,9 +16,12 @@ var task = {
         }
     },
     filter: function (opt, next) {
-        console.log(opt);
-        if (!utils.string.endsWith(opt.filename, '.js')) {
-            opt.filename += '.js';
+        if (!utils.string.endsWith(opt.name, '.js')) {
+            opt.filename = opt.name + '.js';
+        }
+        else {
+            opt.filename = opt.name;
+            opt.name     = opt.name.slice(0, -3);
         }
         next();
     },
@@ -49,7 +48,7 @@ var task = {
         {
             task: 'scaffolding-replace',
             options: {
-                file: '{{dst}}/{{name}}.js',
+                file: '{{dst}}/{{filename}}.js',
                 data: {
                     name: '{{name}}'
                 }
