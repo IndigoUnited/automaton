@@ -20,6 +20,7 @@ var task = {
         }
     },
     filter: function (opt, next) {
+        console.log(opt);
         if (!utils.string.endsWith(opt.filename, '.js')) {
             opt.filename += '.js';
         }

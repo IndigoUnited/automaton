@@ -458,6 +458,6 @@
         }
     });
 
-    module.exports = new Automaton();
+    module.exports = Automaton;
 
 })();

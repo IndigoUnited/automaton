@@ -43,7 +43,10 @@ var commands = [
 // ---------------------------------- BOOT -------------------------------------
 
 // load automaton
-var automaton = require(__dirname + '/../index');
+var Automaton = require(__dirname + '/../index'),
+    automaton;
+
+automaton = new Automaton();
 
 // if task directory includes were defined, load the tasks
 var taskDir = (argv['task-dir'] !== true ? argv['task-dir'] : false) || (argv.d !== true ? argv.d : false);
