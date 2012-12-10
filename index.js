@@ -350,28 +350,6 @@
         },
 
         /**
-         * Parses a task description.
-         * The description can be a string or a function.
-         * If it's a function, it will be called with the options, in order to
-         * generate a complex description based on the them.
-         * Placeholders will be handled with Automaton#_replacePlaceholders.
-         *
-         * @param  {String|Function} description The task description
-         * @param  {Object}          options     The task options
-         *
-         * @return {String} The parsed description
-         */
-        _parseDescription: function (description, options) {
-            if (utils.lang.isFunction(description)) {
-                description = description(options);
-            } else if (description != null) {
-                description = this._replacePlaceholders(description, options, { purge: true });
-            }
-
-            return description;
-        },
-
-        /**
          * Report the next task that will run.
          *
          * @param {Object} task    The task definition
@@ -379,8 +357,11 @@
          * @param {Number} depth   The task depth
          */
         _reportNextTask: function (task, options, depth) {
+            var description;
+
             if (task.description) {
-                this._log('  - ' + task.description.cyan, depth, false);
+                description = utils.lang.isFunction(task.description) ? task.description(options) : task.description;
+                this._log('  - ' + description.cyan, depth, false);
             }
         },
 
