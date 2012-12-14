@@ -16,13 +16,11 @@ var task = {
         }
     },
     filter: function (opt, next) {
-        if (!utils.string.endsWith(opt.name, '.js')) {
-            opt.filename = opt.name + '.js';
+        if (utils.string.endsWith(opt.name, '.js')) {
+            opt.name = opt.name.slice(0, -3);
         }
-        else {
-            opt.filename = opt.name;
-            opt.name     = opt.name.slice(0, -3);
-        }
+        opt.filename = opt.name + '.js';
+
         next();
     },
     tasks  :
@@ -48,7 +46,7 @@ var task = {
         {
             task: 'scaffolding-replace',
             options: {
-                file: '{{dst}}/{{filename}}.js',
+                file: '{{dst}}/{{filename}}',
                 data: {
                     name: '{{name}}'
                 }
