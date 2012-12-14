@@ -10,8 +10,9 @@ var task = {
         }
     },
 
-    filter: function (opt) {
+    filter: function (opt, next) {
         // do any validation/sanitization you need here
+        next();
     },
 
     tasks: [
