@@ -478,7 +478,10 @@ describe('Built in tasks', function () {
         it.skip('should work with sources as symlinks (directly or deep)');
         it.skip('should work with destinations as symlinks');
         it.skip('should copy file and folders permissions');
-        it.skip('should pass over the glob options');
+        it.skip('should pass over the glob options', function () {
+            // There is a special case handled inside for the dot option
+            // It needs to be tested with special care
+        });
     });
 
     describe('mkdir', function () {
