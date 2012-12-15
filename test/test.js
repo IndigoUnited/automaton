@@ -5,6 +5,8 @@ var expect    = require('expect.js'),
     Automaton = require('../index'),
     fs        = require('fs'),
     rimraf    = require('rimraf'),
+    isDir     = require('./util/is-dir'),
+    isFile    = require('./util/is-file'),
     automaton
 ;
 
@@ -34,7 +36,7 @@ function loadTestTasks() {
 describe('Automaton', function () {
     before(loadTestTasks);
     beforeEach(prepareTmp);
-    after(cleanUpTmp);
+    //after(cleanUpTmp);
 
     describe('tasks', function () {
         it.skip('should throw if they have an invalid definition');
@@ -108,13 +110,13 @@ describe('Automaton', function () {
             var dirname = __dirname + '/tmp/dir';
 
             automaton.run('mkdir', {
-                dir: dirname
+                dirs: dirname
             }, function (err) {
                 if (err) {
                     return done(err);
                 }
 
-                expect(fs.existsSync(dirname)).to.be(true);
+                expect(isDir(dirname)).to.be(true);
                 done();
             });
         });
@@ -173,7 +175,7 @@ describe('Automaton', function () {
                     return done(err);
                 }
 
-                expect(fs.existsSync(dirname)).to.be(true);
+                expect(isDir(dirname)).to.be(true);
                 done();
             });
         });
@@ -361,6 +363,9 @@ describe('Automaton', function () {
             }, opts, function (err) {
                 done(err);
             });
+
+            // TODO: test if replacements is being done deeply in arrays and objects
+            //       in case of objects, its keys and values should be replaced
         });
 
         it.skip('should ignore escaped placeholders');
@@ -440,96 +445,98 @@ describe('Built in tasks', function () {
 
     describe('chmod', function () {
         it.skip('should change mode of files');
+        it.skip('should accept a file or an array of files');
+        it.skip('should accept minimatch patterns');
+        it.skip('should pass over the glob options');
     });
 
     describe('cp', function () {
         it('should copy a file', function (done) {
+            var files = {};
+            files[__dirname + '/assets/file1.json'] = __dirname + '/tmp/file1.json';
+            files[__dirname + '/assets/file2'] = __dirname + '/tmp/';
+
             automaton.run('cp', {
-                src: __dirname + '/assets/file1.json',
-                // TODO: add support for only specifying the dest folder, and filename is kept
-                dst: __dirname + '/tmp/file1.json'
+                files: files
             }, function (err) {
                 if (err) {
                     return done(err);
                 }
 
-                expect(fs.existsSync(__dirname + '/tmp/file1.json')).to.be(true);
+                // TODO: test a lot of possibilities!
+                expect(isFile(__dirname + '/tmp/file1.json')).to.be(true);
+                expect(isFile(__dirname + '/tmp/file2')).to.be(true);
+                process.exit(0);
                 done();
             });
         });
 
         it.skip('should copy a folder', function () {
-
+            // TODO: test a lot of possibilities!
         });
 
-        it.skip('should throw error because source does not exist', function () {
-
-        });
+        it.skip('should work with sources as symlinks (directly or deep)');
+        it.skip('should work with destinations as symlinks');
+        it.skip('should copy file and folders permissions');
+        it.skip('should pass over the glob options');
     });
 
     describe('mkdir', function () {
-        it.skip('should create folder', function () {
+        it.skip('should create directory', function () {
             // single level folder
 
             // multiple depth folder
         });
-
-        it.skip('should create folder with desired mode');
+        it.skip('should accept a directory or an array of directories');
+        it.skip('should create directories with desired mode');
     });
 
     describe('rm', function () {
-        it.skip('should remove files', function () {
-
-        });
-
-        it.skip('should remove folders', function () {
-
-        });
+        it.skip('should remove files');
+        it.skip('should remove folders');
+        it.skip('should accept minimatch patterns');
+        it.skip('should pass over the glob options');
     });
 
     describe('run', function () {
-        it.skip('should run command', function () {
-
-        });
-
-        it.skip('should run command in a different cwd', function () {
-
-        });
+        it.skip('should run command');
+        it.skip('should run command in a different cwd');
     });
 
     describe('scaffolding', function () {
-        it.skip('should append string to placeholder', function () {
-
+        describe('append', function () {
+            it.skip('should append string to placeholder');
+            it.skip('should append file to placeholder');
+            it.skip('should accept minimatch patterns');
+            it.skip('should pass over the glob options');
         });
 
-        it.skip('should append file to placeholder', function () {
-
+        describe('replace', function () {
+            it.skip('should replace placeholder with string');
+            it.skip('should replace placeholder with file');
+            it.skip('should accept minimatch patterns');
+            it.skip('should pass over the glob options');
         });
 
-        it.skip('should replace placeholder with string', function () {
-
+        describe('close', function () {
+            it.skip('should close placeholder');
+            it.skip('should close placeholder, trimming empty lines before or after it');
+            it.skip('should accept minimatch patterns');
+            it.skip('should pass over the glob options');
         });
 
-        it.skip('should replace placeholder with file', function () {
-
+        describe('file-rename', function () {
+            it.skip('should replace filename placeholders with string');
+            it.skip('should accept minimatch patterns');
+            it.skip('should pass over the glob options');
         });
-
-        it.skip('should close placeholder', function () {
-
-        });
-
-        it.skip('should replace filename placeholders with string');
     });
 
     describe('symlink', function () {
-        it.skip('should create symlink', function () {
-
-        });
+        it.skip('should create symlink');
     });
 
     describe('init', function () {
-        it.skip('should initialize an empty task', function () {
-
-        });
+        it.skip('should initialize an empty task');
     });
 });

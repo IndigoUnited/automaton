@@ -10,8 +10,8 @@ var task = {
     author  : 'Indigo United',
     name    : 'Scaffolding: append',
     options : {
-        file: {
-            description: 'The file(s) to apply the append (supports minimatch patterns)'
+        files: {
+            description: 'The files to scaffold. Accepts an array of files or a single one through a string. Works with minimatch.'
         },
         data: {
             description: 'The data to append. Keys are placeholders and values the content of each placeholder.'
@@ -19,13 +19,17 @@ var task = {
         type: {
             description: 'The type of the data. Accepts "string" (default) and "file"',
             'default': 'string'
+        },
+        glob: {
+            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            'default': null
         }
     },
     task    :
     [
         {
             task: function (opt, next) {
-                var files = !utils.lang.isArray(opt.file) ? [opt.file] : opt.file;
+                var files = !utils.lang.isArray(opt.files) ? [opt.files] : opt.files;
                 var data = {};
                 var keys = Object.keys(opt.data);
 
@@ -46,7 +50,7 @@ var task = {
                 }, function () {
                     // data is done at this time
                     // For each item in the files array, perform a glob
-                    async.forEach(files, function (file, next) {
+                    async.forEach(files, opt.glob, function (file, next) {
                         glob(file, function (err, files) {
                             if (err) {
                                 return next(err);

@@ -10,8 +10,8 @@ var task = {
     author  : 'Indigo United',
     name    : 'Scaffolding: close placeholder',
     options : {
-        file: {
-            description: 'The file(s) to apply the close (supports minimatch patterns)'
+        files: {
+            description: 'The files to scaffold. Accepts an array of files or a single one through a string. Works with minimatch.'
         },
         placeholders: {
             description: 'Which placeholder(s) to close'
@@ -19,13 +19,17 @@ var task = {
         trim: {
             description: 'Trim leading or trailing spaces',
             'default': true
+        },
+        glob: {
+            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            'default': null
         }
     },
     tasks   :
     [
         {
             task : function (opt, next) {
-                var files = !utils.lang.isArray(opt.file) ? [opt.file] : opt.file;
+                var files = !utils.lang.isArray(opt.files) ? [opt.files] : opt.files;
                 var data = {};
 
                 opt.placeholders.forEach(function (placeholder) {
@@ -35,7 +39,7 @@ var task = {
                 // data is done at this time
                 // For each item in the files array, perform a glob
                 async.forEach(files, function (file, next) {
-                    glob(file, function (err, files) {
+                    glob(file, opt.glob, function (err, files) {
                         if (err) {
                             return next(err);
                         }

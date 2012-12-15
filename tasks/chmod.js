@@ -8,12 +8,16 @@ var task = {
     author : 'Indigo United',
     name   : 'Change mode',
     options: {
-        file: {
-            description: 'The file(s) to chmod'
+        files: {
+            description: 'The files to chmod. Accepts an array of files or a single one through a string. Works with minimatch.'
         },
         mode: {
             description: 'The mode',
             'default': parseInt('0777', 8)
+        },
+        glob: {
+            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            'default': null
         }
     },
     filter: function (opt, next) {
@@ -26,9 +30,9 @@ var task = {
     [
         {
             task : function (opt, next) {
-                var files = utils.lang.isArray(opt.file) ? opt.file : [opt.file];
+                var files = utils.lang.isArray(opt.files) ? opt.files : [opt.files];
 
-                async.forEach(files, function (file, next) {
+                async.forEach(files, opt.glob, function (file, next) {
                     glob(file, function (err, files) {
                         if (err) {
                             return next(err);

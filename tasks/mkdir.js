@@ -8,8 +8,8 @@ var task = {
     author  : 'Indigo United',
     name    : 'Make dir recursively',
     options : {
-        dir: {
-            description: 'The directory(ies) you want to create'
+        dirs: {
+            description: 'The directories you want to create. Accepts an array of directories or a single one through a string.'
         },
         mode: {
             description: 'The directory permissions',
@@ -27,7 +27,7 @@ var task = {
     [
         {
             task : function (opt, next) {
-                var dirs = utils.lang.isArray(opt.dir) ? opt.dir : [opt.dir];
+                var dirs = utils.lang.isArray(opt.dirs) ? opt.dirs : [opt.dirs];
                 async.forEach(dirs, function (dir, next) {
                     fs.stat(dir, function (err, stat) {
                         if (!err || err.code !== 'ENOENT') {

@@ -319,11 +319,16 @@
          * @return {Mixed} The passed target
          */
         _replaceOptions: function (target, values, $options) {
-            var k;
+            var k,
+                newK;
 
             if (utils.lang.isObject(target)) {
                 for (k in target) {
-                    target[k] = this._replaceOptions(target[k], values, $options);
+                    newK = this._replacePlaceholders(k, values, $options) + '';
+                    target[newK] = this._replaceOptions(target[k], values, $options);
+                    if (newK !== k) {
+                        delete target[k];
+                    }
                 }
             } else if (utils.lang.isArray(target)) {
                 for (k = target.length - 1; k >= 0; --k) {
@@ -339,8 +344,8 @@
         /**
          * Replace placeholders in a string with their correspondent values
          *
-         * @param {String} str         The string
-         * @param {Object} values      The values
+         * @param {String} str        The string
+         * @param {Object} values     The values
          * @param {Object} [$options] The interpolation options
          *
          * @return {String} The replaced string
@@ -454,6 +459,12 @@
             $depth = $depth || 0;
             if ($depth <= this._verbosity) {
                 console.error(msg);
+            }
+        },
+
+        $statics: {
+            create: function () {
+                return new Automaton();
             }
         }
     });

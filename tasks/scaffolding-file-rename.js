@@ -10,22 +10,26 @@ var task = {
     author  : 'Indigo United',
     name    : 'Scaffolding: file rename',
     options : {
-        dir: {
-            description: 'The directory(ies) you want to to use as the base of the rename.'
+        dirs: {
+            description: 'The directories you want to to use as the base of the rename. Accepts an array of directories or a single one through a string. Works with minimatch.'
         },
         data: {
             description: 'The data to be used while renaming. Keys are placeholders and values the content of each placeholder.'
+        },
+        glob: {
+            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            'default': null
         }
     },
     tasks   :
     [
         {
             task : function (opt, next) {
-                var dirs = utils.lang.isArray(opt.dir) ? opt.dir : [opt.dir];
+                var dirs = utils.lang.isArray(opt.dirs) ? opt.dirs : [opt.dirs];
 
                 // Do this in series, because it can give problems if the directories intersect eachother
                 async.forEachSeries(dirs, function (dir, next) {
-                    glob(opt.dir + '/**/*{{*}}*', function (err, matches) {
+                    glob(dir + '/**/*{{*}}*', opt.glob, function (err, matches) {
                         if (err) {
                             return next(err);
                         }

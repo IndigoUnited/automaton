@@ -8,18 +8,22 @@ var task = {
     author : 'Indigo United',
     name   : 'Remove',
     options: {
-        file: {
-            description: 'The file(s) to remove'
+        files: {
+            description: 'The files or directories to remove. Accepts an array of entries or a single one through a string. Works with minimatch.'
+        },
+        glob: {
+            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            'default': null
         }
     },
     tasks  :
     [
         {
             task : function (opt, next) {
-                var files = utils.lang.isArray(opt.file) ? opt.file : [opt.file];
+                var files = utils.lang.isArray(opt.files) ? opt.files : [opt.files];
 
                 async.forEach(files, function (file, next) {
-                    glob(file, function (err, files) {
+                    glob(file, opt.glob, function (err, files) {
                         if (err) {
                             return next(err);
                         }
