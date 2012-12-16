@@ -4,6 +4,7 @@ var glob    = require('glob');
 var async   = require('async');
 var path    = require('path');
 var rimraf  = require('rimraf');
+var utils   = require('amd-utils');
 
 var task = {
     id      : 'cp',
@@ -21,10 +22,8 @@ var task = {
     tasks  :
     [
         {
-            task : function (opt, next) {
+            task: function (opt, next) {
                 var sources = Object.keys(opt.files);
-
-                // TODO: support array of dest
 
                 // Foreach source file..
                 // Note that series is used to avoid conflicts between each pattern
@@ -57,15 +56,19 @@ var task = {
 
                         // Finally copy everything
                         async.forEach(batch, function (obj, next) {
-                            var dst = path.join(opt.files[src], getRelativePath(obj.src, src));
-                            copy(obj.src, dst, obj.type, function () {
-                                // Remove dot files from the directory if the dot option is set to false
-                                if (obj.type === 'Directory' && (!opt.glob || !opt.glob.dot)) {
-                                    removeDotfiles(dst, next);
-                                } else {
-                                    next();
-                                }
-                            });
+                            var dsts = utils.lang.isArray(opt.files[src]) ? opt.files[src] : [opt.files[src]];
+                            async.forEach(dsts, function (dst, next) {
+                                dst = path.join(dst, getRelativePath(obj.src, src));
+                                copy(obj.src, dst, obj.type, function () {
+                                    // Remove dot files from the directory if the dot option is set to false
+                                    // This is needed because we optimize what was copied
+                                    if (obj.type === 'Directory' && (!opt.glob || !opt.glob.dot)) {
+                                        removeDotfiles(dst, next);
+                                    } else {
+                                        next();
+                                    }
+                                });
+                            }, next);
                         }, next);
                     });
                 }, next);
@@ -106,6 +109,11 @@ function removeDotfiles(dir, callback) {
 function expand(pattern, options, next) {
     var files = [];
     var dirs = [];
+
+    // If the user specified a /**/* pattern, optimize it
+    if (!options || !options.noglobstar) {
+        pattern = pattern.replace(/(\/\*\*\/\*)+$/g, '/*');
+    }
 
     glob(pattern, options, function (err, matches) {
         if (err) {

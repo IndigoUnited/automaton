@@ -24,7 +24,7 @@ var task = {
     tasks   :
     [
         {
-            task : function (opt, next) {
+            task: function (opt, next) {
                 var dirs = utils.lang.isArray(opt.dirs) ? opt.dirs : [opt.dirs];
 
                 // Do this in series, because it can give problems if the directories intersect eachother

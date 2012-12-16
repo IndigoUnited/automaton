@@ -29,7 +29,7 @@ var task = {
     tasks  :
     [
         {
-            task : function (opt, next) {
+            task: function (opt, next) {
                 var files = utils.lang.isArray(opt.files) ? opt.files : [opt.files];
 
                 async.forEach(files, opt.glob, function (file, next) {

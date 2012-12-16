@@ -18,7 +18,7 @@ var task = {
     tasks  :
     [
         {
-            task : function (opt, next) {
+            task: function (opt, next) {
                 var child;
 
                 if (process.platform === 'win32') {

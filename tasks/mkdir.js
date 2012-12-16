@@ -26,7 +26,7 @@ var task = {
     tasks :
     [
         {
-            task : function (opt, next) {
+            task: function (opt, next) {
                 var dirs = utils.lang.isArray(opt.dirs) ? opt.dirs : [opt.dirs];
                 async.forEach(dirs, function (dir, next) {
                     fs.stat(dir, function (err, stat) {
