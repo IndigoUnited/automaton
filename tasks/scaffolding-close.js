@@ -62,7 +62,7 @@ var task = {
                                         return next(err);
                                     }
 
-                                    contents = interp(contents.toString(), data, opt.trim);
+                                    contents = interp(contents.toString(), data, { trim: opt.trim });
                                     fs.writeFile(file, contents, next);
                                 });
                             });
