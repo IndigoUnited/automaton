@@ -312,10 +312,46 @@ describe('Automaton', function () {
                     },
                     {
                         task: 'callback',
+                        on: null,
+                        options: {
+                            callback: function () {
+                                stack.push(2);
+                            }
+                        }
+                    },
+                    {
+                        task: 'callback',
+                        on: function () { return false; },
+                        options: {
+                            callback: function () {
+                                stack.push(2);
+                            }
+                        }
+                    },
+                    {
+                        task: 'callback',
                         on: true,
                         options: {
                             callback: function () {
                                 stack.push(3);
+                            }
+                        }
+                    },
+                    {
+                        task: 'callback',
+                        on: [],
+                        options: {
+                            callback: function () {
+                                stack.push(4);
+                            }
+                        }
+                    },
+                    {
+                        task: 'callback',
+                        on: function () { return true; },
+                        options: {
+                            callback: function () {
+                                stack.push(5);
                             }
                         }
                     }
@@ -325,7 +361,7 @@ describe('Automaton', function () {
                     return done(err);
                 }
 
-                expect(stack).to.eql([1, 3]);
+                expect(stack).to.eql([1, 3, 4, 5]);
                 done();
             });
         });

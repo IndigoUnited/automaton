@@ -299,9 +299,13 @@
          */
         _isTaskEnabled: function (task, options) {
             if (task.hasOwnProperty('on')) {
-                return utils.lang.isString(task.on) ?
-                    !!this._replacePlaceholders(task.on, options, { purge: true })
-                    : task.on;
+                if (utils.lang.isString(task.on)) {
+                    return !!this._replacePlaceholders(task.on, options, { purge: true });
+                } else if (utils.lang.isFunction(task.on)) {
+                    return !!task.on(options);
+                } else {
+                    return !!task.on;
+                }
             }
 
             return true;
