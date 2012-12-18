@@ -21,21 +21,16 @@ var task = {
         }
         opt.filename = opt.name + '.js';
 
-        next();
+        fs.stat(opt.filename, function (err) {
+            if (!err || err.code !== 'ENOENT') {
+                return next(new Error('Filename ' + opt.filename + ' already exists.'));
+            }
+
+            next();
+        });
     },
     tasks  :
     [
-        {
-            task: function (opt, next) {
-                fs.stat(opt.filename, function (err) {
-                    if (!err || err.code !== 'ENOENT') {
-                        return next(new Error('Filename ' + opt.filename + ' already exists.'));
-                    }
-
-                    next();
-                });
-            }
-        },
         {
             task: 'cp',
             options: {
