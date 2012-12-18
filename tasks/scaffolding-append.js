@@ -22,13 +22,16 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (please look the available options in the glob package README)',
-            'default': null
+            'default': {
+                dot: true
+            }
         }
     },
     task    :
     [
         {
             task: function (opt, next) {
+                opt.glob = opt.glob || {};
                 var files = !utils.lang.isArray(opt.files) ? [opt.files] : opt.files;
                 var data = {};
                 var keys = Object.keys(opt.data);
@@ -50,33 +53,27 @@ var task = {
                 }, function () {
                     // data is done at this time
                     // For each item in the files array, perform a glob
-                    async.forEach(files, opt.glob, function (file, next) {
-                        glob(file, function (err, files) {
+                    opt.glob.mark = true;
+                    async.forEach(files, function (file, next) {
+                        glob(file, opt.glob, function (err, matches) {
                             if (err) {
                                 return next(err);
                             }
 
+                            var files = matches.filter(function (match) {
+                                return !utils.string.endsWith(match, '/');
+                            });
+
                             // For each file in the glob result,
                             // perform the interpolation
                             async.forEach(files, function (file, next) {
-                                // Only apply to files
-                                fs.stat(file, function (err, stat) {
+                                fs.readFile(file, function (err, contents) {
                                     if (err) {
                                         return next(err);
                                     }
 
-                                    if (!stat.isFile()) {
-                                        return next();
-                                    }
-
-                                    fs.readFile(file, function (err, contents) {
-                                        if (err) {
-                                            return next(err);
-                                        }
-
-                                        contents = interp(contents.toString(), data);
-                                        fs.writeFile(file, contents, next);
-                                    });
+                                    contents = interp(contents.toString(), data);
+                                    fs.writeFile(file, contents, next);
                                 });
                             }, next);
                         });

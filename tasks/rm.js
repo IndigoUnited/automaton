@@ -13,23 +13,26 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (please look the available options in the glob package README)',
-            'default': null
+            'default': {
+                dot: true
+            }
         }
     },
     tasks  :
     [
         {
             task: function (opt, next) {
+                // TODO: optimize this with the expand function
                 var files = utils.lang.isArray(opt.files) ? opt.files : [opt.files];
 
                 async.forEach(files, function (file, next) {
-                    glob(file, opt.glob, function (err, files) {
+                    glob(file, opt.glob, function (err, matches) {
                         if (err) {
                             return next(err);
                         }
 
-                        async.forEach(files, function (file) {
-                            rimraf(file, next);
+                        async.forEach(matches, function (match) {
+                            rimraf(match, next);
                         }, next);
                     });
                 }, next);

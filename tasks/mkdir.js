@@ -14,7 +14,6 @@ var task = {
         mode: {
             description: 'The directory permissions',
             'default': '0777'
-
         }
     },
     filter: function (opt, next) {

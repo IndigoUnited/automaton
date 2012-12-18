@@ -18,7 +18,9 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (please look the available options in the glob package README)',
-            'default': null
+            'default': {
+                dot: true
+            }
         }
     },
     tasks   :
