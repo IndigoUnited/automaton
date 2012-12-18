@@ -1,9 +1,7 @@
-var fs      = require('fs');
 var fstream = require('fstream');
 var glob    = require('glob');
 var async   = require('async');
 var path    = require('path');
-var rimraf  = require('rimraf');
 var utils   = require('amd-utils');
 
 var task = {
@@ -16,34 +14,52 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (please look the available options in the glob package README)',
-            'default': null
+            'default': {
+                dot: true
+            }
         }
     },
     tasks  :
     [
         {
             task: function (opt, next) {
+                // TODO: standardize behavior with unix cp
+                //       - If dst does not exist, give error
+                //       - Copying a directory into a file should give error
+                //       - Copying a directory/file, into another directory that exists
+                //         but does not end with a /, it should act like it did
+                //       - Copying a file into a file is obvious
+                opt.glob = opt.glob || {};
                 var sources = Object.keys(opt.files);
 
                 // Foreach source file..
                 // Note that series is used to avoid conflicts between each pattern
-                async.forEachSeries(sources, function (src, next) {
-                    var dst = opt.files[src];
-                    src = path.normalize(src);
+                async.forEachSeries(sources, function (pattern, next) {
+                    var dsts = utils.lang.isArray(opt.files[pattern]) ? opt.files[pattern] : [opt.files[pattern]];
+                    dsts = utils.array.unique(dsts.map(function (dst) { return path.normalize(dst); }));
+
+                    // If the user specified a /**/* pattern, optimize it
+                    if (!opt.glob || !opt.glob.noglobstar) {
+                        pattern = pattern.replace(/(\/\*\*\/\*)+$/g, '/*');
+                    }
 
                     // Expand the files to get an array of files and directories
                     // The files do not overlap directories and directories do not overlay eachother
-                    expand(src, opt.glob, function (err, files, dirs, directMatch) {
+                    expand(pattern, opt.glob, function (err, files, dirs, directMatch) {
                         // If the source pattern was a direct match
+                        // Copy directly to the dests
                         if (directMatch) {
-                            // If the source is directory
-                            // or a file which dst ends with /, concatenate the source basename.
-                            if (dirs.length || /[\/\\]$/.test(dst)) {
-                                dst = dst + path.basename(files[0]);
-                            }
+                            return async.forEach(dsts, function (dst, next) {
+                                var src = dirs[0] || files[0];
+                                var isFile = src === files[0];
+                                // If the source is a directory
+                                // or a file which dst ends with /, concatenate the source basename.
+                                if (/[\/\\]$/.test(dst)) {
+                                    dst = path.join(dst, path.basename(src));
+                                }
 
-                            // Copy it directly
-                            return copy(files[0], dst, 'File', next);
+                                return copy(src, dst, isFile ? 'File': 'Directory', next);
+                            }, next);
                         }
 
                         // Create a batch of files and folders
@@ -55,19 +71,11 @@ var task = {
                         }));
 
                         // Finally copy everything
-                        async.forEach(batch, function (obj, next) {
-                            var dsts = utils.lang.isArray(opt.files[src]) ? opt.files[src] : [opt.files[src]];
+                        // Series is used to prevent strange things from happening
+                        async.forEachSeries(batch, function (obj, next) {
                             async.forEach(dsts, function (dst, next) {
-                                dst = path.join(dst, getRelativePath(obj.src, src));
-                                copy(obj.src, dst, obj.type, function () {
-                                    // Remove dot files from the directory if the dot option is set to false
-                                    // This is needed because we optimize what was copied
-                                    if (obj.type === 'Directory' && (!opt.glob || !opt.glob.dot)) {
-                                        removeDotfiles(dst, next);
-                                    } else {
-                                        next();
-                                    }
-                                });
+                                dst = path.join(dst, relativePath(obj.src, pattern));
+                                copy(obj.src, dst, obj.type, next);
                             }, next);
                         }, next);
                     });
@@ -78,76 +86,46 @@ var task = {
 };
 
 /**
- * Removes dotfiles from a directory
- *
- * @param {String}   dir  The dir
- * @param {Function} next The callback to call when done (follows the node convention)
- */
-function removeDotfiles(dir, callback) {
-    dir = path.normalize(dir);
-
-    glob(dir + '/**/.*', function (err, dotFiles) {
-        if (err) {
-            return callback(err);
-        }
-
-        async.forEach(dotFiles, function (dotFile, next) {
-            rimraf(dotFile, next);
-        }, callback);
-    });
-}
-
-/**
- * Expands the given minimatch pattern to an array if files and an array of dirs.
+ * Expands the given minimatch pattern to an array of files and an array of dirs.
  * The files are guaranteed to not overlap with the folders.
  * The dirs are guaranteed to not overlap eachother.
  *
  * @param {String}   pattern   The pattern
- * @param {Object}   minimatch The options to pass to the minimatch
+ * @param {Object}   [options] The options to pass to the glob
  * @param {Function} callback  The callback to call with the files and folders (follows node conventions)
  */
 function expand(pattern, options, next) {
     var files = [];
     var dirs = [];
+    var lastMatch;
 
-    // If the user specified a /**/* pattern, optimize it
-    if (!options || !options.noglobstar) {
-        pattern = pattern.replace(/(\/\*\*\/\*)+$/g, '/*');
-    }
-
+    options = options || {};
+    options.mark = true;
     glob(pattern, options, function (err, matches) {
         if (err) {
             return next(err);
         }
 
-        async.forEach(matches, function (match, next) {
-            fs.stat(match, function (err, stat) {
-                if (err) {
-                    return next(err);
-                }
-
-                match = path.normalize(match);
-
-                if (stat.isDirectory()) {
-                    dirs.push(match);
-                } else {
-                    files.push(match);
-                }
-
-                next();
-            });
-        }, function (err) {
-            if (err) {
-                return next(err);
+        matches.forEach(function (match) {
+            match = path.normalize(match);
+            if (utils.string.endsWith(match, '/')) {
+                lastMatch = match.slice(0, -1);
+                dirs.push(lastMatch);
+            } else {
+                files.push(match);
+                lastMatch = match;
             }
-
-            // If we only got one match and it was the same as the original pattern,
-            // then it was a direct match
-            var directMatch = matches.length === 1 && matches[0] === pattern;
-
-            cleanup(files, dirs);
-            next(null, files, dirs, directMatch);
         });
+
+
+        // If we only got one match and it was the same as the original pattern,
+        // then it was a direct match
+        var directMatch = matches.length === 1 && lastMatch.replace(/[\/\\]+$/, '') === path.normalize(pattern).replace(/[\/\\]+$/, '');
+        if (!directMatch) {
+            cleanup(files, dirs);
+        }
+
+        next(null, files, dirs, directMatch);
     });
 }
 
@@ -170,20 +148,9 @@ function cleanup(files, dirs) {
         }
     });
 
-    // Sort dirs, from lower path to higher path size
-    dirs.sort(function (first, second) {
-        var firstLength = first.length;
-        var secondLength = second.length;
-
-        if (firstLength > secondLength) {
-            return 1;
-        }
-        if (firstLength < secondLength) {
-            return -1;
-        }
-
-        return 0;
-    });
+    // Sort dirs and files, from lower path to higher path size
+    files.sort(sortFunc);
+    dirs.sort(sortFunc);
 
     // Cleanup dirs that overlap eachother
     for (x = 0; x < dirs.length; ++x) {
@@ -195,6 +162,23 @@ function cleanup(files, dirs) {
             }
         }
     }
+}
+
+/**
+ * Sort function used in the cleanup.
+ */
+function sortFunc(first, second) {
+    var firstLength = first.length;
+    var secondLength = second.length;
+
+    if (firstLength > secondLength) {
+        return 1;
+    }
+    if (firstLength < secondLength) {
+        return -1;
+    }
+
+    return 0;
 }
 
 /**
@@ -210,7 +194,7 @@ function cleanup(files, dirs) {
  *
  * @return {String} The relative path
  */
-function getRelativePath(file, pattern) {
+function relativePath(file, pattern) {
     var length = file.length,
         x;
 
@@ -244,3 +228,5 @@ function copy(src, dst, type, callback) {
 }
 
 module.exports = task;
+module.exports.expand = expand;
+module.exports.relativePath = relativePath;
