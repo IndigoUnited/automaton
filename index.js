@@ -125,11 +125,19 @@
             folder = fs.realpathSync(folder) + '/';
 
             var filenames = fs.readdirSync(folder),
+                file,
                 i
             ;
 
             for (i = filenames.length - 1; i >= 0; --i) {
-                this.addTask(require(folder + path.basename(filenames[i], '.js')));
+                file = filenames[i];
+
+                // Skip files that do not have a .js extension
+                if (path.extname(file) !== '.js') {
+                    continue;
+                }
+
+                this.addTask(require(folder + file));
             }
 
             return this;
