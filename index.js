@@ -132,8 +132,6 @@ var Automaton = d.Class.declare({
         });
 
         async.waterfall(batch, function (err) {
-            this._logger.setDepth(1);
-
             if (err) {
                 this._throwError(err.message);
             }
