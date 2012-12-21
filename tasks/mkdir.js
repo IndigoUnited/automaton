@@ -4,10 +4,11 @@ var utils  = require('amd-utils');
 var async  = require('async');
 
 var task = {
-    id      : 'mkdir',
-    author  : 'Indigo United',
-    name    : 'Make dir recursively',
-    options : {
+    id         : 'mkdir',
+    author     : 'Indigo United',
+    name       : 'Make dir recursively',
+    description: 'Make directories',
+    options    : {
         dirs: {
             description: 'The directories you want to create. Accepts an array of directories or a single one through a string.'
         },
@@ -16,13 +17,13 @@ var task = {
             'default': '0777'
         }
     },
-    filter: function (opt, next) {
+    filter     : function (opt, next) {
         if (!utils.lang.isNumber(opt.mode)) {
             opt.mode = parseInt(opt.mode, 8);
         }
         next();
     },
-    tasks :
+    tasks      :
     [
         {
             task: function (opt, next) {

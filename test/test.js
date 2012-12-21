@@ -1,13 +1,11 @@
-var automaton = require('../index').create(),
+var Automaton = require('../index'),
     fs        = require('fs'),
     rimraf    = require('rimraf'),
     core      = require('./core.js'),
     tasks     = require('./tasks.js'),
-    cli       = require('./cli.js')
+    cli       = require('./cli.js'),
+    automaton;
 ;
-
-// disable output
-automaton.setVerbosity(0);
 
 function cleanUpTmp(done) {
     rimraf(__dirname + '/tmp', done);
@@ -26,6 +24,9 @@ function prepareTmp(done) {
 function loadTestTasks() {
     automaton.loadTasks(__dirname + '/helpers/tasks');
 }
+
+// init automaton, disabling logging
+automaton = new Automaton(process.stdout, process.stderr, { verbosity: 0 });
 
 describe('Automaton', function () {
     before(loadTestTasks);

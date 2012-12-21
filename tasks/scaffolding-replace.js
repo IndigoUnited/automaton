@@ -1,15 +1,16 @@
 var fs     = require('fs'),
-    interp = require('../lib/interpolate'),
+    interp = require('../lib/string/interpolate'),
     glob   = require('glob'),
     async  = require('async'),
     utils  = require('amd-utils')
 ;
 
 var task = {
-    id      : 'scaffolding-replace',
-    author  : 'Indigo United',
-    name    : 'Scaffolding: replace',
-    options : {
+    id         : 'scaffolding-replace',
+    author     : 'Indigo United',
+    name       : 'Scaffolding: replace',
+    description: 'Replace placeholders in file names',
+    options    : {
         files: {
             description: 'The files to scaffold. Accepts an array of files or a single one through a string. Works with minimatch.'
         },
@@ -27,7 +28,7 @@ var task = {
             }
         }
     },
-    tasks   :
+    tasks      :
     [
         {
             task: function (opt, next) {

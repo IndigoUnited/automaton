@@ -1,12 +1,11 @@
-var spawn   = require('child_process').spawn,
-    utils   = require('amd-utils')
-;
+var spawn = require('child_process').spawn;
 
 var task = {
-    id     : 'run',
-    author : 'Indigo United',
-    name   : 'Run command',
-    options: {
+    id         : 'run',
+    author     : 'Indigo United',
+    name       : 'Run',
+    description: 'Run command',
+    options    : {
         cmd: {
             description: 'What command to execute'
         },
@@ -15,33 +14,32 @@ var task = {
             'default': null
         }
     },
-    tasks  :
+    tasks      :
     [
         {
             task: function (opt, next) {
-                var child;
+                var child,
+                    that = this;
 
                 if (process.platform === 'win32') {
-                    child = spawn('cmd', ['/s', '/c', opt.cmd], { cwd: opt.cwd, customFds: [0, 1, 2] });
+                    child = spawn('cmd', ['/s', '/c', opt.cmd], { cwd: opt.cwd });
                 } else {
-                    child = spawn('sh', ['-c', opt.cmd], { cwd: opt.cwd, customFds: [0, 1, 2] });
+                    child = spawn('sh', ['-c', opt.cmd], { cwd: opt.cwd });
                 }
 
-                var separator = '\n' + utils.string.repeat('-', 30) + '\n';
-                console.log(separator, 'Running: '.info, opt.cmd, separator);
+                this.log.infoln('Running: '.green + opt.cmd + '\n');
 
                 // Added colors support with the customFds option
                 // If that is removed, we have access to the .stdout and .stderr again
-                //child.stdout.on('data', function (data) {
-                //    process.stdout.write(data.toString());
-                //});
+                child.stdout.on('data', function (data) {
+                    that.log.info(data.toString());
+                });
 
-                //child.stderr.on('data', function (data) {
-                //    process.stderr.write(data.toString());
-                //});
+                child.stderr.on('data', function (data) {
+                    that.log.error(data.toString());
+                });
 
                 child.on('exit', function (code) {
-                    console.log(separator);
                     if (code === 0) {
                         return next();
                     }

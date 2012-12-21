@@ -1,486 +1,508 @@
-(function () {
-    'use strict';
+'use strict';
 
-    var d       = require('dejavu'),
-        utils   = require('amd-utils'),
-        colors  = require('colors'),
-        fs      = require('fs'),
-        util    = require('util'),
-        async   = require('async'),
-        path    = require('path'),
-        inter   = require('./lib/cast-interpolate')
-    ;
+var d       = require('dejavu'),
+    utils   = require('amd-utils'),
+    fs      = require('fs'),
+    async   = require('async'),
+    path    = require('path'),
+    inter   = require('./lib/string/cast-interpolate'),
+    Logger  = require('./lib/Logger')
+;
 
-    // set up a useful set of formats
-    colors.setTheme({
-        input:   'grey',
-        info:    'green',
-        data:    'grey',
-        help:    'cyan',
-        warning: 'yellow',
-        debug:   'blue',
-        error:   'red'
-    });
+var Automaton = d.Class.declare({
+    $name: 'Automaton',
 
-    var Automaton = d.Class.declare({
-        $name: 'Automaton',
+    _tasks: [],
+    _logger: null,
+    _context: {},
 
-        _tasks: [],
-        _verbosity: 1,
+    /**
+     * Constructor.
+     *
+     * Available options:
+     *  - verbosity - 0 means no logging, 1 means only 1 deep level tasks and so on..
+     *  - debug     - true to log debug messages, false otherwise
+     *
+     * @param {Stream} stdout     The stdout stream
+     * @param {Stream} stderr     The stderr stream
+     * @param {Object} [$options] The options
+     */
+    initialize: function (stdout, stderr, $options) {
+        // init logger & setup context
+        this._logger = new Logger(stdout, stderr, $options);
+        this._context.log = this._logger;
 
-        /**
-         * Constructor.
-         */
-        initialize: function () {
-            // load core tasks
-            this.loadTasks(__dirname + '/tasks');
-        },
+        // load core tasks
+        this.loadTasks(__dirname + '/tasks');
+    },
 
-        /**
-         * Set verbosity level.
-         *
-         * 0 means no logging.
-         * 1 means only 1 deep level tasks are able to log.
-         * 2 means 1 and 2 deep level tasks are able to log.
-         * And so on..
-         *
-         * @param {Number} depth The depth
-         *
-         * @return {Automaton} Chainable!
-         */
-        setVerbosity: function (depth) {
-            this._verbosity = depth;
+    /**
+     * Add new task.
+     * If the task already exists, it will be replaced.
+     * The task will be validaded only when its run.
+     *
+     * @param {Object} task The task definition
+     *
+     * @return {Automaton} Chainable!
+     */
+    addTask: function (task) {
+        this._assertValidTask(task);
 
-            return this;
-        },
+        if (!task.id) {
+            this._throwError('Can only add tasks with an id');
+        }
 
-        /**
-         * Add new task.
-         * If the task already exists, it will be replaced.
-         * The task will be validaded only when its run.
-         *
-         * @param {Object} task The task definition
-         *
-         * @return {Automaton} Chainable!
-         */
-        addTask: function (task) {
-            this._assertIsObject(task, 'Invalid task provided');
-            this._assertIsString(task.id, 'You have provided a task without ID');
+        this._tasks[task.id] = task;
 
-            this._tasks[task.id] = task;
+        return this;
+    },
 
-            return this;
-        },
+    /**
+     * Remove task.
+     *
+     * @param {String} id The task id
+     *
+     * @return {Automaton} Chainable!
+     */
+    removeTask: function (id) {
+        this._assertIsString(id, 'Invalid task id provided \'' + id + '\'');
+        delete this._tasks[id];
 
-        /**
-         * Remove task.
-         *
-         * @param {String} id The task id
-         *
-         * @return {Automaton} Chainable!
-         */
-        removeTask: function (id) {
-            this._assertIsString(id, 'Invalid task id provided \'' + id + '\'');
-            delete this._tasks[id];
+        return this;
+    },
 
-            return this;
-        },
+    /**
+     * Retrieve a task definition by its id.
+     *
+     * @param {String} taskId The task id
+     *
+     * @return {Object} The task definition
+     */
+    getTask: function (taskId) {
+        this._assertTaskLoaded(taskId);
 
-        /**
-         * Run a task.
-         * The callback follows the node style.
-         *
-         * @param {String|Object} task        The task id or definition
-         * @param {Object}        [$options]  The task options
-         * @param {Function}      [$callback] A callback to be called when the task completes
-         *
-         * @return {Automaton} Chainable!
-         */
-        run: function (task, $options, $callback) {
-            var batch  = this._batchTask(task, $options);
+        return this._tasks[taskId];
+    },
 
-            async.waterfall(batch, function (err) {
-                if (err) {
-                    this._throwError(err.message);
-                }
+    /**
+     * Load tasks in a given folder.
+     *
+     * @param {String} folder The folder to search for tasks
+     *
+     * @return {Automaton} Chainable!
+     */
+    loadTasks: function (folder) {
+        this._assertIsString(folder, 'Expected folder to be a string');
 
-                if ($callback) {
-                    $callback(err);
-                }
-            }.$bind(this));
+        folder = fs.realpathSync(folder) + '/';
 
-            return this;
-        },
+        var filenames = fs.readdirSync(folder),
+            file,
+            i
+        ;
 
-        /**
-         * Load tasks in a given folder.
-         *
-         * @param {String} folder The folder to search for tasks
-         *
-         * @return {Automaton} Chainable!
-         */
-        loadTasks: function (folder) {
-            this._assertIsString(folder, 'Expected folder to be a string');
+        for (i = filenames.length - 1; i >= 0; --i) {
+            file = filenames[i];
 
-            folder = fs.realpathSync(folder) + '/';
-
-            var filenames = fs.readdirSync(folder),
-                file,
-                i
-            ;
-
-            for (i = filenames.length - 1; i >= 0; --i) {
-                file = filenames[i];
-
-                // Skip files that do not have a .js extension
-                if (path.extname(file) !== '.js') {
-                    continue;
-                }
-
-                this.addTask(require(folder + file));
+            // skip files that do not have a .js extension
+            if (path.extname(file) !== '.js') {
+                continue;
             }
 
-            return this;
-        },
+            this.addTask(require(folder + file));
+        }
 
-        /**
-         * Retrieve a task definition by its id.
-         *
-         * @param {String} taskId The task id
-         *
-         * @return {Object} The task definition
-         */
-        getTask: function (taskId) {
-            this._assertTaskLoaded(taskId);
+        return this;
+    },
 
-            return this._tasks[taskId];
-        },
+    /**
+     * Run a task.
+     * The callback follows the node style.
+     *
+     * @param {String|Object} task        The task id or definition
+     * @param {Object}        [$options]  The task options
+     * @param {Function}      [$callback] A callback to be called when the task completes
+     *
+     * @return {Automaton} Chainable!
+     */
+    run: function (task, $options, $callback) {
+        var batch  = this._batchTask({
+            task: task,
+            options: $options
+        });
 
-        /**
-         * Create a batch for a task.
-         * The batch is a sequence of functions that form the task.
-         *
-         * @param {String|Object} task       The task id or definition
-         * @param {Object}        [$options] The task options
-         */
-        _batchTask: function (task, options) {
-            var batch = [],       // batch of tasks
-                option,
-                filter,
-                parentOptions = arguments[2] || {},
-                depth = arguments[3] != null ? arguments[3] : 1
-            ;
+        async.waterfall(batch, function (err) {
+            this._logger.setDepth(1);
 
-            options = options || {};
-
-            ///////////////////////////////////////////////////////////////
-
-            // if task is an id, grab its real definition
-            if (utils.lang.isString(task)) {
-                this._assertTaskLoaded(task);
-                task = this._tasks[task];
+            if (err) {
+                this._throwError(err.message);
             }
 
-            this._assertIsObject(task, 'Expected task to be an object');
-
-            if (!utils.lang.isString(task.id)) {
-                task.id = 'Non-identified task';
+            if ($callback) {
+                $callback(err ? this._logger.uncolor(err) : null);
             }
+        }.$bind(this));
 
-            if (task.filter) {
-                this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + task.id + '\' task');
-            }
+        return this;
+    },
 
-            if (task.options) {
-                this._assertIsObject(task.options, 'Expected options to be an object in \'' + task.id + '\' task');
+    /**
+     * Create a batch for a task.
+     * The batch is a sequence of functions that form the task.
+     *
+     * @param {Object} task The task definition
+     */
+    _batchTask: function (def) {
+        var batch = [],
+            option,
+            filter,
+            afterFilter
+        ;
 
-                // fill in the options with default values where the option was not provided
-                for (option in task.options) {
-                    if (options[option] === undefined && task.options[option]['default'] !== undefined) {
-                        options[option] = task.options[option]['default'];
-                    }
-                }
+        // if task is an id, grab its real definition
+        if (utils.lang.isString(def.task)) {
+            this._assertTaskLoaded(def.task);
+            def.task = this._tasks[def.task];
+        }
 
-                if (task.filter) {
-                    // besides adding the filter to the batch, we need to validate
-                    // the required options afterwards
-                    filter = function (next) {
-                        this._replaceOptions(options, parentOptions, { skipUnescape : true });
-                        async.waterfall([
-                            // TODO: this could be a loggin interface
-                            task.filter.$bind(this, options),
-                            function (next) {
-                                this._validateTaskOptions(task, options);
-                                next();
-                            }.$bind(this)
-                        ], next);
-                    }.$bind(this);
-                } else {
-                    filter = function (next) {
-                        // no filter, so we only replace options and validate the required options
-                        this._replaceOptions(options, parentOptions, { skipUnescape : true });
-                        this._validateTaskOptions(task, options);
-                        next();
-                    }.$bind(this);
-                }
-            } else if (task.filter) {
-                // TODO: this could be a loggin interface
-                filter = task.filter.$bind(this, options);
-            }
+        def.options = def.options || {};
+        def.parentOptions = def.parentOptions || {};
+        def.description = def.description || def.task.description;
+        def.depth = def.depth || 1;
 
-            if (filter) {
-                batch.push(filter);
-            }
-
-            ///////////////////////////////////////////////////////////////
-
-            this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + task.id + '\' task');
-            task.tasks.forEach(function (currentSubtask, i) {
-                var subtaskBatch;
-
-                this._assertIsObject(currentSubtask, 'Invalid subtask specified at index \'' + i + '\' in \'' + task.id + '\' task');
-
-                if (!utils.lang.isString(currentSubtask.task) && !utils.lang.isFunction(currentSubtask.task)) {
-                    this._throwError('Subtask type at index \'' + i + '\' must be a function or an object in \'' + task.id + '\' task');
-                }
-
-                // if it's a function, just add it to the batch
-                if (utils.lang.isFunction(currentSubtask.task)) {
-                    batch.push(function (subtask, next) {
-                        // we need to replace options again because parent filter might have
-                        // added options that are placeholders
-                        this._replaceOptions(options, parentOptions);
-                        // skip task if disabled
-                        if (!this._isTaskEnabled(subtask, options)) {
-                            return next();
-                        }
-                        this._reportNextTask(subtask, options, depth);
-                        // TODO: the this of the task could be a logging interface
-                        subtask.task.call(this, options, next);
-                    }.$bind(this, currentSubtask));
-                // it's not a function, then it must be another task, check if it is loaded, and batch it
-                } else if (utils.lang.isString(currentSubtask.task)) {
-                    this._assertTaskLoaded(currentSubtask.task);
-
-                    subtaskBatch = this._batchTask(currentSubtask.task, currentSubtask.options, options, depth + 1);
-                    batch.push(function (subtask, subtaskBatch, next) {
-                        // we need to replace options again because parent filter might have
-                        // added options that are placeholders
-                        this._replaceOptions(options, parentOptions);
-                        // skip task if disabled
-                        if (!this._isTaskEnabled(subtask, options)) {
-                            return next();
-                        }
-                        this._reportNextTask(subtask, options, depth);
-                        async.waterfall(subtaskBatch, next);
-                    }.$bind(this, currentSubtask, subtaskBatch));
-                }
-            }, this);
-
-            return batch;
-        },
-
-        /**
-         * Validate the task options.
-         * Detects if a task is missing required options.
-         *
-         * @param {Object} task    The task definition
-         * @param {Object} options The task options
-         */
-        _validateTaskOptions: function (task, options) {
-            for (var option in task.options) {
-                // if option was not provided to the task, abort
-                if (options[option] === undefined) {
-                    this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task');
-                }
-            }
-        },
-
-        /**
-         * Check if a task is enabled.
-         * Disabled tasks should be skipped.
-         *
-         * Detects if a task is missing required options.
-         *
-         * @param {Object} task    The task definition
-         * @param {Object} options The task options
-         */
-        _isTaskEnabled: function (task, options) {
-            if (task.hasOwnProperty('on')) {
-                if (utils.lang.isString(task.on)) {
-                    return !!this._replacePlaceholders(task.on, options, { purge: true });
-                } else if (utils.lang.isFunction(task.on)) {
-                    return !!task.on(options);
-                } else {
-                    return !!task.on;
-                }
-            }
-
-            return true;
-        },
-
-        /**
-         * Replace target placeholders with their correspondent options value.
-         * If the target is an array or an object, it will replace them
-         * recursively.
-         *
-         * @param {Mixed}  target     The target which will get its values replaced
-         * @param {Object} values     The values
-         * @param {Object} [$options] The interpolation options
-         *
-         * @return {Mixed} The passed target
-         */
-        _replaceOptions: function (target, values, $options) {
-            var k,
-                newK;
-
-            if (utils.lang.isObject(target)) {
-                for (k in target) {
-                    newK = this._replacePlaceholders(k, values, $options) + '';
-                    target[newK] = this._replaceOptions(target[k], values, $options);
-                    if (newK !== k) {
-                        delete target[k];
-                    }
-                }
-            } else if (utils.lang.isArray(target)) {
-                for (k = target.length - 1; k >= 0; --k) {
-                    target[k] = this._replaceOptions(target[k], values, $options);
-                }
-            } else if (utils.lang.isString(target)) {
-                target = this._replacePlaceholders(target, values, $options);
-            }
-
-            return target;
-        },
-
-        /**
-         * Replace placeholders in a string with their correspondent values
-         *
-         * @param {String} str        The string
-         * @param {Object} values     The values
-         * @param {Object} [$options] The interpolation options
-         *
-         * @return {String} The replaced string
-         */
-        _replacePlaceholders: function (str, values, $options) {
-            return inter(str, values, $options);
-        },
-
-        /**
-         * Report the next task that will run.
-         *
-         * @param {Object} task    The task definition
-         * @param {Object} options The task options
-         * @param {Number} depth   The task depth
-         */
-        _reportNextTask: function (task, options, depth) {
-            var description;
-
-            if (task.description) {
-                description = utils.lang.isFunction(task.description) ? task.description(options) : task.description;
-                this._log('  - ' + description.cyan, depth, false);
-            }
-        },
-
-        /**
-         * Assert task is loaded.
-         *
-         * @param {String} taskId The task id
-         */
-        _assertTaskLoaded: function (taskId) {
-            if (!utils.lang.isObject(this._tasks[taskId])) {
-                this._throwError('Could not find any task handler suitable for \'' + taskId + '\'');
-            }
-        },
-
-        /**
-         * Assert string.
-         *
-         * @param {Mixed} variable  The target to assert
-         * @param {String} errorMsg The error message to show if the assert fails
-         */
-        _assertIsString: function (variable, errorMsg) {
-            if (!utils.lang.isString(variable)) {
-                this._throwError(errorMsg);
-            }
-        },
-
-        /**
-         * Assert object.
-         *
-         * @param {Mixed} variable  The target to assert
-         * @param {String} errorMsg The error message to show if the assert fails
-         */
-        _assertIsObject: function (variable, errorMsg) {
-            if (!utils.lang.isObject(variable)) {
-                this._throwError(errorMsg);
-            }
-        },
-
-        /**
-         * Assert function.
-         *
-         * @param {Mixed} variable  The target to assert
-         * @param {String} errorMsg The error message to show if the assert fails
-         */
-        _assertIsFunction: function (variable, errorMsg) {
-            if (!utils.lang.isFunction(variable)) {
-                this._throwError(errorMsg);
-            }
-        },
-
-        /**
-         * Assert array.
-         *
-         * @param {Mixed} variable  The target to assert
-         * @param {String} errorMsg The error message to show if the assert fails
-         */
-        _assertIsArray: function (variable, errorMsg) {
-            if (!utils.lang.isArray(variable)) {
-                this._throwError(errorMsg);
-            }
-        },
-
-        // TODO: the functions bellow are not stable..
-        //       streams will be added and we can't do
-        //       process.exit() because we won't be able to use
-        //       automaton programatically
-        _throwError: function (errorMsg, $verbose) {
-            if (!$verbose) {
-                console.error('\n' + errorMsg.error + '\n');
-                process.exit(1);
-            }
-
-            throw new Error(errorMsg);
-        },
-
-        _log: function (msg, $depth, $newLine) {
-            $depth   = $depth || 0;
-            $newLine = $newLine || true;
-
-            if ($depth <= this._verbosity) {
-                if ($newLine) {
-                    util.puts(msg);
-                } else {
-                    util.print(msg);
-                }
-            }
-        },
-
-        _error: function (msg, $depth) {
-            $depth = $depth || 0;
-            if ($depth <= this._verbosity) {
-                console.error(msg);
-            }
-        },
-
-        $statics: {
-            create: function () {
-                return new Automaton();
+        // fill in the options with default values where the option was not provided
+        for (option in def.task.options) {
+            if (def.options[option] === undefined && def.task.options[option]['default'] !== undefined) {
+                def.options[option] = def.task.options[option]['default'];
             }
         }
-    });
 
-    module.exports = Automaton;
+        // batch the filter
+        afterFilter = function (next) {
+            // we need to replace options again because parent filter might have
+            // added options that are placeholders
+            this._replaceOptions(def.options, def.parentOptions);
+            this._validateTaskOptions(def.task, def.options);
+            next();
+        }.$bind(this);
+        filter = function (next) {
+            // replace options & report task
+            this._replaceOptions(def.options, def.parentOptions, { skipUnescape : true });
+            this._reportNextTask(def);
 
-})();
+            // if there is an actual filter, run it and call the after filter afterwards
+            if (def.task.filter) {
+                async.waterfall([
+                    def.task.filter.$bind(this._context, def.options),
+                    afterFilter
+                ], next);
+            // otherwise simply call the after filter
+            } else {
+                afterFilter(next);
+            }
+        }.$bind(this);
+        batch.push(filter);
+
+        // batch each task
+        def.task.tasks.forEach(function (currentSubtask, i) {
+            var subtaskBatch;
+
+            this._assertIsObject(currentSubtask, 'Invalid subtask specified at index \'' + i + '\' in \'' + def.task.id + '\' task');
+
+            // if it's a function, just add it to the batch
+            if (utils.lang.isFunction(currentSubtask.task)) {
+                batch.push(function (next) {
+                    // skip task if disabled
+                    if (!this._isTaskEnabled(currentSubtask, def.options)) {
+                        return next();
+                    }
+                    this._reportNextTask(this._createTaskDefinition(currentSubtask, def));
+                    currentSubtask.task.call(this._context, def.options, next);
+                }.$bind(this));
+            // it's not a function, then it must be another task, check if it is loaded, and batch it
+            } else if (utils.lang.isString(currentSubtask.task)) {
+                this._assertTaskLoaded(currentSubtask.task);
+
+                subtaskBatch = this._batchTask(this._createTaskDefinition(currentSubtask, def));
+                batch.push(function (subtask, subtaskBatch, next) {
+                    // skip task if disabled
+                    if (!this._isTaskEnabled(subtask, def.options)) {
+                        return next();
+                    }
+                    async.waterfall(subtaskBatch, next);
+                }.$bind(this, currentSubtask, subtaskBatch));
+            }
+        }, this);
+
+        return batch;
+    },
+
+    /**
+     * Creates a task definition for a task.
+     *
+     * @param {Object} task          The task
+     * @param {oBJECT} parentTaskDef The parent task definition
+     */
+    _createTaskDefinition: function (task, parentTaskDef) {
+        return {
+            task: task.task,
+            description: task.description,
+            options: task.options,
+            parentOptions: parentTaskDef.options,
+            depth: parentTaskDef.depth + 1
+        };
+    },
+
+    /**
+     * Validate the task options.
+     * Detects if a task is missing required options.
+     *
+     * @param {Object} task    The task definition
+     * @param {Object} options The task options
+     */
+    _validateTaskOptions: function (task, options) {
+        for (var option in task.options) {
+            // if option was not provided to the task, abort
+            if (options[option] === undefined) {
+                this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task');
+            }
+        }
+    },
+
+    /**
+     * Check if a task is enabled.
+     * Disabled tasks should be skipped.
+     *
+     * Detects if a task is missing required options.
+     *
+     * @param {Object} task    The task definition
+     * @param {Object} options The task options
+     */
+    _isTaskEnabled: function (task, options) {
+        if (task.hasOwnProperty('on')) {
+            if (utils.lang.isString(task.on)) {
+                return !!this._replacePlaceholders(task.on, options, { purge: true });
+            } else if (utils.lang.isFunction(task.on)) {
+                return !!task.on(options);
+            } else {
+                return !!task.on;
+            }
+        }
+
+        return true;
+    },
+
+    /**
+     * Replace target placeholders with their correspondent options value.
+     * If the target is an array or an object, it will replace them
+     * recursively.
+     *
+     * @param {Mixed}  target     The target which will get its values replaced
+     * @param {Object} values     The values
+     * @param {Object} [$options] The interpolation options
+     *
+     * @return {Mixed} The passed target
+     */
+    _replaceOptions: function (target, values, $options) {
+        var k,
+            newK;
+
+        if (utils.lang.isObject(target)) {
+            for (k in target) {
+                newK = this._replacePlaceholders(k, values, $options) + '';
+                target[newK] = this._replaceOptions(target[k], values, $options);
+                if (newK !== k) {
+                    delete target[k];
+                }
+            }
+        } else if (utils.lang.isArray(target)) {
+            for (k = target.length - 1; k >= 0; --k) {
+                target[k] = this._replaceOptions(target[k], values, $options);
+            }
+        } else if (utils.lang.isString(target)) {
+            target = this._replacePlaceholders(target, values, $options);
+        }
+
+        return target;
+    },
+
+    /**
+     * Replace placeholders in a string with their correspondent values
+     *
+     * @param {String} str        The string
+     * @param {Object} values     The values
+     * @param {Object} [$options] The interpolation options
+     *
+     * @return {String} The replaced string
+     */
+    _replacePlaceholders: function (str, values, $options) {
+        return inter(str, values, $options);
+    },
+
+    /**
+     * Report the next task that will run.
+     *
+     * @param {Object} task The task definition
+     */
+    _reportNextTask: function (def) {
+        var desc;
+
+        this._logger.setDepth(def.depth);
+
+        if (def.description) {
+            desc = utils.lang.isFunction(def.description) ? def.description(def.options) : def.description;
+            this._logger.infoln(('> ' + desc).cyan);
+        }
+    },
+
+    /**
+     * Assert task is loaded.
+     *
+     * @param {String} taskId The task id
+     */
+    _assertTaskLoaded: function (taskId) {
+        if (!utils.lang.isObject(this._tasks[taskId])) {
+            this._throwError('Could not find any task handler suitable for \'' + taskId + '\'');
+        }
+    },
+
+    /**
+     * Assert string.
+     *
+     * @param {Mixed} variable  The target to assert
+     * @param {String} errorMsg The error message to show if the assert fails
+     */
+    _assertIsString: function (variable, errorMsg) {
+        if (!utils.lang.isString(variable)) {
+            this._throwError(errorMsg);
+        }
+    },
+
+    /**
+     * Assert object.
+     *
+     * @param {Mixed} variable  The target to assert
+     * @param {String} errorMsg The error message to show if the assert fails
+     */
+    _assertIsObject: function (variable, errorMsg) {
+        if (!utils.lang.isObject(variable)) {
+            this._throwError(errorMsg);
+        }
+    },
+
+    /**
+     * Assert function.
+     *
+     * @param {Mixed} variable  The target to assert
+     * @param {String} errorMsg The error message to show if the assert fails
+     */
+    _assertIsFunction: function (variable, errorMsg) {
+        if (!utils.lang.isFunction(variable)) {
+            this._throwError(errorMsg);
+        }
+    },
+
+    /**
+     * Assert array.
+     *
+     * @param {Mixed} variable  The target to assert
+     * @param {String} errorMsg The error message to show if the assert fails
+     */
+    _assertIsArray: function (variable, errorMsg) {
+        if (!utils.lang.isArray(variable)) {
+            this._throwError(errorMsg);
+        }
+    },
+
+    /**
+     * Assert that a task is valid.
+     *
+     * @param {Object} task The task
+     */
+    _assertValidTask: function (task) {
+        var taskId = task.id || 'unknown',
+            x,
+            currTask;
+
+        this._assertIsObject(task, 'Expected task to be an object');
+        if (task.id !== undefined) {
+            this._assertIsString(task.id, 'Expected id to be a string');
+            if (!task.id) {
+                this._throwError('Task id cannot be empty.');
+            }
+        }
+        if (task.name !== undefined) {
+            this._assertIsString(task.author, 'Expected name to be a string in \'' + taskId + '\' task');
+        }
+        if (task.author !== undefined) {
+            this._assertIsString(task.author, 'Expected author to be a string in \'' + taskId + '\' task');
+        }
+        if (task.description !== undefined) {
+            if (!utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
+                this._throwError('Expected description to be a string or a function in \'' + taskId + '\' task');
+            }
+        }
+        if (task.filter !== undefined) {
+            this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + taskId + '\' task');
+        }
+        if (task.options !== undefined) {
+            this._assertIsObject(task.options, 'Expected options to be an object in \'' + taskId + '\' task');
+            // TODO: validate options object
+        } else {
+            task.options = {};
+        }
+
+        this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + taskId + '\' task');
+
+        for (x = 0; x < task.tasks; ++x) {
+            currTask = task.tasks[x];
+
+            this._assertIsObject('Expected subtask at index \'' + x + '\' to be an object');
+            if (utils.lang.isObject(currTask.task)) {
+                this._assertValidTask(currTask.task);
+            } else {
+                if (!utils.lang.isString(currTask.task) && !utils.lang.isFunction(currTask.task)) {
+                    this._throwError('Expected subtask at index \'' + x + '\' to be a string, a function or a task object in \'' + taskId + '\' task');
+                }
+                if (currTask.description !== undefined && !utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
+                    this._throwError('Expected subtask description at index \'' + x + '\' to be a string or a function in \'' + taskId + '\' task');
+                }
+                if (currTask.options !== undefined) {
+                    this._assertIsObject('Expected subtask options at index \'' + x + '\' to be an object in \'' + taskId + '\' task');
+                }
+            }
+        }
+    },
+
+    /**
+     * Throws an error.
+     *
+     * @param {String}  msg        The error message
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     */
+    _throwError: function (msg, $verbose) {
+        if (!$verbose) {
+            this._logger.errorln(msg);
+            process.exit(1);
+        }
+
+        throw new Error(this._logger.uncolor(msg));
+    },
+
+    $statics: {
+        /**
+         * Creates a new automaton instance.
+         *
+         * @param {Stream} [$stdout]  The stdout stream, defaults to process.stdout
+         * @param {Stream} [$stderr]  The stderr stream, defaults to process.stderr
+         * @param {Object} [$options] The options
+         *
+         * @return {Automaton} A new automaton instance
+         */
+        create: function ($stdout, $stderr, $options) {
+            return new Automaton($stdout || process.stdout, $stderr || process.stderr, $options);
+        }
+    }
+});
+
+module.exports = Automaton;

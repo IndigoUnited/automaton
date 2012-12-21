@@ -4,10 +4,11 @@ var async = require('async');
 var glob  = require('glob');
 
 var task = {
-    id     : 'chmod',
-    author : 'Indigo United',
-    name   : 'Change mode',
-    options: {
+    id         : 'chmod',
+    author     : 'Indigo United',
+    name       : 'Change mode',
+    description: 'Chmod files',
+    options    : {
         files: {
             description: 'The files to chmod. Accepts an array of files or a single one through a string. Works with minimatch.'
         },
@@ -22,13 +23,13 @@ var task = {
             }
         }
     },
-    filter: function (opt, next) {
+    filter     : function (opt, next) {
         if (!utils.lang.isNumber(opt.mode)) {
             opt.mode = parseInt(opt.mode, 8);
         }
         next();
     },
-    tasks  :
+    tasks      :
     [
         {
             task: function (opt, next) {

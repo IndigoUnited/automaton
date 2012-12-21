@@ -4,9 +4,10 @@ var async  = require('async');
 var glob   = require('glob');
 
 var task = {
-    id     : 'rm',
-    author : 'Indigo United',
-    name   : 'Remove',
+    id         : 'rm',
+    author     : 'Indigo United',
+    name       : 'Remove',
+    description: 'Remove files',
     options: {
         files: {
             description: 'The files or directories to remove. Accepts an array of entries or a single one through a string. Works with minimatch.'
@@ -18,7 +19,7 @@ var task = {
             }
         }
     },
-    tasks  :
+    tasks      :
     [
         {
             task: function (opt, next) {

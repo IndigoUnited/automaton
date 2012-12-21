@@ -1,10 +1,11 @@
 var fs   = require('fs');
 
 var task = {
-    id      : 'symlink',
-    author  : 'Indigo United',
-    name    : 'Symlink',
-    options : {
+    id         : 'symlink',
+    author     : 'Indigo United',
+    name       : 'Symlink',
+    description: 'Create symlink',
+    options    : {
         src: {
             'description': 'The original file you want to reference'
         },
@@ -16,7 +17,7 @@ var task = {
             'default': 'file'
         }
     },
-    tasks   :
+    tasks      :
     [
         {
             task: function (ctx, opt, next) {

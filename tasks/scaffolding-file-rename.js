@@ -2,14 +2,15 @@ var fs     = require('fs'),
     glob   = require('glob'),
     async  = require('async'),
     utils  = require('amd-utils'),
-    interp = require('../lib/interpolate')
+    interp = require('../lib/string/interpolate')
 ;
 
 var task = {
-    id      : 'scaffolding-file-rename',
-    author  : 'Indigo United',
-    name    : 'Scaffolding: file rename',
-    options : {
+    id         : 'scaffolding-file-rename',
+    author     : 'Indigo United',
+    name       : 'Scaffolding: file rename',
+    description: 'Replace placeholders in file names',
+    options    : {
         dirs: {
             description: 'The directories you want to to use as the base of the rename. Accepts an array of directories or a single one through a string. Works with minimatch.'
         },
@@ -23,7 +24,7 @@ var task = {
             }
         }
     },
-    tasks   :
+    tasks      :
     [
         {
             task: function (opt, next) {

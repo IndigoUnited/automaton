@@ -5,9 +5,12 @@ var expect    = require('expect.js'),
 
 
 module.exports = function (automaton) {
-    describe('tasks', function () {
-        it.skip('should throw if they have an invalid definition');
+    describe('Engine', function () {
+        it.skip('should throw on invalid', {
+            // test tasks and deep tasks
+        });
 
+        // test run
         it('should run a single subtask', function (done) {
             var called = false;
 
@@ -72,8 +75,7 @@ module.exports = function (automaton) {
             });
         });
 
-        // test "automaton.run" by providing the task id
-        it('should be able to run by id', function (done) {
+        it('should be able to run task by id', function (done) {
             var dirname = __dirname + '/tmp/dir';
 
             automaton.run('mkdir', {
@@ -88,8 +90,10 @@ module.exports = function (automaton) {
             });
         });
 
+        it.skip('should run deep tasks specified directly in tasks inside tasks (not by id)');
+
         // test if options are shared
-        it('should be run in an isolated way', function (done) {
+        it('should run tasks in an isolated way', function (done) {
             var counter = 0;
 
             automaton.run({
@@ -126,7 +130,7 @@ module.exports = function (automaton) {
         });
 
         // test inline subtask
-        it('should be able to run inline subtasks', function (done) {
+        it('should run inline subtasks', function (done) {
             var dirname = __dirname + '/tmp/dir';
 
             automaton.run({
@@ -151,7 +155,6 @@ module.exports = function (automaton) {
         it('should skip a subtask when its "on" attribute has a falsy placeholder', function (done) {
             var stack = [];
 
-            // TODO: test infered on filter
             automaton.run({
                 filter: function (opt, next) {
                     opt.truthy2 = true;
@@ -333,12 +336,15 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('show fail if all required options have not been passed');
-        it.skip('should assume default options if absent');
+        it.skip('should throw if all required task options have not been passed');
+        it.skip('should assume default task options if absent');
 
-        it.skip('should have placeholders replaced in its description');
+        it.skip('should replace placeholders in task descriptions', function () {
+            // test description as string and function
+        });
+        it.skip('should ignore escaped placeholders in task options');
 
-        it('should have placeholders replaced in their options', function (done) {
+        it('should replaced placeholders in task options', function (done) {
             var someObj = {};
             var opts = {
                 opt1: 'x',
@@ -370,13 +376,9 @@ module.exports = function (automaton) {
             // TODO: test if replacements is being done deeply in arrays and objects
             //       in case of objects, its keys and values should be replaced
         });
+        it.skip('should ignore escaped placeholders in task options');
 
-        it.skip('should ignore escaped placeholders');
-    });
-
-    // test filter
-    describe('filter', function () {
-        it('should execute before the task itself', function (done) {
+        it('should execute filters before their respective tasks', function (done) {
             var filtered = false,
                 wrong = false;
 
@@ -409,7 +411,7 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should be able to modify options and infer new ones', function (done) {
+        it('should let filters modify options and infer new ones', function (done) {
             automaton.run({
                 filter: function (opt, next) {
                     opt.very = 'awesome';
@@ -439,5 +441,9 @@ module.exports = function (automaton) {
                 done(err);
             });
         });
+    });
+
+    describe('Logger', function () {
+        // TODO: add tests for the logger
     });
 };

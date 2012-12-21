@@ -1,15 +1,16 @@
 var fs     = require('fs'),
-    interp = require('../lib/interpolate'),
+    interp = require('../lib/string/interpolate'),
     glob   = require('glob'),
     async  = require('async'),
     utils  = require('amd-utils')
 ;
 
 var task = {
-    id      : 'scaffolding-append',
-    author  : 'Indigo United',
-    name    : 'Scaffolding: append',
-    options : {
+    id         : 'scaffolding-append',
+    author     : 'Indigo United',
+    name       : 'Scaffolding: append',
+    description: 'Append data to placeholders in files',
+    options    : {
         files: {
             description: 'The files to scaffold. Accepts an array of files or a single one through a string. Works with minimatch.'
         },
@@ -27,7 +28,7 @@ var task = {
             }
         }
     },
-    task    :
+    tasks      :
     [
         {
             task: function (opt, next) {

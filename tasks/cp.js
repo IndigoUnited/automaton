@@ -5,10 +5,11 @@ var path    = require('path');
 var utils   = require('amd-utils');
 
 var task = {
-    id      : 'cp',
-    author  : 'Indigo United',
-    name    : 'Copy',
-    options : {
+    id         : 'cp',
+    author     : 'Indigo United',
+    name       : 'Copy',
+    description: 'Copy files',
+    options    : {
         files: {
             description: 'The files to copy. Accepts an object in which keys are the source files and values the destination. Source values support minimatch.'
         },
@@ -19,7 +20,7 @@ var task = {
             }
         }
     },
-    tasks  :
+    tasks      :
     [
         {
             task: function (opt, next) {

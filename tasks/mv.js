@@ -8,10 +8,11 @@ var expand       = require('./cp').expand;
 var relativePath = require('./cp').relativePath;
 
 var task = {
-    id      : 'mv',
-    author  : 'Indigo United',
-    name    : 'Copy',
-    options : {
+    id         : 'mv',
+    author     : 'Indigo United',
+    name       : 'Copy',
+    description: 'Move files',
+    options    : {
         files: {
             description: 'The files to copy. Accepts an object in which keys are the source files and values the destination. Source values support minimatch.'
         },
@@ -22,7 +23,7 @@ var task = {
             }
         }
     },
-    tasks  :
+    tasks      :
     [
         {
             task: function (opt, next) {

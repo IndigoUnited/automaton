@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-var utils   = require('amd-utils'),
-    fs      = require('fs'),
-    path    = require('path'),
-    argv    = require('optimist').argv,
-    pkg     = require('../package.json')
+var utils     = require('amd-utils'),
+    fs        = require('fs'),
+    path      = require('path'),
+    argv      = require('optimist').argv,
+    pkg       = require('../package.json'),
+    Automaton = require('../index')
 ;
 
 // ----------------------------- USAGE PARAMETERS ------------------------------
@@ -32,35 +33,37 @@ var commands = [
             desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
         },
         {
+            opt: '--debug, -D',
+            desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
+        },
+        {
             opt: '--version, -v',
             desc: 'Get version'
         }
     ]
 ;
 
-// TODO: list available tasks
-
 // ---------------------------------- BOOT -------------------------------------
 
-// load automaton
-var Automaton = require(__dirname + '/../index'),
-    automaton;
+// set up the options to pass to the automaton
+var options = {
+    debug: !!(argv.debug || argv.D)
+};
 
-automaton = new Automaton();
+// only process the verbosity if set
+if (argv.verbosity != null || argv.V != null) {
+    options.verbosity = parseInt(argv.verbosity != null ? argv.verbosity : argv.V, 10);
+}
+
+var automaton = new Automaton(process.stdin, process.stdout, options);
 
 // if task directory includes were defined, load the tasks
-var taskDir = (argv['task-dir'] !== true ? argv['task-dir'] : false) || (argv.d !== true ? argv.d : false);
+var taskDir = (utils.lang.isString(argv['task-dir']) ? argv['task-dir'] : null) || (utils.lang.isString(argv.d) ? argv.d : null);
 if (taskDir) {
     // if task dir exists, load tasks
     if (fs.existsSync(taskDir) && fs.statSync(taskDir).isDirectory()) {
         automaton.loadTasks(taskDir);
     }
-}
-
-// if verbosity was defined, set it
-var verbosity = (argv.verbosity !== true ? argv.verbosity : false) || (argv.V !== true ? argv.V : false);
-if (verbosity) {
-    automaton.setVerbosity(verbosity);
 }
 
 // --------------- CHECK WHAT THE USER REQUESTED, AND ACT ON IT ----------------
