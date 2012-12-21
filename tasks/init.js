@@ -20,7 +20,7 @@ var task = {
             opt.name = opt.name.slice(0, -3);
         }
         opt.filename = opt.name + '.js';
-
+        opt.__dirname = __dirname;
         fs.stat(opt.filename, function (err) {
             if (!err || err.code !== 'ENOENT') {
                 return next(new Error('Filename ' + opt.filename + ' already exists.'));
@@ -28,20 +28,22 @@ var task = {
 
             next();
         });
+
     },
     tasks  :
     [
         {
             task: 'cp',
             options: {
-                src: __dirname + '/../base_autofile.js',
-                dst: '{{dst}}/{{filename}}'
+                files: {
+                    '{{__dirname}}/../base_autofile.js': '{{dst}}/{{filename}}'
+                }
             }
         },
         {
             task: 'scaffolding-replace',
             options: {
-                file: '{{dst}}/{{filename}}',
+                files: '{{dst}}/{{filename}}',
                 data: {
                     name: '{{name}}'
                 }
