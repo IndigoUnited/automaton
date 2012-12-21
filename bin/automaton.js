@@ -67,8 +67,7 @@ if (verbosity) {
 
 // if version was requested, just show version and quit
 if (argv.version || argv.v) {
-    console.log('Automaton'.cyan, ('v' + pkg.version).info);
-    console.log('Indigo United 2012'.cyan);
+    console.log(pkg.version);
     process.exit();
 }
 
@@ -233,11 +232,11 @@ function initTask(taskId) {
         'name': taskId
     }, function (err) {
         if (err) {
-            console.error('Unable to create task');
+            console.error(('\nUnable to create task\n').error);
             process.exit(1);
         }
 
-        console.log('Task initialized'.info);
+        console.log('Task initialized'.green);
     });
 }
 
