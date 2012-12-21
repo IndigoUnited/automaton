@@ -47,7 +47,6 @@ var Automaton = d.Class.declare({
      */
     addTask: function (task) {
         this._assertValidTask(task);
-
         if (!task.id) {
             this._throwError('Can only add tasks with an id');
         }
