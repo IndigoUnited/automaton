@@ -5,7 +5,6 @@ var Automaton = require('../index'),
     tasks     = require('./tasks.js'),
     cli       = require('./cli.js'),
     automaton;
-;
 
 function cleanUpTmp(done) {
     rimraf(__dirname + '/tmp', done);

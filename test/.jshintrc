@@ -7,7 +7,7 @@
         "before",
         "beforeEach",
         "after",
-        "afterEach"
+        "afterEach",
         "it"
     ],
 
