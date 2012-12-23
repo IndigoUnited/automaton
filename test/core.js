@@ -3,7 +3,6 @@ var expect    = require('expect.js'),
     isDir     = require('./helpers/util/is-dir')
 ;
 
-
 module.exports = function (automaton) {
     describe('Engine', function () {
         it.skip('should throw on invalid', {
@@ -92,6 +91,31 @@ module.exports = function (automaton) {
 
         it.skip('should run deep tasks specified directly in tasks inside tasks (not by id)');
 
+        it('should run inline subtasks', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: function (opt, next) {
+                            fs.mkdir(dirname, parseInt('0777', 8), next);
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                expect(isDir(dirname)).to.be(true);
+                done();
+            });
+        });
+
+        // test callback
+        it.skip('should call the callback once done running a task');
+        it.skip('should pass a nerror (without colors) to the callback if there was an one');
+
         // test if options are shared
         it('should run tasks in an isolated way', function (done) {
             var counter = 0;
@@ -126,28 +150,6 @@ module.exports = function (automaton) {
                     expect(counter).to.equal(1);
                     done();
                 });
-            });
-        });
-
-        // test inline subtask
-        it('should run inline subtasks', function (done) {
-            var dirname = __dirname + '/tmp/dir';
-
-            automaton.run({
-                tasks: [
-                    {
-                        task: function (opt, next) {
-                            fs.mkdir(dirname, parseInt('0777', 8), next);
-                        }
-                    }
-                ]
-            }, null, function (err) {
-                if (err) {
-                    return done(err);
-                }
-
-                expect(isDir(dirname)).to.be(true);
-                done();
             });
         });
 

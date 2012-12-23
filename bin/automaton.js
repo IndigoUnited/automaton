@@ -55,14 +55,25 @@ if (argv.verbosity != null || argv.V != null) {
     options.verbosity = parseInt(argv.verbosity != null ? argv.verbosity : argv.V, 10);
 }
 
-var automaton = new Automaton(process.stdin, process.stdout, options);
+var automaton;
+try {
+    automaton = new Automaton(options);
+} catch (e) {
+    automaton.getLogger().errorln(e.message);
+    process.exit(1);
+}
 
 // if task directory includes were defined, load the tasks
 var taskDir = (utils.lang.isString(argv['task-dir']) ? argv['task-dir'] : null) || (utils.lang.isString(argv.d) ? argv.d : null);
 if (taskDir) {
     // if task dir exists, load tasks
     if (fs.existsSync(taskDir) && fs.statSync(taskDir).isDirectory()) {
-        automaton.loadTasks(taskDir);
+        try {
+            automaton.loadTasks(taskDir);
+        } catch (e) {
+            automaton.getLogger().errorln(e.message);
+            process.exit(1);
+        }
     }
 }
 
@@ -95,9 +106,8 @@ if (argv.help || argv.h) {
         } catch (err) {
             console.error(('\nCould not find any task or autofile "' + taskId + '"\n').error);
         }
-    }
     // no task was specified, show overall usage
-    else {
+    } else {
         showUsage();
     }
 
@@ -128,12 +138,10 @@ if (argv._.length) {
         }
 
         // run the task
-        //runTask(task, getTaskOptFromArgv(task));
         runTask(task, argv);
     }
-}
-// no command was specified, try to run autofile.js in the cwd
-else {
+    // no command was specified, try to run autofile.js in the cwd
+} else {
     var task = getTaskFromFile();
 
     if (!task) {
@@ -141,7 +149,6 @@ else {
         process.exit();
     }
 
-    //runTask(task, getTaskOptFromArgv(task));
     runTask(task, argv);
 }
 
@@ -263,5 +270,7 @@ function runTask(task, options) {
         task = automaton.getTask(task);
     }
 
-    automaton.run(task, options);
+    automaton.run(task, options, function (err) {
+        process.exit(err ? 1 : 0);
+    });
 }

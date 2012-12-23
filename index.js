@@ -20,20 +20,31 @@ var Automaton = d.Class.declare({
      * Constructor.
      *
      * Available options:
-     *  - verbosity - 0 means no logging, 1 means only 1 deep level tasks and so on..
+     *  - stdout    - a stream to write log messages (defaults to process.stdout, null to disable)
+     *  - stderr    - a stream to write error log messages (defaults to process.stdout, null to disable)
+     *  - verbosity - 0 means no logging
+     *                1 means only 1 deep level tasks and so on..
+     *                -1 means log every level
      *  - debug     - true to log debug messages, false otherwise
      *
-     * @param {Stream} stdout     The stdout stream
-     * @param {Stream} stderr     The stderr stream
      * @param {Object} [$options] The options
      */
-    initialize: function (stdout, stderr, $options) {
+    initialize: function ($options) {
         // init logger & setup context
-        this._logger = new Logger(stdout, stderr, $options);
+        this._logger = new Logger($options);
         this._context.log = this._logger;
 
         // load core tasks
         this.loadTasks(__dirname + '/tasks');
+    },
+
+    /**
+     * Get the logger.
+     *
+     * @return {Logger} The logger instance
+     */
+    getLogger: function () {
+        return this._logger;
     },
 
     /**
@@ -46,9 +57,10 @@ var Automaton = d.Class.declare({
      * @return {Automaton} Chainable!
      */
     addTask: function (task) {
-        this._assertValidTask(task);
+        this._validateTask(task);
+
         if (!task.id) {
-            this._throwError('Can only add tasks with an id');
+            this._throwError('Can only add tasks with an id', true);
         }
 
         this._tasks[task.id] = task;
@@ -64,7 +76,7 @@ var Automaton = d.Class.declare({
      * @return {Automaton} Chainable!
      */
     removeTask: function (id) {
-        this._assertIsString(id, 'Invalid task id provided \'' + id + '\'');
+        this._assertIsString(id, 'Invalid task id provided', true);
         delete this._tasks[id];
 
         return this;
@@ -78,7 +90,7 @@ var Automaton = d.Class.declare({
      * @return {Object} The task definition
      */
     getTask: function (taskId) {
-        this._assertTaskLoaded(taskId);
+        this._assertTaskLoaded(taskId, true);
 
         return this._tasks[taskId];
     },
@@ -91,7 +103,7 @@ var Automaton = d.Class.declare({
      * @return {Automaton} Chainable!
      */
     loadTasks: function (folder) {
-        this._assertIsString(folder, 'Expected folder to be a string');
+        this._assertIsString(folder, 'Expected folder to be a string', true);
 
         folder = fs.realpathSync(folder) + '/';
 
@@ -125,20 +137,33 @@ var Automaton = d.Class.declare({
      * @return {Automaton} Chainable!
      */
     run: function (task, $options, $callback) {
-        var batch  = this._batchTask({
-            task: task,
-            options: $options
-        });
+        var batch,
+            handle;
 
-        async.waterfall(batch, function (err) {
-            if (err) {
-                this._throwError(err.message);
-            }
-
+        // function to handle the completion of the task
+        handle = function (err) {
             if ($callback) {
-                $callback(err ? this._logger.uncolor(err) : null);
+                if (err) {
+                    err.message = this._logger.uncolor(err.message);
+                }
+                $callback(err);
             }
-        }.$bind(this));
+
+            return this;
+        }.$bind(this);
+
+        // catch any error while getting the batch
+        try {
+            batch  = this._batchTask({
+                task: task,
+                options: $options
+            });
+        } catch (e) {
+            return handle(e);
+        }
+
+        // waterfall the batch
+        async.waterfall(batch, handle);
 
         return this;
     },
@@ -151,6 +176,7 @@ var Automaton = d.Class.declare({
      */
     _batchTask: function (def) {
         var batch = [],
+            error,
             option,
             filter,
             afterFilter
@@ -158,7 +184,7 @@ var Automaton = d.Class.declare({
 
         // if task is an id, grab its real definition
         if (utils.lang.isString(def.task)) {
-            this._assertTaskLoaded(def.task);
+            this._assertTaskLoaded(def.task, true);
             def.task = this._tasks[def.task];
         }
 
@@ -179,15 +205,15 @@ var Automaton = d.Class.declare({
             // we need to replace options again because parent filter might have
             // added options that are placeholders
             this._replaceOptions(def.options, def.parentOptions);
-            this._validateTaskOptions(def.task, def.options);
-            next();
+            error = this._validateTaskOptions(def.task, def.options);
+            next(error);
         }.$bind(this);
         filter = function (next) {
             // replace options & report task
             this._replaceOptions(def.options, def.parentOptions, { skipUnescape : true });
             this._reportNextTask(def);
 
-            // if there is an actual filter, run it and call the after filter afterwards
+            // if there is an actual filter, run it and call the filter afterwards
             if (def.task.filter) {
                 async.waterfall([
                     def.task.filter.$bind(this._context, def.options),
@@ -201,10 +227,8 @@ var Automaton = d.Class.declare({
         batch.push(filter);
 
         // batch each task
-        def.task.tasks.forEach(function (currentSubtask, i) {
+        def.task.tasks.forEach(function (currentSubtask) {
             var subtaskBatch;
-
-            this._assertIsObject(currentSubtask, 'Invalid subtask specified at index \'' + i + '\' in \'' + def.task.id + '\' task');
 
             // if it's a function, just add it to the batch
             if (utils.lang.isFunction(currentSubtask.task)) {
@@ -238,7 +262,7 @@ var Automaton = d.Class.declare({
      * Creates a task definition for a task.
      *
      * @param {Object} task          The task
-     * @param {oBJECT} parentTaskDef The parent task definition
+     * @param {Object} parentTaskDef The parent task definition
      */
     _createTaskDefinition: function (task, parentTaskDef) {
         return {
@@ -248,22 +272,6 @@ var Automaton = d.Class.declare({
             parentOptions: parentTaskDef.options,
             depth: parentTaskDef.depth + 1
         };
-    },
-
-    /**
-     * Validate the task options.
-     * Detects if a task is missing required options.
-     *
-     * @param {Object} task    The task definition
-     * @param {Object} options The task options
-     */
-    _validateTaskOptions: function (task, options) {
-        for (var option in task.options) {
-            // if option was not provided to the task, abort
-            if (options[option] === undefined) {
-                this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task');
-            }
-        }
     },
 
     /**
@@ -353,121 +361,141 @@ var Automaton = d.Class.declare({
     },
 
     /**
+     * Assert that a task is valid.
+     *
+     * @param {Object} task The task
+     */
+    _validateTask: function (task) {
+        var taskId = task.id || 'unknown',
+            x,
+            currTask;
+
+        this._assertIsObject(task, 'Expected task to be an object', true);
+        if (task.id !== undefined) {
+            this._assertIsString(task.id, 'Expected id to be a string', true);
+            if (!task.id) {
+                this._throwError('Task id cannot be empty.', true);
+            }
+        }
+        if (task.name !== undefined) {
+            this._assertIsString(task.author, 'Expected name to be a string in \'' + taskId + '\' task', true);
+        }
+        if (task.author !== undefined) {
+            this._assertIsString(task.author, 'Expected author to be a string in \'' + taskId + '\' task', true);
+        }
+        if (task.description !== undefined && !utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
+            this._throwError('Expected description to be a string or a function in \'' + taskId + '\' task', true);
+        }
+        if (task.filter !== undefined) {
+            this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + taskId + '\' task', true);
+        }
+        if (task.options !== undefined) {
+            this._assertIsObject(task.options, 'Expected options to be an object in \'' + taskId + '\' task', true);
+            // TODO: validate options object
+        } else {
+            task.options = {};
+        }
+
+        this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + taskId + '\' task', true);
+
+        for (x = 0; x < task.tasks; ++x) {
+            currTask = task.tasks[x];
+
+            this._assertIsObject('Expected subtask at index \'' + x + '\' to be an object', true);
+            if (utils.lang.isObject(currTask.task)) {
+                this._assertIsValidTask(currTask.task);
+            } else {
+                if (!utils.lang.isString(currTask.task) && !utils.lang.isFunction(currTask.task)) {
+                    this._throwError('Expected subtask at index \'' + x + '\' to be a string, a function or a task object in \'' + taskId + '\' task', true);
+                }
+                if (currTask.description !== undefined && !utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
+                    this._throwError('Expected subtask description at index \'' + x + '\' to be a string or a function in \'' + taskId + '\' task', true);
+                }
+                if (currTask.options !== undefined) {
+                    this._assertIsObject('Expected subtask options at index \'' + x + '\' to be an object in \'' + taskId + '\' task', true);
+                }
+            }
+        }
+    },
+
+    /**
+     * Validate the task options.
+     * Detects if a task is missing required options.
+     *
+     * @param {Object}  task       The task definition
+     * @param {Object}  options    The task options
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     */
+    _validateTaskOptions: function (task, options, $verbose) {
+        for (var option in task.options) {
+            // if option was not provided to the task, abort
+            if (options[option] === undefined) {
+                return this._throwError('Missing option \'' + option + '\' in \'' + task.id + '\' task', $verbose);
+            }
+        }
+    },
+
+    /**
      * Assert task is loaded.
      *
-     * @param {String} taskId The task id
+     * @param {String}  taskId      The task id
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
      */
-    _assertTaskLoaded: function (taskId) {
+    _assertTaskLoaded: function (taskId, $verbose) {
         if (!utils.lang.isObject(this._tasks[taskId])) {
-            this._throwError('Could not find any task handler suitable for \'' + taskId + '\'');
+            return this._throwError('Could not find any task handler suitable for \'' + taskId + '\'', $verbose);
         }
     },
 
     /**
      * Assert string.
      *
-     * @param {Mixed} variable  The target to assert
-     * @param {String} errorMsg The error message to show if the assert fails
+     * @param {Mixed}   variable   The target to assert
+     * @param {String}  msg        The error message to show if the assert fails
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
      */
-    _assertIsString: function (variable, errorMsg) {
+    _assertIsString: function (variable, msg, $verbose) {
         if (!utils.lang.isString(variable)) {
-            this._throwError(errorMsg);
+            return this._throwError(msg, $verbose);
         }
     },
 
     /**
      * Assert object.
      *
-     * @param {Mixed} variable  The target to assert
-     * @param {String} errorMsg The error message to show if the assert fails
+     * @param {Mixed}   variable   The target to assert
+     * @param {String}  msg        The error message to show if the assert fails
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
      */
-    _assertIsObject: function (variable, errorMsg) {
+    _assertIsObject: function (variable, msg, $verbose) {
         if (!utils.lang.isObject(variable)) {
-            this._throwError(errorMsg);
+            return this._throwError(msg, $verbose);
         }
     },
 
     /**
      * Assert function.
      *
-     * @param {Mixed} variable  The target to assert
-     * @param {String} errorMsg The error message to show if the assert fails
+     * @param {Mixed}   variable   The target to assert
+     * @param {String}  msg        The error message to show if the assert fails
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
      */
-    _assertIsFunction: function (variable, errorMsg) {
+    _assertIsFunction: function (variable, msg, $verbose) {
         if (!utils.lang.isFunction(variable)) {
-            this._throwError(errorMsg);
+            return this._throwError(msg, $verbose);
         }
     },
 
     /**
      * Assert array.
      *
-     * @param {Mixed} variable  The target to assert
-     * @param {String} errorMsg The error message to show if the assert fails
+     * @param {Mixed}   variable   The target to assert
+     * @param {String}  msg        The error message to show if the assert fails
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
      */
-    _assertIsArray: function (variable, errorMsg) {
+    _assertIsArray: function (variable, msg, $verbose) {
         if (!utils.lang.isArray(variable)) {
-            this._throwError(errorMsg);
-        }
-    },
-
-    /**
-     * Assert that a task is valid.
-     *
-     * @param {Object} task The task
-     */
-    _assertValidTask: function (task) {
-        var taskId = task.id || 'unknown',
-            x,
-            currTask;
-
-        this._assertIsObject(task, 'Expected task to be an object');
-        if (task.id !== undefined) {
-            this._assertIsString(task.id, 'Expected id to be a string');
-            if (!task.id) {
-                this._throwError('Task id cannot be empty.');
-            }
-        }
-        if (task.name !== undefined) {
-            this._assertIsString(task.author, 'Expected name to be a string in \'' + taskId + '\' task');
-        }
-        if (task.author !== undefined) {
-            this._assertIsString(task.author, 'Expected author to be a string in \'' + taskId + '\' task');
-        }
-        if (task.description !== undefined) {
-            if (!utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
-                this._throwError('Expected description to be a string or a function in \'' + taskId + '\' task');
-            }
-        }
-        if (task.filter !== undefined) {
-            this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + taskId + '\' task');
-        }
-        if (task.options !== undefined) {
-            this._assertIsObject(task.options, 'Expected options to be an object in \'' + taskId + '\' task');
-            // TODO: validate options object
-        } else {
-            task.options = {};
-        }
-
-        this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + taskId + '\' task');
-
-        for (x = 0; x < task.tasks; ++x) {
-            currTask = task.tasks[x];
-
-            this._assertIsObject('Expected subtask at index \'' + x + '\' to be an object');
-            if (utils.lang.isObject(currTask.task)) {
-                this._assertValidTask(currTask.task);
-            } else {
-                if (!utils.lang.isString(currTask.task) && !utils.lang.isFunction(currTask.task)) {
-                    this._throwError('Expected subtask at index \'' + x + '\' to be a string, a function or a task object in \'' + taskId + '\' task');
-                }
-                if (currTask.description !== undefined && !utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
-                    this._throwError('Expected subtask description at index \'' + x + '\' to be a string or a function in \'' + taskId + '\' task');
-                }
-                if (currTask.options !== undefined) {
-                    this._assertIsObject('Expected subtask options at index \'' + x + '\' to be an object in \'' + taskId + '\' task');
-                }
-            }
+            return this._throwError(msg, $verbose);
         }
     },
 
@@ -480,7 +508,7 @@ var Automaton = d.Class.declare({
     _throwError: function (msg, $verbose) {
         if (!$verbose) {
             this._logger.errorln(msg);
-            process.exit(1);
+            return new Error(msg);
         }
 
         throw new Error(this._logger.uncolor(msg));
@@ -489,15 +517,14 @@ var Automaton = d.Class.declare({
     $statics: {
         /**
          * Creates a new automaton instance.
+         * Please see the constructor for more info about the available options.
          *
-         * @param {Stream} [$stdout]  The stdout stream, defaults to process.stdout
-         * @param {Stream} [$stderr]  The stderr stream, defaults to process.stderr
          * @param {Object} [$options] The options
          *
          * @return {Automaton} A new automaton instance
          */
-        create: function ($stdout, $stderr, $options) {
-            return new Automaton($stdout || process.stdout, $stderr || process.stderr, $options);
+        create: function ($options) {
+            return new Automaton($options);
         }
     }
 });

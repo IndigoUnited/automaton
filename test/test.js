@@ -25,7 +25,7 @@ function loadTestTasks() {
 }
 
 // init automaton, disabling logging
-automaton = new Automaton(process.stdout, process.stderr, { verbosity: 0 });
+automaton = new Automaton({ verbosity: 0 });
 
 describe('Automaton', function () {
     before(loadTestTasks);

@@ -36,7 +36,10 @@ var task = {
                 });
 
                 child.stderr.on('data', function (data) {
-                    that.log.error(data.toString());
+                    // Log stderr as normal messages because a lot of programs
+                    // output debug messages to stderr (and not only error messages)
+                    // This is a valid standard
+                    that.log.info(data.toString());
                 });
 
                 child.on('exit', function (code) {
