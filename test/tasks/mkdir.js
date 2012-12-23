@@ -1,4 +1,5 @@
 var expect = require('expect.js'),
+    fs     = require('fs'),
     isDir  = require('../helpers/util/is-dir')
 ;
 
@@ -58,10 +59,16 @@ module.exports = function (automaton) {
         });
 
         it('should create directories with desired mode', function (done) {
-            var dirs = [];
+            var dirs = [],
+                expectedMode = 16877,
+                dir3 = __dirname + '/../tmp/mkdir/mode/dir3',
+                dir4 = dir3 + '/dir4';
+
             dirs.push(__dirname + '/../tmp/mkdir/mode/dir1');
             dirs.push(__dirname + '/../tmp/mkdir/mode/dir2');
-            dirs.push(__dirname + '/../tmp/mkdir/mode/dir3/dir4');
+            dirs.push(dir4);
+
+
 
             automaton.run('mkdir', {
                 dirs: dirs,
@@ -71,9 +78,18 @@ module.exports = function (automaton) {
                     return done(err);
                 }
 
+                // verify if is dir
                 expect(isDir(dirs[0])).to.be(true);
                 expect(isDir(dirs[1])).to.be(true);
-                expect(isDir(dirs[2])).to.be(true);
+                expect(isDir(dir3)).to.be(true);
+                expect(isDir(dir4)).to.be(true);
+
+                // verify mode
+                expect(fs.statSync(dirs[0]).mode === expectedMode).to.be(true);
+                expect(fs.statSync(dirs[1]).mode === expectedMode).to.be(true);
+                expect(fs.statSync(dir3).mode === expectedMode).to.be(true);
+                expect(fs.statSync(dir4).mode === expectedMode).to.be(true);
+
                 done();
             });
         });

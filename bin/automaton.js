@@ -140,7 +140,7 @@ if (argv._.length) {
         // run the task
         runTask(task, argv);
     }
-    // no command was specified, try to run autofile.js in the cwd
+// no command was specified, try to run autofile.js in the cwd
 } else {
     var task = getTaskFromFile();
 
