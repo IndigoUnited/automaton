@@ -173,6 +173,8 @@ var Automaton = d.Class.declare({
      * The batch is a sequence of functions that form the task.
      *
      * @param {Object} task The task definition
+     *
+     * @return {Array} The batch
      */
     _batchTask: function (def) {
         var batch = [],
@@ -263,6 +265,8 @@ var Automaton = d.Class.declare({
      *
      * @param {Object} task          The task
      * @param {Object} parentTaskDef The parent task definition
+     *
+     * @return {Object} The task definition
      */
     _createTaskDefinition: function (task, parentTaskDef) {
         return {
@@ -282,6 +286,8 @@ var Automaton = d.Class.declare({
      *
      * @param {Object} task    The task definition
      * @param {Object} options The task options
+     *
+     * @return {Boolean} True if enabled, false otherwise
      */
     _isTaskEnabled: function (task, options) {
         if (task.hasOwnProperty('on')) {
@@ -438,8 +444,10 @@ var Automaton = d.Class.declare({
     /**
      * Assert task is loaded.
      *
-     * @param {String}  taskId      The task id
+     * @param {String}  taskId     The task id
      * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     *
+     * @return {Error} The error object or null if none (only if not verbose)
      */
     _assertTaskLoaded: function (taskId, $verbose) {
         if (!utils.lang.isObject(this._tasks[taskId])) {
@@ -453,6 +461,8 @@ var Automaton = d.Class.declare({
      * @param {Mixed}   variable   The target to assert
      * @param {String}  msg        The error message to show if the assert fails
      * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     *
+     * @return {Error} The error object or null if none (only if not verbose)
      */
     _assertIsString: function (variable, msg, $verbose) {
         if (!utils.lang.isString(variable)) {
@@ -466,6 +476,8 @@ var Automaton = d.Class.declare({
      * @param {Mixed}   variable   The target to assert
      * @param {String}  msg        The error message to show if the assert fails
      * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     *
+     * @return {Error} The error object or null if none (only if not verbose)
      */
     _assertIsObject: function (variable, msg, $verbose) {
         if (!utils.lang.isObject(variable)) {
@@ -479,6 +491,8 @@ var Automaton = d.Class.declare({
      * @param {Mixed}   variable   The target to assert
      * @param {String}  msg        The error message to show if the assert fails
      * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     *
+     * @return {Error} The error object or null if none (only if not verbose)
      */
     _assertIsFunction: function (variable, msg, $verbose) {
         if (!utils.lang.isFunction(variable)) {
@@ -492,6 +506,8 @@ var Automaton = d.Class.declare({
      * @param {Mixed}   variable   The target to assert
      * @param {String}  msg        The error message to show if the assert fails
      * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     *
+     * @return {Error} The error object or null if none (only if not verbose)
      */
     _assertIsArray: function (variable, msg, $verbose) {
         if (!utils.lang.isArray(variable)) {
@@ -504,6 +520,8 @@ var Automaton = d.Class.declare({
      *
      * @param {String}  msg        The error message
      * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     *
+     * @return {Error} The error object or null if none (only if not verbose)
      */
     _throwError: function (msg, $verbose) {
         if (!$verbose) {
