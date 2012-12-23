@@ -1,4 +1,5 @@
 var fs    = require('fs');
+var path  = require('path');
 var utils = require('amd-utils');
 
 var task = {
@@ -20,7 +21,7 @@ var task = {
         if (utils.string.endsWith(opt.name, '.js')) {
             opt.name = opt.name.slice(0, -3);
         }
-        opt.filename = opt.name + '.js';
+        opt.filename = path.join(opt.dst, opt.name + '.js');
         opt.__dirname = __dirname;
 
         fs.stat(opt.filename, function (err) {
@@ -37,14 +38,14 @@ var task = {
             task: 'cp',
             options: {
                 files: {
-                    '{{__dirname}}/../base_autofile.js': '{{dst}}/{{filename}}'
+                    '{{__dirname}}/../base_autofile.js': '{{filename}}'
                 }
             }
         },
         {
             task: 'scaffolding-replace',
             options: {
-                files: '{{dst}}/{{filename}}',
+                files: '{{filename}}',
                 data: {
                     name: '{{name}}'
                 }

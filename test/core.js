@@ -114,35 +114,30 @@ module.exports = function (automaton) {
 
         // test callback
         it.skip('should call the callback once done running a task');
-        it.skip('should pass a nerror (without colors) to the callback if there was an one');
+        it.skip('should pass an error (without colors) to the callback if there was an one');
 
         // test if options are shared
         it('should run tasks in an isolated way', function (done) {
-            var counter = 0;
+            var counter = 0,
+                shared;
+
+            shared = {
+                task: 'callback',
+                options: {
+                    callback: '{{test}}'
+                }
+            };
 
             automaton.run({
-                tasks: [
-                    {
-                        task: 'callback',
-                        options: {
-                            callback: function () {
-                                ++counter;
-                            }
-                        }
-                    }
-                ]
-            }, null, function (err) {
+                tasks: [shared]
+            }, { test: function () { counter++; }}, function (err) {
                 if (err) {
                     return done(err);
                 }
 
                 automaton.run({
-                    tasks: [
-                        {
-                            task: 'callback'  // same task but with no options!
-                        }
-                    ]
-                }, null, function (err) {
+                    tasks: [shared]
+                }, { test: function () { }}, function (err) {
                     if (err) {
                         return done(err);
                     }

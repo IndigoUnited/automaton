@@ -30,7 +30,7 @@ automaton = new Automaton({ verbosity: 0 });
 describe('Automaton', function () {
     before(loadTestTasks);
     beforeEach(prepareTmp);
-    after(cleanUpTmp);
+    //after(cleanUpTmp);
 
     core(automaton);
     tasks(automaton);
