@@ -384,7 +384,7 @@ var Automaton = d.Class.declare({
             }
         }
         if (task.name !== undefined) {
-            this._assertIsString(task.author, 'Expected name to be a string in \'' + taskId + '\' task', true);
+            this._assertIsString(task.name, 'Expected name to be a string in \'' + taskId + '\' task', true);
         }
         if (task.author !== undefined) {
             this._assertIsString(task.author, 'Expected author to be a string in \'' + taskId + '\' task', true);
@@ -418,7 +418,7 @@ var Automaton = d.Class.declare({
                     this._throwError('Expected subtask description at index \'' + x + '\' to be a string or a function in \'' + taskId + '\' task', true);
                 }
                 if (currTask.options !== undefined) {
-                    this._assertIsObject('Expected subtask options at index \'' + x + '\' to be an object in \'' + taskId + '\' task', true);
+                    this._assertIsObject(currTask.options, 'Expected subtask options at index \'' + x + '\' to be an object in \'' + taskId + '\' task', true);
                 }
             }
         }
