@@ -5,8 +5,106 @@ var expect    = require('expect.js'),
 
 module.exports = function (automaton) {
     describe('Engine', function () {
-        it.skip('should throw on invalid', {
-            // test tasks and deep tasks
+        it('should throw if a task is invalid', function () {
+            after(function () {
+                automaton.removeTask('foo');
+            });
+
+            // not an object
+            expect(function () {
+                automaton.addTask('foo');
+            }).to.throwException(/an object/);
+
+            // no subtasks
+            expect(function () {
+                automaton.addTask({});
+            }).to.throwException(/subtasks to be an array/);
+
+            // no id
+            expect(function () {
+                automaton.addTask({
+                    tasks: []
+                });
+            }).to.throwException(/only add tasks with an id/);
+
+            // invalid name/author
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    name: 1,
+                    tasks: []
+                });
+            }).to.throwException(/name/);
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    author: 1,
+                    tasks: []
+                });
+            }).to.throwException(/author/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    author: 'André',
+                    tasks: []
+                });
+            }).to.not.throwException();
+
+            // invalid description
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    description: 1,
+                    tasks: []
+                });
+            }).to.throwException(/description/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    description: 'Some task',
+                    tasks: []
+                });
+            }).to.not.throwException();
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    description: function () { return 'Some Task'; },
+                    tasks: []
+                });
+            }).to.not.throwException();
+
+            // invalid options
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    options: 1,
+                    tasks: []
+                });
+            }).to.throwException(/options/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    options: {},
+                    tasks: []
+                });
+            }).to.not.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    options: {
+                        opt1: 1
+                    },
+                    tasks: []
+                });
+            }).to.throwException(/options/);
+
+            // TODO:
         });
 
         // test run
