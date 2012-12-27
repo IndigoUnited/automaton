@@ -108,20 +108,21 @@ function expand(pattern, options, next) {
         }
 
         matches.forEach(function (match) {
+            var isDir = utils.string.endsWith(match, '/');
             match = path.normalize(match);
-            if (utils.string.endsWith(match, '/')) {
-                lastMatch = match.slice(0, -1);
-                dirs.push(lastMatch);
+
+            if (isDir) {
+                lastMatch = match.replace(/[\/\\]+$/, '');
+                dirs.push(path.normalize(lastMatch));
             } else {
-                files.push(match);
                 lastMatch = match;
+                files.push(lastMatch);
             }
         });
 
-
         // If we only got one match and it was the same as the original pattern,
         // then it was a direct match
-        var directMatch = matches.length === 1 && lastMatch.replace(/[\/\\]+$/, '') === path.normalize(pattern).replace(/[\/\\]+$/, '');
+        var directMatch = matches.length === 1 && lastMatch === path.normalize(pattern).replace(/[\/\\]+$/, '');
         if (!directMatch) {
             cleanup(files, dirs);
         }
@@ -198,6 +199,8 @@ function sortFunc(first, second) {
 function relativePath(file, pattern) {
     var length = file.length,
         x;
+
+    pattern = path.normalize(pattern);
 
     for (x = 0; x < length; ++x) {
         if (file[x] !== pattern[x]) {

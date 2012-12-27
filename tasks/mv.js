@@ -198,6 +198,7 @@ function replicateStructure(dst, pattern, cache, callback) {
     }
 
     // Find the base path pos
+    pattern = path.normalize(pattern);
     currPath = paths[0];
     length = currPath.length;
     for (x = 0; x < length; ++x) {
