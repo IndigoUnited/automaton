@@ -142,6 +142,10 @@ var Automaton = d.Class.declare({
 
         // function to handle the completion of the task
         handle = function (err) {
+            if (err) {
+                this._logger.errorln(err.message);
+            }
+
             if ($callback) {
                 if (err) {
                     err.message = this._logger.uncolor(err.message);
@@ -528,7 +532,6 @@ var Automaton = d.Class.declare({
      */
     _throwError: function (msg, $verbose) {
         if (!$verbose) {
-            this._logger.errorln(msg);
             return new Error(msg);
         }
 
