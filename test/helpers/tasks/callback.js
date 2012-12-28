@@ -12,13 +12,13 @@ module.exports = {
         }
     },
     filter: function (opt, next) {
-        opt.filterCallback(opt);
+        opt.filterCallback.call(this, opt);
         next();
     },
     tasks: [
         {
             task: function (opt, next) {
-                opt.callback(opt);
+                opt.callback.call(this, opt);
                 next();
             }
         }

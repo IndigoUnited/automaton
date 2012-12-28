@@ -852,15 +852,45 @@ module.exports = function (automaton) {
                 done();
             });
         });
-    });
 
-    describe('Logger', function () {
-        
-        // test description replacement
-        it.skip('should replace placeholders in task descriptions', function () {
-                
+        it('should offer a logging interface for tasks to report', function (done) {
+            var assert = function (ctx) {
+                expect(ctx.log).to.be.ok();
+                expect(ctx.log.info).to.be.a('function');
+                expect(ctx.log.infoln).to.be.a('function');
+                expect(ctx.log.warn).to.be.a('function');
+                expect(ctx.log.warnln).to.be.a('function');
+                expect(ctx.log.error).to.be.a('function');
+                expect(ctx.log.errorln).to.be.a('function');
+                expect(ctx.log.success).to.be.a('function');
+                expect(ctx.log.successln).to.be.a('function');
+            };
+
+            automaton.run({
+                filter: function (opt, next) {
+                    assert(this);
+                    next();
+                },
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            filterCallback: function () {
+                                assert(this);
+                            },
+                            callback: function () {
+                                assert(this);
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                done();
+            });
         });
-
-        // TODO: add tests for the logger
     });
 };
