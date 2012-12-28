@@ -98,8 +98,6 @@ var task = {
     options: {
         dir1: {
             // Option description is not mandatory
-            // can be a string or a function that receives the options
-            // and should return a string.
             description : 'The name of the folder ' +
                           'that will hold ' +
                           'all the subfolders'
@@ -122,7 +120,7 @@ var task = {
     tasks: [
         {
             task: 'mkdir',
-            description: 'create the root and second folder',
+            description: 'Create the root and second folder',
             options: {
                 // the option below
                 // will have its placeholders replaced by
@@ -229,7 +227,7 @@ In order to run an `autofile`, you simply run `automaton`. This will look for `a
 
 ### Node.js
 
-Automaton can also be used as a node module. Here's a quick example of its usage:
+Automaton can also be used programatically as a node module. Here's a quick example of its usage:
 
 ```javascript
 var automaton = require('automaton');
