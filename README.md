@@ -32,14 +32,14 @@ var myTask = {
     tasks: [
         {
             task: 'mkdir',
-            description: 'create the project root folder',
+            description: 'Create the project root folder',
             options: {
                 dirs: ['some_dir']
             }
         },
         {
             task: 'cp',
-            description: 'copy some file',
+            description: 'Copy some file',
             options: {
                 files: {
                     'some_file': 'some_dir/dest_file'
