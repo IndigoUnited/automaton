@@ -32,14 +32,14 @@ var myTask = {
     tasks: [
         {
             task: 'mkdir',
-            description: 'create the project root folder',
+            description: 'Create the project root folder',
             options: {
                 dirs: ['some_dir']
             }
         },
         {
             task: 'cp',
-            description: 'copy some file',
+            description: 'Copy some file',
             options: {
                 files: {
                     'some_file': 'some_dir/dest_file'
@@ -230,7 +230,7 @@ In order to run an `autofile`, you simply run `automaton`. This will look for `a
 Automaton can also be used programatically as a node module. Here's a quick example of its usage:
 
 ```javascript
-var automaton = require('automaton');
+var automaton = require('automaton').create();
 
 // Since autofiles are node modules themselves,
 // you can just require them
