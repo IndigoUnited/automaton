@@ -121,6 +121,18 @@ module.exports = function (automaton) {
                     id: 'foo',
                     options: {
                         opt1: {
+                            description: function () {}
+                        }
+                    },
+                    tasks: []
+                });
+            }).to.throwException(/option description/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    options: {
+                        opt1: {
                             description: 'test'
                         }
                     },
@@ -128,7 +140,122 @@ module.exports = function (automaton) {
                 });
             }).to.not.throwException();
 
-            // TODO: validate tasks[]
+            // test filter
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    filter: 1,
+                    tasks: []
+                });
+            }).to.throwException(/filter/);
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    filter: function () {},
+                    tasks: []
+                });
+            }).to.not.throwException();
+
+            // test tasks
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [1]
+                });
+            }).to.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [{}]
+                });
+            }).to.throwException(/task/);
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 1
+                        }
+                    ]
+                });
+            }).to.throwException(/task/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp'
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            options: 1
+                        }
+                    ]
+                });
+            }).to.throwException(/options/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            options: {}
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            description: 1
+                        }
+                    ]
+                });
+            }).to.throwException(/description/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            description: 'copy something'
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: {
+                                tasks: 1
+                            },
+                            description: 'copy something'
+                        }
+                    ]
+                });
+            }).to.throwException(/tasks/);
+
         });
 
         // test run

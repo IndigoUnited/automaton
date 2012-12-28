@@ -378,7 +378,8 @@ var Automaton = d.Class.declare({
     _validateTask: function (task) {
         var taskId = task.id || 'unknown',
             x,
-            curr;
+            curr,
+            length;
 
         this._assertIsObject(task, 'Expected task to be an object', true);
         if (task.id !== undefined) {
@@ -414,17 +415,18 @@ var Automaton = d.Class.declare({
 
         this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + taskId + '\' task', true);
 
-        for (x = 0; x < task.tasks; ++x) {
+        length = task.tasks.length;
+        for (x = 0; x < length; ++x) {
             curr = task.tasks[x];
 
-            this._assertIsObject('Expected subtask at index \'' + x + '\' to be an object', true);
+            this._assertIsObject(curr, 'Expected subtask at index \'' + x + '\' to be an object', true);
             if (utils.lang.isObject(curr.task)) {
-                this._assertIsValidTask(curr.task);
+                this._validateTask(curr.task);
             } else {
                 if (!utils.lang.isString(curr.task) && !utils.lang.isFunction(curr.task)) {
                     this._throwError('Expected subtask at index \'' + x + '\' to be a string, a function or a task object in \'' + taskId + '\' task', true);
                 }
-                if (curr.description !== undefined && !utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
+                if (curr.description !== undefined && !utils.lang.isString(curr.description) && !utils.lang.isFunction(curr.description)) {
                     this._throwError('Expected subtask description at index \'' + x + '\' to be a string or a function in \'' + taskId + '\' task', true);
                 }
                 if (curr.options !== undefined) {
