@@ -399,8 +399,51 @@ module.exports = function (automaton) {
         });
 
         // test callback
-        it.skip('should call the callback once done running a task');
-        it.skip('should pass an error (without colors) to the callback if there was an one');
+        it('should call the callback once done running a task', function (done) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback'
+                    }
+                ]
+            }, null, function () {
+                done();
+            });
+        });
+
+        it('should pass an error (without colors) to the callback if there was an one', function (done) {
+            var assert = function (err) {
+                expect(err).to.be.ok();
+                expect(err.message).to.equal('wtf');
+                expect(/\x1B\[\d+m/.test(err.message)).to.equal(false);
+            };
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: function (opt, next) {
+                            next(new Error('wtf'));
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                assert(err);
+
+                automaton.run({
+                    tasks: [
+                        {
+                            task: function (opt, next) {
+                                next('wtf');
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    assert(err);
+
+                    done();
+                });
+            });
+        });
 
         // test if options are shared
         it('should run tasks in an isolated way', function (done) {

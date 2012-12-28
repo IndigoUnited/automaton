@@ -142,6 +142,10 @@ var Automaton = d.Class.declare({
 
         // function to handle the completion of the task
         handle = function (err) {
+            if (utils.lang.isString(err)) {
+                err = new Error(err);
+            }
+
             if (err) {
                 this._logger.errorln(err.message);
             }
