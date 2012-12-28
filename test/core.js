@@ -678,13 +678,46 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should assume default task options if absent');
+        // test default options
+        it('should assume default task options if absent', function (done) {
+            automaton.run({
+                options: {
+                    foo: {
+                        'default': 'bar'
+                    }
+                },
+                filter: function (opt, next) {
+                    expect(opt.foo).to.equal('bar');
+                    next();
+                },
+                tasks: []
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
 
-        it.skip('should replace placeholders in task descriptions', function () {
-            // test description as string and function
+                automaton.run({
+                    options: {
+                        foo: {
+                            'default': 'bar'
+                        }
+                    },
+                    filter: function (opt, next) {
+                        expect(opt.foo).to.equal('baz');
+                        next();
+                    },
+                    tasks: []
+                }, { foo: 'baz' }, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    done();
+                });
+            });
         });
-        it.skip('should ignore escaped placeholders in task options');
 
+        // test options replacement
         it('should replaced placeholders in task options', function (done) {
             var someObj = {};
             var opts = {
@@ -702,10 +735,18 @@ module.exports = function (automaton) {
                             foo: '{{opt1}}-{{opt2}}',
                             bar: '{{opt3}}',
                             baz: '{{opt4}}',
+                            arr: ['{{opt4}}', 'foo'],
+                            obj: {
+                                '{{opt1}}': '{{opt4}}',
+                                '{{opt2}}': '{{opt1}}-{{opt2}}'
+                            },
                             callback: function (opt) {
                                 expect(opt.foo).to.be.equal('x-y');
                                 expect(opt.bar === true).to.be.equal(true);
                                 expect(opt.baz === someObj).to.be.equal(true);
+                                expect(opt.arr[0] === someObj).to.be.equal(true);
+                                expect(opt.obj.x === someObj).to.be.equal(true);
+                                expect(opt.obj.y).to.be.equal('x-y');
                             }
                         }
                     }
@@ -717,11 +758,32 @@ module.exports = function (automaton) {
 
                 done();
             });
-
-            // TODO: test if replacements is being done deeply in arrays and objects
-            //       in case of objects, its keys and values should be replaced
         });
-        it.skip('should ignore escaped placeholders in task options');
+
+        it('should ignore escaped placeholders in task options', function (done) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            someOption: '\\{\\{foo\\}\\}',
+                            filterCallback: function (opt) {
+                                expect(opt.someOption).to.equal('\\{\\{foo\\}\\}');
+                            },
+                            callback: function (opt) {
+                                expect(opt.someOption).to.equal('{{foo}}');
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                done();
+            });
+        });
 
         it('should execute filters before their respective tasks', function (done) {
             var filtered = false,
@@ -793,6 +855,12 @@ module.exports = function (automaton) {
     });
 
     describe('Logger', function () {
+        
+        // test description replacement
+        it.skip('should replace placeholders in task descriptions', function () {
+                
+        });
+
         // TODO: add tests for the logger
     });
 };
