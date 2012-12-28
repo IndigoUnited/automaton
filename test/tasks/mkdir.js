@@ -60,7 +60,7 @@ module.exports = function (automaton) {
 
         it('should create directories with desired mode', function (done) {
             var dirs = [],
-                expectedMode = 16877,
+                expectedMode = process.platform === 'win32' ? 16822 : 16877,
                 dir3 = __dirname + '/../tmp/mkdir/mode/dir3',
                 dir4 = dir3 + '/dir4';
 
