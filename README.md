@@ -232,7 +232,7 @@ In order to run an `autofile`, you simply run `automaton`. This will look for `a
 Automaton can also be used as a node module. Here's a quick example of its usage:
 
 ```javascript
-var automaton = require('automaton');
+var automaton = require('automaton').create();
 
 // Since autofiles are node modules themselves,
 // you can just require them
