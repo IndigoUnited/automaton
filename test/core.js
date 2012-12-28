@@ -276,7 +276,7 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(called).to.be(true);
@@ -316,7 +316,7 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(stack).to.eql([1, 2, 3]);
@@ -331,7 +331,7 @@ module.exports = function (automaton) {
                 dirs: dirname
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dirname)).to.be(true);
@@ -354,7 +354,7 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dirname)).to.be(true);
@@ -382,14 +382,14 @@ module.exports = function (automaton) {
                 tasks: [shared]
             }, { test: function () { counter++; }}, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 automaton.run({
                     tasks: [shared]
                 }, { test: function () { }}, function (err) {
                     if (err) {
-                        return done(err);
+                        throw err;
                     }
 
                     expect(counter).to.equal(1);
@@ -479,7 +479,7 @@ module.exports = function (automaton) {
                 ]
             }, { falsy1: false, falsy2: undefined, falsy3: null, truthy1: 'foo' }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(stack).to.eql([1, 3, 4]);
@@ -575,7 +575,7 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(stack).to.eql([1, 3, 4, 5]);
@@ -583,7 +583,22 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should throw if all required task options have not been passed');
+        // test required options
+        it('should throw if all required task options have not been passed', function (done) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'mkdir'
+                    }
+                ]
+            }, {}, function (err) {
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/missing/i);
+
+                done();
+            });
+        });
+
         it.skip('should assume default task options if absent');
 
         it.skip('should replace placeholders in task descriptions', function () {
@@ -617,7 +632,11 @@ module.exports = function (automaton) {
                     }
                 ]
             }, opts, function (err) {
-                done(err);
+                if (err) {
+                    throw err;
+                }
+
+                done();
             });
 
             // TODO: test if replacements is being done deeply in arrays and objects
@@ -647,11 +666,11 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 if (!filtered || wrong) {
-                    return done(new Error('Filtered not called or called after task'));
+                    throw new Error('Filtered not called or called after task');
                 }
 
                 done();
@@ -685,7 +704,11 @@ module.exports = function (automaton) {
                     }
                 ]
             }, { ultra: 'cool' }, function (err) {
-                done(err);
+                if (err) {
+                    throw err;
+                }
+
+                done();
             });
         });
     });

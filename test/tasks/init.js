@@ -12,7 +12,7 @@ module.exports = function (automaton) {
                 dst: dir
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isFile(dir + filename)).to.be(true);
@@ -30,7 +30,7 @@ module.exports = function (automaton) {
                 dst: dir
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isFile(dir + file)).to.be(true);

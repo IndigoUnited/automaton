@@ -11,7 +11,7 @@ module.exports = function (automaton) {
                 cmd: 'mkdir ' + dir
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dir)).to.be(true);
@@ -27,7 +27,7 @@ module.exports = function (automaton) {
                 cwd: dir
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dir + folder)).to.be(true);
