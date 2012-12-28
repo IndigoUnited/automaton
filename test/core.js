@@ -104,7 +104,31 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/options/);
 
-            // TODO:
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    options: {
+                        opt1: {
+                            description: 1
+                        }
+                    },
+                    tasks: []
+                });
+            }).to.throwException(/option description/);
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    options: {
+                        opt1: {
+                            description: 'test'
+                        }
+                    },
+                    tasks: []
+                });
+            }).to.not.throwException();
+
+            // TODO: validate tasks[]
         });
 
         // test run

@@ -404,6 +404,9 @@ var Automaton = d.Class.declare({
             for (x in task.options) {
                 curr = task.options[x];
                 this._assertIsObject(curr, 'Expected options definition to be an object in \'' + taskId + '\' task', true);
+                if (curr.description !== undefined) {
+                    this._assertIsString(curr.description, 'Expected \'' + x + '\' option description to be a string in \'' + taskId + '\' task', true);
+                }
             }
         } else {
             task.options = {};
