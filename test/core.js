@@ -339,7 +339,43 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should run deep tasks specified directly in tasks inside tasks (not by id)');
+        it('should run deep tasks specified directly in tasks inside tasks (not by id)', function (done) {
+            var stack = [];
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: {
+                            tasks: [
+                                {
+                                    task: 'callback',
+                                    options: {
+                                        callback: function () {
+                                            stack.push(1);
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        task: 'callback',
+                        options: {
+                            callback: function () {
+                                stack.push(2);
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(stack).to.eql([1, 2]);
+                done();
+            });
+        });
 
         it('should run inline subtasks', function (done) {
             var dirname = __dirname + '/tmp/dir';
@@ -591,7 +627,7 @@ module.exports = function (automaton) {
                         task: 'mkdir'
                     }
                 ]
-            }, {}, function (err) {
+            }, null, function (err) {
                 expect(err).to.be.ok();
                 expect(err.message).to.match(/missing/i);
 

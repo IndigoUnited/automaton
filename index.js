@@ -246,10 +246,8 @@ var Automaton = d.Class.declare({
                     this._reportNextTask(this._createTaskDefinition(currentSubtask, def));
                     currentSubtask.task.call(this._context, def.options, next);
                 }.$bind(this));
-            // it's not a function, then it must be another task, check if it is loaded, and batch it
-            } else if (utils.lang.isString(currentSubtask.task)) {
-                this._assertTaskLoaded(currentSubtask.task);
-
+            // it's not a function, then it must be another task
+            } else {
                 subtaskBatch = this._batchTask(this._createTaskDefinition(currentSubtask, def));
                 batch.push(function (subtask, subtaskBatch, next) {
                     // skip task if disabled
