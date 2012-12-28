@@ -149,7 +149,7 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/filter/);
 
-            expect(function () {
+            expect(function () {  // test valid case
                 automaton.addTask({
                     id: 'foo',
                     filter: function () {},
@@ -242,6 +242,7 @@ module.exports = function (automaton) {
                 });
             }).to.not.throwException();
 
+            // test deep tasks validation
             expect(function () {
                 automaton.addTask({
                     id: 'foo',
