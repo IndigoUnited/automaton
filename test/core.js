@@ -1,16 +1,17 @@
 var expect       = require('expect.js'),
     fs           = require('fs'),
     isDir        = require('./helpers/util/is-dir'),
+    callback     = require('./helpers/tasks/callback'),
     removeColors = require('../lib/Logger').removeColors
 ;
 
 module.exports = function (automaton) {
     describe('Engine', function () {
-        it('should throw if a task is invalid', function () {
-            after(function () {
-                automaton.removeTask('foo');
-            });
+        after(function () {
+            automaton.removeTask('foo');
+        });
 
+        it('should throw if a task is invalid', function () {
             // not an object
             expect(function () {
                 automaton.addTask('foo');
@@ -275,17 +276,85 @@ module.exports = function (automaton) {
 
         });
 
-        it('should add tasks by id', function () {
-            // TODO: test adding a callback task different than the other one
-            //       and then adding the previous one again
+        it('should add tasks by id', function (done) {
+            var called = 0;
+
+            automaton.addTask({
+                id: 'callback',
+                tasks: []
+            });
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            callback: function () {
+                                called++;
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                automaton.addTask(callback);
+
+                if (err) {
+                    throw err;
+                }
+
+                expect(called === 0).to.equal(true);
+
+                automaton.run({
+                    tasks: [
+                        {
+                            task: 'callback',
+                            options: {
+                                callback: function () {
+                                    called++;
+                                }
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(called === 1).to.equal(true);
+
+                    done();
+                });
+            });
         });
 
-        it('should remove tasks by id', function () {
+        it('should remove tasks by id', function (done) {
+            automaton.removeTask('callback');
 
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback'
+                    }
+                ]
+            }, null, function (err) {
+                automaton.addTask(callback);
+
+                if (!err) {
+                    throw new Error('Callback task was not deleted');
+                }
+
+                expect(err.message).to.match(/task handler suitable/);
+
+                done();
+            });
         });
 
         it('should load tasks in folder', function () {
-            // TODO: remove the callback task and then ask to load the tasks folder
+            // for now this test does not need verifications
+            // because the root test is loading the tasks folder
+            // that has the callback task that is being used all over the place
+            //
+            // if we ever support loading nested folders, then the test must account for that
         });
 
         // test run
