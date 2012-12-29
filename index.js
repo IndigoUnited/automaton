@@ -371,12 +371,20 @@ var Automaton = d.Class.declare({
      */
     _reportNextTask: function (def) {
         var desc,
-            logger = def.context.log;
+            logger = def.context.log,
+            isPureFunction = utils.lang.isFunction(def.task);
 
         logger.setDepth(def.depth);
 
         // try out to extract the description, falling back to the name
-        desc = def.description || def.task.description || def.task.name || '';
+        desc = def.description || def.task.description || def.task.name;
+        if (!desc) {
+            if (isPureFunction) {
+                return this;
+            }
+            desc = '';
+        }
+
         if (utils.lang.isFunction(def.description)) {
             desc = def.description(def.options);
         }

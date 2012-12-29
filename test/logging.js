@@ -109,8 +109,7 @@ module.exports = function (automaton) {
                         indent('Level 3 task error\n', 3) +
                         arrow('', 2) +
                         arrow('Other level 3 task', 3) +
-                        arrow('Even other level 2 task', 2) +
-                        arrow('', 3)
+                        arrow('Even other level 2 task', 2)
                     );
 
                     done();
@@ -166,7 +165,6 @@ module.exports = function (automaton) {
                     log = removeColors(log);
                     expect(log).to.equal(
                         arrow('', 1) +
-                        arrow('', 2) +
                         indent('[object Object]\n', 2) +
                         indent('foo,bar\n', 2) +
                         indent('null\n', 2) +
@@ -227,7 +225,6 @@ module.exports = function (automaton) {
                     log = removeColors(log);
                     expect(log).to.equal(
                         arrow('', 1) +
-                        arrow('', 2) +
                         indent('foo\n', 2) +
                         indent('bar', 2) +
                         'baz' +
@@ -266,7 +263,6 @@ module.exports = function (automaton) {
                     log = removeColors(log);
                     expect(log).to.equal(
                         arrow('', 1) +
-                        arrow('', 2) +
                         indent('foo\n', 2) +
                         indent('bar\n', 2) +
                         indent('baz\n', 2) +
@@ -325,8 +321,6 @@ module.exports = function (automaton) {
                     log = removeColors(log);
                     expect(log).to.equal(
                         arrow('', 1) +
-                        arrow('', 2) +
-
                         indent('bar', 2) +
                         indent('bar\n', 2) +
                         indent('bar', 2) +
@@ -375,7 +369,6 @@ module.exports = function (automaton) {
                             log = removeColors(log);
                             expect(log).to.equal(
                                 arrow('', 1) +
-                                arrow('', 2) +
                                 indent('foo', 2) +
                                 indent('foo\n', 2) +
                                 indent('foo', 2) +
