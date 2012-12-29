@@ -270,7 +270,9 @@ function runTask(task, options) {
         task = automaton.getTask(task);
     }
 
-    automaton.run(task, options, function (err) {
-        process.exit(err ? 1 : 0);
-    });
+    automaton
+        .run(task, options, function (err) {
+            process.exit(err ? 1 : 0);
+        })
+        .pipe(process.stdout);
 }

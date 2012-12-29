@@ -13,15 +13,12 @@ var Automaton = d.Class.declare({
     $name: 'Automaton',
 
     _tasks: [],
-    _logger: null,
-    _context: {},
+    _options: null,
 
     /**
      * Constructor.
      *
      * Available options:
-     *  - stdout    - a stream to write log messages (defaults to process.stdout, null to disable)
-     *  - stderr    - a stream to write error log messages (defaults to process.stdout, null to disable)
      *  - verbosity - 0 means no logging
      *                1 means only 1 deep level tasks and so on..
      *                -1 means log every level
@@ -30,21 +27,10 @@ var Automaton = d.Class.declare({
      * @param {Object} [$options] The options
      */
     initialize: function ($options) {
-        // init logger & setup context
-        this._logger = new Logger($options);
-        this._context.log = this._logger;
+        this._options = $options;
 
         // load core tasks
         this.loadTasks(__dirname + '/tasks');
-    },
-
-    /**
-     * Get the logger.
-     *
-     * @return {Logger} The logger instance
-     */
-    getLogger: function () {
-        return this._logger;
     },
 
     /**
@@ -134,25 +120,33 @@ var Automaton = d.Class.declare({
      * @param {Object}        [$options]  The task options
      * @param {Function}      [$callback] A callback to be called when the task completes
      *
-     * @return {Automaton} Chainable!
+     * @return {Stream} A readable stream where logging will be done
      */
     run: function (task, $options, $callback) {
         var batch,
-            handle;
+            handle,
+            context,
+            stream;
 
         // function to handle the completion of the task
         handle = function (err) {
-            if (utils.lang.isString(err)) {
-                err = new Error(err);
+            // if error is not actually an error, attempt to fix it
+            if (!(err instanceof Error)) {
+                err = new Error(err + '');
             }
 
+            // log the error
             if (err) {
-                this._logger.errorln(err.message);
+                context.log.errorln(err.message);
             }
 
+            // signal the end of the stream
+            stream.emit('end');
+
+            // call callback if any
             if ($callback) {
                 if (err) {
-                    err.message = this._logger.uncolor(err.message);
+                    err.message = Logger.removeColors(err.message); // Remove any colors from the message
                 }
                 $callback(err);
             }
@@ -160,12 +154,19 @@ var Automaton = d.Class.declare({
             return this;
         }.$bind(this);
 
+        // setup context
+        context = {
+            log: new Logger(this._options)
+        };
+        stream = context.log.getStream();
+
         // catch any error while getting the batch
         try {
             batch  = this._batchTask({
                 task: task,
                 options: $options,
-                depth: 1
+                depth: 1,
+                context: context
             });
         } catch (e) {
             return handle(e);
@@ -174,7 +175,7 @@ var Automaton = d.Class.declare({
         // waterfall the batch
         async.waterfall(batch, handle);
 
-        return this;
+        return stream;
     },
 
     /**
@@ -197,6 +198,7 @@ var Automaton = d.Class.declare({
         if (utils.lang.isString(def.task)) {
             this._assertTaskLoaded(def.task, true);
             def.task = this._tasks[def.task];
+        // otherwise, trigger validation if is the root task
         } else if (def.depth === 1) {
             this._validateTask(def.task);
         }
@@ -228,7 +230,7 @@ var Automaton = d.Class.declare({
             // if there is an actual filter, run it and call the filter afterwards
             if (def.task.filter) {
                 async.waterfall([
-                    def.task.filter.$bind(this._context, def.options),
+                    def.task.filter.$bind(def.context, def.options),
                     afterFilter
                 ], next);
             // otherwise simply call the after filter
@@ -250,7 +252,7 @@ var Automaton = d.Class.declare({
                         return next();
                     }
                     this._reportNextTask(this._createTaskDefinition(currentSubtask, def));
-                    currentSubtask.task.call(this._context, def.options, next);
+                    currentSubtask.task.call(def.context, def.options, next);
                 }.$bind(this));
             // it's not a function, then it must be another task
             } else {
@@ -282,7 +284,8 @@ var Automaton = d.Class.declare({
             description: task.description,
             options: utils.lang.clone(task.options),
             parentOptions: parentTaskDef.options,
-            depth: parentTaskDef.depth + 1
+            depth: parentTaskDef.depth + 1,
+            context: parentTaskDef.context
         };
     },
 
@@ -364,13 +367,14 @@ var Automaton = d.Class.declare({
      * @param {Object} task The task definition
      */
     _reportNextTask: function (def) {
-        var desc;
+        var desc,
+            logger = def.context.log;
 
-        this._logger.setDepth(def.depth);
+        logger.setDepth(def.depth);
 
         if (def.description) {
             desc = utils.lang.isFunction(def.description) ? def.description(def.options) : def.description;
-            this._logger.infoln(('> ' + desc).cyan);
+            logger.infoln(('> ' + desc).cyan);
         }
     },
 
@@ -548,7 +552,7 @@ var Automaton = d.Class.declare({
             return new Error(msg);
         }
 
-        throw new Error(this._logger.uncolor(msg));
+        throw new Error(Logger.removeColors(msg));
     },
 
     $statics: {

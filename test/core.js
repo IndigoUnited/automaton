@@ -1,6 +1,7 @@
-var expect    = require('expect.js'),
-    fs        = require('fs'),
-    isDir     = require('./helpers/util/is-dir')
+var expect       = require('expect.js'),
+    fs           = require('fs'),
+    isDir        = require('./helpers/util/is-dir'),
+    removeColors = require('../lib/Logger').removeColors
 ;
 
 module.exports = function (automaton) {
@@ -430,7 +431,7 @@ module.exports = function (automaton) {
             var assert = function (err) {
                 expect(err).to.be.ok();
                 expect(err.message).to.equal('wtf');
-                expect(/\x1B\[\d+m/.test(err.message)).to.equal(false);
+                expect(removeColors(err.message) === err.message).to.equal(true);
             };
 
             automaton.run({
