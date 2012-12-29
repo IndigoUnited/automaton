@@ -239,7 +239,52 @@ module.exports = function (automaton) {
                 })
                 .on('data', function (data) { log += data; });
         });
-    });
 
-    it.skip('should indent new lines in the middle of a message');
+        it('should indent new lines in the middle of a message', function (done) {
+            var log = '';
+
+            automaton
+                .run({
+                    tasks: [
+                        {
+                            task: function (opt, next) {
+                                this.log.infoln('foo\nbar\nbaz');
+                                this.log.infoln('foo\r\nbar\r\nbaz');
+                                this.log.infoln('\r\nbar\r\nbaz');
+
+                                this.log.info('foo');
+                                this.log.info('\r\nbar\r\nbaz');
+                                next();
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    log = removeColors(log);
+                    expect(log).to.equal(
+                        arrow('', 1) +
+                        arrow('', 2) +
+                        indent('foo\n', 2) +
+                        indent('bar\n', 2) +
+                        indent('baz\n', 2) +
+                        indent('foo\r\n', 2) +
+                        indent('bar\r\n', 2) +
+                        indent('baz\n', 2) +
+                        indent('\r\n', 2) +
+                        indent('bar\r\n', 2) +
+                        indent('baz\n', 2) +
+
+                        indent('foo\r\n', 2) +
+                        indent('bar\r\n', 2) +
+                        indent('baz', 2)
+                    );
+
+                    done();
+                })
+                .on('data', function (data) { log += data; });
+        });
+    });
 };
