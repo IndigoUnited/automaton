@@ -286,5 +286,200 @@ module.exports = function (automaton) {
                 })
                 .on('data', function (data) { log += data; });
         });
+
+        it('should only log debug messages if automaton is in debug mode', function (done) {
+            var log = '';
+
+            automaton
+                .run({
+                    tasks: [
+                        {
+                            task: function (opt, next) {
+                                this.log.info('foo', true);
+                                this.log.infoln('foo', true);
+                                this.log.warn('foo', true);
+                                this.log.warnln('foo', true);
+                                this.log.error('foo', true);
+                                this.log.errorln('foo', true);
+                                this.log.success('foo', true);
+                                this.log.successln('foo', true);
+
+                                this.log.info('bar');
+                                this.log.infoln('bar');
+                                this.log.warn('bar');
+                                this.log.warnln('bar');
+                                this.log.error('bar');
+                                this.log.errorln('bar');
+                                this.log.success('bar');
+                                this.log.successln('bar');
+
+                                next();
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    log = removeColors(log);
+                    expect(log).to.equal(
+                        arrow('', 1) +
+                        arrow('', 2) +
+
+                        indent('bar', 2) +
+                        indent('bar\n', 2) +
+                        indent('bar', 2) +
+                        indent('bar\n', 2) +
+                        indent('bar', 2) +
+                        indent('bar\n', 2) +
+                        indent('bar', 2) +
+                        indent('bar\n', 2)
+                    );
+
+                    log = '';
+                    var automaton = new Automaton({ debug: true });
+
+                    automaton
+                        .run({
+                            tasks: [
+                                {
+                                    task: function (opt, next) {
+                                        this.log.info('foo', true);
+                                        this.log.infoln('foo', true);
+                                        this.log.warn('foo', true);
+                                        this.log.warnln('foo', true);
+                                        this.log.error('foo', true);
+                                        this.log.errorln('foo', true);
+                                        this.log.success('foo', true);
+                                        this.log.successln('foo', true);
+
+                                        this.log.info('bar');
+                                        this.log.infoln('bar');
+                                        this.log.warn('bar');
+                                        this.log.warnln('bar');
+                                        this.log.error('bar');
+                                        this.log.errorln('bar');
+                                        this.log.success('bar');
+                                        this.log.successln('bar');
+
+                                        next();
+                                    }
+                                }
+                            ]
+                        }, null, function (err) {
+                            if (err) {
+                                throw err;
+                            }
+
+                            log = removeColors(log);
+                            expect(log).to.equal(
+                                arrow('', 1) +
+                                arrow('', 2) +
+                                indent('foo', 2) +
+                                indent('foo\n', 2) +
+                                indent('foo', 2) +
+                                indent('foo\n', 2) +
+                                indent('foo', 2) +
+                                indent('foo\n', 2) +
+                                indent('foo', 2) +
+                                indent('foo\n', 2) +
+
+                                indent('bar', 2) +
+                                indent('bar\n', 2) +
+                                indent('bar', 2) +
+                                indent('bar\n', 2) +
+                                indent('bar', 2) +
+                                indent('bar\n', 2) +
+                                indent('bar', 2) +
+                                indent('bar\n', 2)
+                            );
+
+                            done();
+                        })
+                        .on('data', function (data) { log += data; });
+                })
+                .on('data', function (data) { log += data; });
+        });
+
+        it('should not log messages lower than the verbosity level', function (done) {
+            var log = '',
+                automaton = new Automaton({ verbosity: 1 });
+
+            automaton
+                .run({
+                    filter: function (opt, next) {
+                        this.log.infoln('Level 1 task info');
+                        this.log.warnln('Level 1 task warn');
+                        this.log.successln('Level 1 task success');
+                        this.log.errorln('Level 1 task error');
+                        next();
+                    },
+                    description: 'Level 1 task',
+                    tasks: [
+                        {
+                            task: function (opt, next) {
+                                next();
+                            },
+                            description: 'Level 2 task'
+                        },
+                        {
+                            task: {
+                                description: 'This should not appear',
+                                tasks: [
+                                    {
+                                        task: function (opt, next) {
+                                            this.log.infoln('Level 3 task info');
+                                            this.log.warnln('Level 3 task warn');
+                                            this.log.successln('Level 3 task success');
+                                            this.log.errorln('Level 3 task error');
+                                            next();
+                                        },
+                                        description: 'Level 3 task'
+                                    }
+                                ]
+                            },
+                            description: 'Other level 2 task'
+                        },
+                        {
+                            task: {
+                                tasks: [
+                                    {
+                                        task: function (opt, next) { next(); },
+                                        description: 'Other level 3 task'
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            task: {
+                                name: 'Even other level 2 task',
+                                tasks: [
+                                    {
+                                        task: function (opt, next) { next(); }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    log = removeColors(log);
+                    expect(log).to.equal(
+                        arrow('Level 1 task', 1) +
+                        indent('Level 1 task info\n', 1) +
+                        indent('Level 1 task warn\n', 1) +
+                        indent('Level 1 task success\n', 1) +
+                        indent('Level 1 task error\n', 1)
+                    );
+
+                    done();
+                })
+                .on('data', function (data) { log += data; });
+        });
+
     });
 };
