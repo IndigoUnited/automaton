@@ -169,7 +169,11 @@ var Automaton = d.Class.declare({
                 context: context
             });
         } catch (e) {
-            return handle(e);
+            setTimeout(function () {
+                handle(e);
+            }, 1);
+
+            return stream;
         }
 
         // waterfall the batch
@@ -205,7 +209,6 @@ var Automaton = d.Class.declare({
 
         def.options = def.options || {};
         def.parentOptions = def.parentOptions || {};
-        def.description = def.description || def.task.description;
 
         // fill in the options with default values where the option was not provided
         for (option in def.task.options) {
@@ -372,10 +375,13 @@ var Automaton = d.Class.declare({
 
         logger.setDepth(def.depth);
 
-        if (def.description) {
-            desc = utils.lang.isFunction(def.description) ? def.description(def.options) : def.description;
-            logger.infoln(('> ' + desc).cyan);
+        // try out to extract the description, falling back to the name
+        desc = def.description || def.task.description || def.task.name || '';
+        if (utils.lang.isFunction(def.description)) {
+            desc = def.description(def.options);
         }
+
+        logger.infoln(('> ' + desc).cyan);
     },
 
     /**
