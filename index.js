@@ -120,7 +120,7 @@ var Automaton = d.Class.declare({
      * @param {Object}        [$options]  The task options
      * @param {Function}      [$callback] A callback to be called when the task completes
      *
-     * @return {Stream} A readable stream where logging will be done
+     * @return {Stream} A read stream where logging will be done
      */
     run: function (task, $options, $callback) {
         var batch,
