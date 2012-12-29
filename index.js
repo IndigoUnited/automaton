@@ -385,9 +385,11 @@ var Automaton = d.Class.declare({
             desc = '';
         }
 
-        if (utils.lang.isFunction(def.description)) {
-            desc = def.description(def.options);
+        if (utils.lang.isFunction(desc)) {
+            desc = desc(def.options) + '';
         }
+
+        desc = this._replacePlaceholders(desc, def.options, { purge: true });
 
         logger.infoln(('> ' + desc).cyan);
     },
