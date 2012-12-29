@@ -164,7 +164,8 @@ var Automaton = d.Class.declare({
         try {
             batch  = this._batchTask({
                 task: task,
-                options: $options
+                options: $options,
+                depth: 1
             });
         } catch (e) {
             return handle(e);
@@ -196,12 +197,13 @@ var Automaton = d.Class.declare({
         if (utils.lang.isString(def.task)) {
             this._assertTaskLoaded(def.task, true);
             def.task = this._tasks[def.task];
+        } else if (def.depth === 1) {
+            this._validateTask(def.task);
         }
 
         def.options = def.options || {};
         def.parentOptions = def.parentOptions || {};
         def.description = def.description || def.task.description;
-        def.depth = def.depth || 1;
 
         // fill in the options with default values where the option was not provided
         for (option in def.task.options) {
@@ -378,7 +380,7 @@ var Automaton = d.Class.declare({
      * @param {Object} task The task
      */
     _validateTask: function (task) {
-        var taskId = task.id || 'unknown',
+        var taskId,
             x,
             curr,
             length;
@@ -389,7 +391,11 @@ var Automaton = d.Class.declare({
             if (!task.id) {
                 this._throwError('Task id cannot be empty.', true);
             }
+            taskId = task.id;
+        } else {
+            taskId = 'unknown';
         }
+
         if (task.name !== undefined) {
             this._assertIsString(task.name, 'Expected name to be a string in \'' + taskId + '\' task', true);
         }

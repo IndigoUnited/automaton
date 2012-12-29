@@ -257,6 +257,21 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/tasks/);
 
+            // test that run also triggers validation for not loaded/added tasks
+            automaton.run({
+                tasks: [
+                    {
+                        task: {
+                            tasks: 1
+                        },
+                        description: 'copy something'
+                    }
+                ]
+            }, null, function (err) {
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/tasks/);
+            });
+
         });
 
         // test run
