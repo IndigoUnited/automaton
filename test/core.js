@@ -275,6 +275,19 @@ module.exports = function (automaton) {
 
         });
 
+        it('should add tasks by id', function () {
+            // TODO: test adding a callback task different than the other one
+            //       and then adding the previous one again
+        });
+
+        it('should remove tasks by id', function () {
+
+        });
+
+        it('should load tasks in folder', function () {
+            // TODO: remove the callback task and then ask to load the tasks folder
+        });
+
         // test run
         it('should run a single subtask', function (done) {
             var called = false;
