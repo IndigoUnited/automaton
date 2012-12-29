@@ -1,11 +1,11 @@
-var cp          = require('./tasks/cp.js'),
-    chmod       = require('./tasks/chmod.js'),
-    mkdir       = require('./tasks/mkdir.js'),
-    rm          = require('./tasks/rm.js'),
-    run         = require('./tasks/run.js'),
-    scaffolding = require('./tasks/scaffolding.js'),
-    symlink     = require('./tasks/symlink.js'),
-    init        = require('./tasks/init.js')
+var cp          = require('./tasks/cp'),
+    chmod       = require('./tasks/chmod'),
+    mkdir       = require('./tasks/mkdir'),
+    rm          = require('./tasks/rm'),
+    run         = require('./tasks/run'),
+    scaffolding = require('./tasks/scaffolding'),
+    symlink     = require('./tasks/symlink'),
+    init        = require('./tasks/init')
 ;
 
 module.exports = function (automaton) {
