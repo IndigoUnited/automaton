@@ -130,13 +130,13 @@ var Automaton = d.Class.declare({
 
         // function to handle the completion of the task
         handle = function (err) {
-            // if error is not actually an error, attempt to fix it
-            if (!(err instanceof Error)) {
-                err = new Error(err + '');
-            }
-
-            // log the error
             if (err) {
+                // if error is not actually an error, attempt to fix it
+                if (!(err instanceof Error)) {
+                    err = new Error(err + '');
+                }
+
+                // log the error
                 context.log.errorln(err.message);
             }
 
