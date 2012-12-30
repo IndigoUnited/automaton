@@ -23,6 +23,7 @@ var Automaton = d.Class.declare({
      *                1 means only 1 deep level tasks and so on..
      *                -1 means log every level
      *  - debug     - true to log debug messages, false otherwise
+     *  - color     - true to keep colors in messages, false otherwise
      *
      * @param {Object} [$options] The options
      */

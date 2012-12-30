@@ -523,5 +523,48 @@ module.exports = function (automaton) {
                 .on('data', function (data) { log += data; });
         });
 
+        it('should remove colors if color option is set to false', function (done) {
+            var log = '',
+                automaton = new Automaton({ color: false });
+
+            automaton
+                .run({
+                    tasks: [
+                        {
+                            task: function (opt, next) {
+                                this.log.info('foo');
+                                this.log.infoln('foo'.green);
+                                this.log.warn('foo');
+                                this.log.warnln('foo');
+                                this.log.error('foo'.blue);
+                                this.log.errorln('foo');
+                                this.log.success('foo');
+                                this.log.successln('foo'.yellow);
+
+                                next();
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(log).to.equal(
+                        arrow('??', 1) +
+                        indent('foo', 2) +
+                        indent('foo\n', 2) +
+                        indent('foo', 2) +
+                        indent('foo\n', 2) +
+                        indent('foo', 2) +
+                        indent('foo\n', 2) +
+                        indent('foo', 2) +
+                        indent('foo\n', 2)
+                    );
+
+                    done();
+                })
+                .on('data', function (data) { log += data; });
+        });
     });
 };

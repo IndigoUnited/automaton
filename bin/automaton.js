@@ -37,6 +37,10 @@ var commands = [
             desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
         },
         {
+            opt: '--no-color',
+            desc: 'Disable colors'
+        },
+        {
             opt: '--version, -v',
             desc: 'Get version'
         }
@@ -49,6 +53,11 @@ var commands = [
 var options = {
     debug: !!(argv.debug || argv.D)
 };
+
+// only process the color if set
+if (argv.color != null) {
+    options.color = !!argv.color;
+}
 
 // only process the verbosity if set
 if (argv.verbosity != null || argv.V != null) {
