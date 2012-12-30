@@ -154,17 +154,17 @@ var Automaton = d.Class.declare({
             return this;
         }.$bind(this);
 
-        // setup context
-        context = {
-            log: new Logger(this._options)
-        };
+        // setup an unique context for the task
+        context = {};
+        context.log = new Logger(this._options);
         stream = context.log.getStream();
 
         // catch any error while getting the batch
+        // and report it with node style callback
         try {
             batch  = this._batchTask({
                 task: task,
-                options: $options,
+                options: $options || {},
                 depth: 1,
                 context: context
             });
@@ -192,7 +192,6 @@ var Automaton = d.Class.declare({
      */
     _batchTask: function (def) {
         var batch = [],
-            error,
             option,
             filter,
             afterFilter
@@ -207,9 +206,6 @@ var Automaton = d.Class.declare({
             this._validateTask(def.task);
         }
 
-        def.options = def.options || {};
-        def.parentOptions = def.parentOptions || {};
-
         // fill in the options with default values where the option was not provided
         for (option in def.task.options) {
             if (def.options[option] === undefined && def.task.options[option]['default'] !== undefined) {
@@ -222,15 +218,14 @@ var Automaton = d.Class.declare({
             // we need to replace options again because parent filter might have
             // added options that are placeholders
             this._replaceOptions(def.options, def.parentOptions);
-            error = this._validateTaskOptions(def.task, def.options);
-            next(error);
+            next(this._validateTaskOptions(def.task, def.options));
         }.$bind(this);
         filter = function (next) {
             // replace options & report task
             this._replaceOptions(def.options, def.parentOptions, { skipUnescape : true });
             this._reportNextTask(def);
 
-            // if there is an actual filter, run it and call the filter afterwards
+            // if there is an actual filter, run it and call the after filter
             if (def.task.filter) {
                 async.waterfall([
                     def.task.filter.$bind(def.context, def.options),
@@ -244,29 +239,29 @@ var Automaton = d.Class.declare({
         batch.push(filter);
 
         // batch each task
-        def.task.tasks.forEach(function (currentSubtask) {
+        def.task.tasks.forEach(function (subtask) {
             var subtaskBatch;
 
             // if it's a function, just add it to the batch
-            if (utils.lang.isFunction(currentSubtask.task)) {
+            if (utils.lang.isFunction(subtask.task)) {
                 batch.push(function (next) {
                     // skip task if disabled
-                    if (!this._isTaskEnabled(currentSubtask, def.options)) {
+                    if (!this._isTaskEnabled(subtask, def.options)) {
                         return next();
                     }
-                    this._reportNextTask(this._createTaskDefinition(currentSubtask, def));
-                    currentSubtask.task.call(def.context, def.options, next);
+                    this._reportNextTask(this._createTaskDefinition(subtask, def));
+                    subtask.task.call(def.context, def.options, next);
                 }.$bind(this));
             // it's not a function, then it must be another task
             } else {
-                subtaskBatch = this._batchTask(this._createTaskDefinition(currentSubtask, def));
-                batch.push(function (subtask, subtaskBatch, next) {
+                subtaskBatch = this._batchTask(this._createTaskDefinition(subtask, def));
+                batch.push(function (next) {
                     // skip task if disabled
                     if (!this._isTaskEnabled(subtask, def.options)) {
                         return next();
                     }
                     async.waterfall(subtaskBatch, next);
-                }.$bind(this, currentSubtask, subtaskBatch));
+                }.$bind(this));
             }
         }, this);
 
@@ -285,8 +280,8 @@ var Automaton = d.Class.declare({
         return {
             task: task.task,
             description: task.description,
-            options: utils.lang.clone(task.options),
-            parentOptions: parentTaskDef.options,
+            options: task.options ? utils.lang.clone(task.options) : {},
+            parentOptions: parentTaskDef.options || {},
             depth: parentTaskDef.depth + 1,
             context: parentTaskDef.context
         };
