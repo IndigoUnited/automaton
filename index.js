@@ -373,15 +373,17 @@ var Automaton = d.Class.declare({
 
         // try out to extract the description, falling back to the name
         desc = def.description || def.task.description || def.task.name;
+        if (utils.lang.isFunction(desc)) {
+            desc = desc(def.options) + '';
+        }
+
         if (!desc) {
+            // if is a pure function that has no description, then simply do not report
             if (isPureFunction) {
                 return this;
             }
-            desc = '';
-        }
-
-        if (utils.lang.isFunction(desc)) {
-            desc = desc(def.options) + '';
+            // otherwise assume '??'
+            desc = '??';
         }
 
         desc = this._replacePlaceholders(desc, def.options, { purge: true });
@@ -403,9 +405,7 @@ var Automaton = d.Class.declare({
         this._assertIsObject(task, 'Expected task to be an object', true);
         if (task.id !== undefined) {
             this._assertIsString(task.id, 'Expected id to be a string', true);
-            if (!task.id) {
-                this._throwError('Task id cannot be empty.', true);
-            }
+            this._assertIsNotEmpty(task.id, 'Task id cannot be empty.', true);
             taskId = task.id;
         } else {
             taskId = 'unknown';
@@ -413,12 +413,17 @@ var Automaton = d.Class.declare({
 
         if (task.name !== undefined) {
             this._assertIsString(task.name, 'Expected name to be a string in \'' + taskId + '\' task', true);
+            this._assertIsNotEmpty(task.name, 'Expected name to not be empty \'' + taskId + '\' task', true);
         }
         if (task.author !== undefined) {
             this._assertIsString(task.author, 'Expected author to be a string in \'' + taskId + '\' task', true);
+            this._assertIsNotEmpty(task.author, 'Expected author to not be empty \'' + taskId + '\' task.', true);
         }
-        if (task.description !== undefined && !utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
-            this._throwError('Expected description to be a string or a function in \'' + taskId + '\' task', true);
+        if (task.description !== undefined) {
+            if (!utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
+                this._throwError('Expected description to be a string or a function in \'' + taskId + '\' task', true);
+            }
+            this._assertIsNotEmpty(task.description, 'Expected description to not be empty \'' + taskId + '\' task');
         }
         if (task.filter !== undefined) {
             this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + taskId + '\' task', true);
@@ -546,6 +551,21 @@ var Automaton = d.Class.declare({
      */
     _assertIsArray: function (variable, msg, $verbose) {
         if (!utils.lang.isArray(variable)) {
+            return this._throwError(msg, $verbose);
+        }
+    },
+
+    /**
+     * Assert not empty.
+     *
+     * @param {Mixed}   variable   The target to assert
+     * @param {String}  msg        The error message to show if the assert fails
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     *
+     * @return {Error} The error object or null if none (only if not verbose)
+     */
+    _assertIsNotEmpty: function (variable, msg, $verbose) {
+        if (!variable) {
             return this._throwError(msg, $verbose);
         }
     },
