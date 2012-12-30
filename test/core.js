@@ -29,6 +29,14 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/only add tasks with an id/);
 
+            // empty id
+            expect(function () {
+                automaton.addTask({
+                    id: '',
+                    tasks: []
+                });
+            }).to.throwException(/empty/);
+
             // invalid name/author
             expect(function () {
                 automaton.addTask({
@@ -45,6 +53,23 @@ module.exports = function (automaton) {
                     tasks: []
                 });
             }).to.throwException(/author/);
+
+            // empty name/author
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    name: '',
+                    tasks: []
+                });
+            }).to.throwException(/empty/);
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    author: '',
+                    tasks: []
+                });
+            }).to.throwException(/empty/);
 
             expect(function () { // test valid case
                 automaton.addTask({
