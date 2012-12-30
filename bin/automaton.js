@@ -104,7 +104,7 @@ if (argv.help || argv.h) {
             showTaskUsage(task);
         // unknown task requested
         } catch (err) {
-            console.error(('\nCould not find any task or autofile "' + taskId + '"\n').error);
+            console.error(('Could not find any task or autofile "' + taskId + '"\n').error);
         }
     // no task was specified, show overall usage
     } else {
@@ -132,7 +132,7 @@ if (argv._.length) {
             try {
                 task = automaton.getTask(taskId);
             } catch (err) {
-                console.error(('\nCould not find any task or autofile "' + taskId + '"\n').error);
+                console.error(('Could not find any task or autofile "' + taskId + '"\n').error);
                 process.exit(1);
             }
         }
@@ -242,7 +242,7 @@ function initTask(taskId) {
         'name': taskId
     }, function (err) {
         if (err) {
-            console.error(('\nUnable to create task\n').error);
+            console.error(('Unable to create task\n').error);
             process.exit(1);
         }
 
