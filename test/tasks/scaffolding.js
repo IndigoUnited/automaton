@@ -1,17 +1,20 @@
-var expect = require('expect.js'),
-    fs     = require('fs')
+var expect  = require('expect.js'),
+    fs      = require('fs'),
+    rimraf  = require('rimraf'),
+    fstream = require('fstream'),
+    isFile  = require('../helpers/util/is-file')
 ;
 
 module.exports = function (automaton) {
     describe('scaffolding', function () {
-        describe('append', function () {
-            beforeEach(function () {
-                // Copy assets to the tmp
-                var file1 = fs.readFileSync(__dirname + '/../helpers/assets/file1.json');
-                fs.writeFileSync(__dirname + '/../tmp/file1.json', file1);
-                fs.writeFileSync(__dirname + '/../tmp/file1_copy.json', file1);
-            });
+        beforeEach(function () {
+            // Copy assets to the tmp
+            var file1 = fs.readFileSync(__dirname + '/../helpers/assets/file1.json');
+            fs.writeFileSync(__dirname + '/../tmp/file1.json', file1);
+            fs.writeFileSync(__dirname + '/../tmp/file1_copy.json', file1);
+        });
 
+        describe('append', function () {
             it('should append string to placeholder', function (done) {
                 automaton.run({
                     filter: function (opts, next) {
@@ -358,9 +361,166 @@ module.exports = function (automaton) {
         });
 
         describe('file-rename', function () {
-            it.skip('should replace filename placeholders with string');
-            it.skip('should accept minimatch patterns');
-            it.skip('should pass over the glob options');
+            beforeEach(function (done) {
+                rimraf(__dirname + '/../tmp/file-rename', function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    fs.mkdirSync(__dirname + '/../tmp/file-rename');
+                    fs.mkdirSync(__dirname + '/../tmp/file-rename/dummy');
+
+                    // Create some assets in tmp/file-rename
+                    fs.writeFileSync(__dirname + '/../tmp/file-rename/file1_{{placeholder1}}_{{placeholder2}}.json', '');
+                    fs.writeFileSync(__dirname + '/../tmp/file-rename/dummy/file1_{{placeholder1}}_{{placeholder2}}.json', '');
+
+                    done();
+                });
+
+            });
+
+            it('should replace filename placeholders with string', function (done) {
+                // Copy file-rename to file-rename-copy to test multiple dirs
+                var reader = fstream.Reader(__dirname + '/../tmp/file-rename').pipe(
+                    fstream.Writer({
+                        type: 'Directory',
+                        path: __dirname + '/../tmp/file-rename-copy'
+                    })
+                );
+
+                reader.on('error', function (err) {
+                    throw err;
+                });
+
+                reader.on('end', function () {
+                    automaton.run({
+                        filter: function (opts, next) {
+                            opts.__dirname = __dirname;
+                            next();
+                        },
+                        tasks: [
+                            {
+                                task: 'scaffolding-file-rename',
+                                options: {
+                                    dirs: ['{{__dirname}}/../tmp/file-rename', '{{__dirname}}/../tmp/file-rename-copy'],
+                                    data: {
+                                        placeholder1: 'foo',
+                                        placeholder2: 'bar'
+                                    }
+                                }
+                            }
+                        ]
+                    }, null, function (err) {
+                        if (err) {
+                            throw err;
+                        }
+
+                        expect(isFile(__dirname + '/../tmp/file-rename/file1_foo_bar.json')).to.equal(true);
+                        expect(isFile(__dirname + '/../tmp/file-rename/dummy/file1_foo_bar.json')).to.equal(true);
+                        expect(isFile(__dirname + '/../tmp/file-rename-copy/file1_foo_bar.json')).to.equal(true);
+                        expect(isFile(__dirname + '/../tmp/file-rename-copy/dummy/file1_foo_bar.json')).to.equal(true);
+
+                        done();
+                    });
+                });
+            });
+
+            it('should not read dirs recursively if the recursive option is false', function (done) {
+                automaton.run({
+                    filter: function (opts, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-file-rename',
+                            options: {
+                                dirs: ['{{__dirname}}/../tmp/file-rename'],
+                                data: {
+                                    placeholder1: 'foo',
+                                    placeholder2: 'bar'
+                                },
+                                recursive: false
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(isFile(__dirname + '/../tmp/file-rename/file1_foo_bar.json')).to.equal(true);
+                    expect(isFile(__dirname + '/../tmp/file-rename/dummy/file1_{{placeholder1}}_{{placeholder2}}.json')).to.equal(true);
+
+                    done();
+                });
+            });
+
+            it('should accept minimatch patterns', function (done) {
+                automaton.run({
+                    filter: function (opts, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-file-rename',
+                            options: {
+                                dirs: ['{{__dirname}}/../tmp/file*rename'],
+                                data: {
+                                    placeholder1: 'foo',
+                                    placeholder2: 'bar'
+                                }
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(isFile(__dirname + '/../tmp/file-rename/file1_foo_bar.json')).to.equal(true);
+                    expect(isFile(__dirname + '/../tmp/file-rename/dummy/file1_foo_bar.json')).to.equal(true);
+
+                    done();
+                });
+            });
+
+            it('should pass over the glob options', function (done) {
+                // Rename to .file-reanme and tell glob to not match files starting with dot
+                fs.renameSync(__dirname + '/../tmp/file-rename', __dirname + '/../tmp/.file-rename');
+
+                automaton.run({
+                    filter: function (opts, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-file-rename',
+                            options: {
+                                dirs: ['{{__dirname}}/../tmp/file-rename'],
+                                data: {
+                                    placeholder1: 'foo',
+                                    placeholder2: 'bar'
+                                },
+                                glob: {
+                                    dot: false
+                                }
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(isFile(__dirname + '/../tmp/.file-rename/file1_{{placeholder1}}_{{placeholder2}}.json')).to.equal(true);
+                    expect(isFile(__dirname + '/../tmp/.file-rename/dummy/file1_{{placeholder1}}_{{placeholder2}}.json')).to.equal(true);
+
+                    done();
+                });
+            });
         });
     });
 };
