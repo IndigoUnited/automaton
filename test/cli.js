@@ -3,6 +3,8 @@ var expect = require('expect.js');
 
 module.exports = function () {
     describe('CLI', function () {
+        this.timeout(10000); // Increase the timeout to let the update-notifier do it's job
+
         it('should error if task file does not exist', function (done) {
             cp.exec('node bin/automaton something-that-will-never-exist', function (err, stdout, stderr) {
                 expect(stderr).to.match(/could not find/i);
