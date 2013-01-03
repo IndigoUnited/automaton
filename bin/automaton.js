@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-var utils     = require('amd-utils'),
-    fs        = require('fs'),
-    path      = require('path'),
-    argv      = require('optimist').argv,
-    pkg       = require('../package.json'),
-    Automaton = require('../index')
+var utils          = require('amd-utils'),
+    fs             = require('fs'),
+    path           = require('path'),
+    argv           = require('optimist').argv,
+    pkg            = require('../package.json'),
+    updateNotifier = require('update-notifier'),
+    Automaton      = require('../index'),
+    notifier
 ;
 
 // ----------------------------- USAGE PARAMETERS ------------------------------
@@ -94,6 +96,20 @@ if (argv.version || argv.v) {
     process.exit();
 }
 
+
+// Check if there's an update
+notifier = updateNotifier({
+    packagePath: __dirname + '/../package'
+});
+
+if (notifier.update) {
+    // Notify using the built-in convenience method
+    notifier.notify();
+}
+
+// NOTE: at this point, avoid doing process.exit() unless there is really an error
+//       this is because we must let the update notifier run until the end
+
 // if help was requested, just show the usage
 if (argv.help || argv.h) {
     var taskId = (argv.help === true ? false : argv.help) || (argv.h === true ? false : argv.h),
@@ -119,12 +135,10 @@ if (argv.help || argv.h) {
     } else {
         showUsage();
     }
-
-    process.exit();
 }
 
 // if a command was specified, run it
-if (argv._.length) {
+else if (argv._.length) {
     switch (argv._[0]) {
     case 'init':
         var taskId = argv._[1] || 'autofile';
@@ -155,10 +169,9 @@ if (argv._.length) {
 
     if (!task) {
         showUsage();
-        process.exit();
+    } else {
+        runTask(task, argv);
     }
-
-    runTask(task, argv);
 }
 
 
@@ -281,7 +294,9 @@ function runTask(task, options) {
 
     automaton
         .run(task, options, function (err) {
-            process.exit(err ? 1 : 0);
+            if (err) {
+                process.exit(1);
+            }
         })
         .pipe(process.stdout);
 }
