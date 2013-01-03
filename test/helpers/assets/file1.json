@@ -1,5 +1,6 @@
 {
-    "name": "Marco Oliveira",
-    "email": "marco@indigounited.com",
-    "some_field": "This has a {{placeholder}}, you see?"
+    "some_field": "This has an {{placeholder}}, you see?",
+    "other_field": "Here's the {{placeholder}} again just in case..",
+    "name": "{{name}}",
+    "email": "{{email}}"
 }
