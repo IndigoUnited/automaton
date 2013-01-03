@@ -19,7 +19,9 @@ var task = {
         {
             task: function (opt, next) {
                 var child,
-                    that = this;
+                    that = this,
+                    output = '',
+                    onData;
 
                 if (process.platform === 'win32') {
                     child = spawn('cmd', ['/s', '/c', opt.cmd], { cwd: opt.cwd });
@@ -29,20 +31,27 @@ var task = {
 
                 this.log.infoln('Running: '.green + opt.cmd + '\n');
 
-                // Added colors support with the customFds option
-                // If that is removed, we have access to the .stdout and .stderr again
-                child.stdout.on('data', function (data) {
-                    that.log.info(data.toString());
-                });
+                onData = function (data) {
+                    // Buffer the response until we find a new line
+                    output += data.toString();
 
-                child.stderr.on('data', function (data) {
-                    // Log stderr as normal messages because a lot of programs
-                    // output debug messages to stderr (and not only error messages)
-                    // This is a valid standard
-                    that.log.info(data.toString());
-                });
+                    var pos = output.lastIndexOf('\n');
+                    if (pos !== -1) {
+                        // If there is a new line in the buffer, output it
+                        that.log.infoln(output.substr(0, pos));
+                        output = output.substr(pos + 1);
+                    }
+                };
+
+                child.stdout.on('data', onData);
+                child.stderr.on('data', onData);
 
                 child.on('exit', function (code) {
+                    // Log the remaining buffer
+                    if (output) {
+                        this.log.infoln(output);
+                    }
+
                     if (code === 0) {
                         return next();
                     }

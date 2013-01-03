@@ -37,6 +37,10 @@ var commands = [
             desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
         },
         {
+            opt: '--no-color',
+            desc: 'Disable colors'
+        },
+        {
             opt: '--version, -v',
             desc: 'Get version'
         }
@@ -49,6 +53,11 @@ var commands = [
 var options = {
     debug: !!(argv.debug || argv.D)
 };
+
+// only process the color if set
+if (argv.color != null) {
+    options.color = !!argv.color;
+}
 
 // only process the verbosity if set
 if (argv.verbosity != null || argv.V != null) {
@@ -104,7 +113,7 @@ if (argv.help || argv.h) {
             showTaskUsage(task);
         // unknown task requested
         } catch (err) {
-            console.error(('\nCould not find any task or autofile "' + taskId + '"\n').error);
+            console.error(('Could not find any task or autofile "' + taskId + '"\n').error);
         }
     // no task was specified, show overall usage
     } else {
@@ -132,7 +141,7 @@ if (argv._.length) {
             try {
                 task = automaton.getTask(taskId);
             } catch (err) {
-                console.error(('\nCould not find any task or autofile "' + taskId + '"\n').error);
+                console.error(('Could not find any task or autofile "' + taskId + '"\n').error);
                 process.exit(1);
             }
         }
@@ -242,7 +251,7 @@ function initTask(taskId) {
         'name': taskId
     }, function (err) {
         if (err) {
-            console.error(('\nUnable to create task\n').error);
+            console.error(('Unable to create task\n').error);
             process.exit(1);
         }
 
@@ -270,7 +279,9 @@ function runTask(task, options) {
         task = automaton.getTask(task);
     }
 
-    automaton.run(task, options, function (err) {
-        process.exit(err ? 1 : 0);
-    });
+    automaton
+        .run(task, options, function (err) {
+            process.exit(err ? 1 : 0);
+        })
+        .pipe(process.stdout);
 }

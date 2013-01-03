@@ -1,6 +1,6 @@
 {
   "name": "automaton",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Task automation tool",
   "main": "index.js",
   "scripts": {
@@ -44,12 +44,13 @@
     "optimist": "~0.3.5",
     "glob": "~3.1.14"
   },
+  "devDependencies": {
+    "expect.js": "~0.2.0",
+    "mocha": "~1.7.3",
+    "inherits": "~1.0.0"
+  },
   "preferGlobal": true,
   "bin": {
     "automaton": "bin/automaton.js"
-  },
-  "devDependencies": {
-    "expect.js": "~0.2.0",
-    "mocha": "~1.7.3"
   }
 }

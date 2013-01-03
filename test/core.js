@@ -1,15 +1,17 @@
-var expect    = require('expect.js'),
-    fs        = require('fs'),
-    isDir     = require('./helpers/util/is-dir')
+var expect       = require('expect.js'),
+    fs           = require('fs'),
+    isDir        = require('./helpers/util/is-dir'),
+    callback     = require('./helpers/tasks/callback'),
+    removeColors = require('../lib/Logger').removeColors
 ;
 
 module.exports = function (automaton) {
     describe('Engine', function () {
-        it('should throw if a task is invalid', function () {
-            after(function () {
-                automaton.removeTask('foo');
-            });
+        after(function () {
+            automaton.removeTask('foo');
+        });
 
+        it('should throw if a task is invalid', function () {
             // not an object
             expect(function () {
                 automaton.addTask('foo');
@@ -27,6 +29,14 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/only add tasks with an id/);
 
+            // empty id
+            expect(function () {
+                automaton.addTask({
+                    id: '',
+                    tasks: []
+                });
+            }).to.throwException(/empty/);
+
             // invalid name/author
             expect(function () {
                 automaton.addTask({
@@ -43,6 +53,23 @@ module.exports = function (automaton) {
                     tasks: []
                 });
             }).to.throwException(/author/);
+
+            // empty name/author
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    name: '',
+                    tasks: []
+                });
+            }).to.throwException(/empty/);
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    author: '',
+                    tasks: []
+                });
+            }).to.throwException(/empty/);
 
             expect(function () { // test valid case
                 automaton.addTask({
@@ -274,6 +301,87 @@ module.exports = function (automaton) {
 
         });
 
+        it('should add tasks by id', function (done) {
+            var called = 0;
+
+            automaton.addTask({
+                id: 'callback',
+                tasks: []
+            });
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            callback: function () {
+                                called++;
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                automaton.addTask(callback);
+
+                if (err) {
+                    throw err;
+                }
+
+                expect(called === 0).to.equal(true);
+
+                automaton.run({
+                    tasks: [
+                        {
+                            task: 'callback',
+                            options: {
+                                callback: function () {
+                                    called++;
+                                }
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(called === 1).to.equal(true);
+
+                    done();
+                });
+            });
+        });
+
+        it('should remove tasks by id', function (done) {
+            automaton.removeTask('callback');
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback'
+                    }
+                ]
+            }, null, function (err) {
+                automaton.addTask(callback);
+
+                if (!err) {
+                    throw new Error('Callback task was not deleted');
+                }
+
+                expect(err.message).to.match(/task handler suitable/);
+
+                done();
+            });
+        });
+
+        it('should load tasks in folder', function () {
+            // for now this test does not need verifications
+            // because the root test is loading the tasks folder
+            // that has the callback task that is being used all over the place
+            //
+            // if we ever support loading nested folders, then the test must account for that
+        });
+
         // test run
         it('should run a single subtask', function (done) {
             var called = false;
@@ -430,7 +538,7 @@ module.exports = function (automaton) {
             var assert = function (err) {
                 expect(err).to.be.ok();
                 expect(err.message).to.equal('wtf');
-                expect(/\x1B\[\d+m/.test(err.message)).to.equal(false);
+                expect(removeColors(err.message) === err.message).to.equal(true);
             };
 
             automaton.run({

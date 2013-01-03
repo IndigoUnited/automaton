@@ -13,38 +13,25 @@ var Automaton = d.Class.declare({
     $name: 'Automaton',
 
     _tasks: [],
-    _logger: null,
-    _context: {},
+    _options: null,
 
     /**
      * Constructor.
      *
      * Available options:
-     *  - stdout    - a stream to write log messages (defaults to process.stdout, null to disable)
-     *  - stderr    - a stream to write error log messages (defaults to process.stdout, null to disable)
      *  - verbosity - 0 means no logging
      *                1 means only 1 deep level tasks and so on..
      *                -1 means log every level
      *  - debug     - true to log debug messages, false otherwise
+     *  - color     - true to keep colors in messages, false otherwise
      *
      * @param {Object} [$options] The options
      */
     initialize: function ($options) {
-        // init logger & setup context
-        this._logger = new Logger($options);
-        this._context.log = this._logger;
+        this._options = $options;
 
         // load core tasks
         this.loadTasks(__dirname + '/tasks');
-    },
-
-    /**
-     * Get the logger.
-     *
-     * @return {Logger} The logger instance
-     */
-    getLogger: function () {
-        return this._logger;
     },
 
     /**
@@ -134,25 +121,33 @@ var Automaton = d.Class.declare({
      * @param {Object}        [$options]  The task options
      * @param {Function}      [$callback] A callback to be called when the task completes
      *
-     * @return {Automaton} Chainable!
+     * @return {Stream} A read stream where logging will be done
      */
     run: function (task, $options, $callback) {
         var batch,
-            handle;
+            handle,
+            context,
+            stream;
 
         // function to handle the completion of the task
         handle = function (err) {
-            if (utils.lang.isString(err)) {
-                err = new Error(err);
-            }
-
             if (err) {
-                this._logger.errorln(err.message);
+                // if error is not actually an error, attempt to fix it
+                if (!(err instanceof Error)) {
+                    err = new Error(err + '');
+                }
+
+                // log the error
+                context.log.errorln(err.message);
             }
 
+            // signal the end of the stream
+            stream.emit('end');
+
+            // call callback if any
             if ($callback) {
                 if (err) {
-                    err.message = this._logger.uncolor(err.message);
+                    err.message = Logger.removeColors(err.message); // Remove any colors from the message
                 }
                 $callback(err);
             }
@@ -160,21 +155,32 @@ var Automaton = d.Class.declare({
             return this;
         }.$bind(this);
 
+        // setup an unique context for the task
+        context = {};
+        context.log = new Logger(this._options);
+        stream = context.log.getStream();
+
         // catch any error while getting the batch
+        // and report it with node style callback
         try {
             batch  = this._batchTask({
                 task: task,
-                options: $options,
-                depth: 1
+                options: $options || {},
+                depth: 1,
+                context: context
             });
         } catch (e) {
-            return handle(e);
+            setTimeout(function () {
+                handle(e);
+            }, 1);
+
+            return stream;
         }
 
         // waterfall the batch
         async.waterfall(batch, handle);
 
-        return this;
+        return stream;
     },
 
     /**
@@ -187,7 +193,6 @@ var Automaton = d.Class.declare({
      */
     _batchTask: function (def) {
         var batch = [],
-            error,
             option,
             filter,
             afterFilter
@@ -197,13 +202,10 @@ var Automaton = d.Class.declare({
         if (utils.lang.isString(def.task)) {
             this._assertTaskLoaded(def.task, true);
             def.task = this._tasks[def.task];
+        // otherwise, trigger validation if is the root task
         } else if (def.depth === 1) {
             this._validateTask(def.task);
         }
-
-        def.options = def.options || {};
-        def.parentOptions = def.parentOptions || {};
-        def.description = def.description || def.task.description;
 
         // fill in the options with default values where the option was not provided
         for (option in def.task.options) {
@@ -217,18 +219,17 @@ var Automaton = d.Class.declare({
             // we need to replace options again because parent filter might have
             // added options that are placeholders
             this._replaceOptions(def.options, def.parentOptions);
-            error = this._validateTaskOptions(def.task, def.options);
-            next(error);
+            next(this._validateTaskOptions(def.task, def.options));
         }.$bind(this);
         filter = function (next) {
             // replace options & report task
             this._replaceOptions(def.options, def.parentOptions, { skipUnescape : true });
             this._reportNextTask(def);
 
-            // if there is an actual filter, run it and call the filter afterwards
+            // if there is an actual filter, run it and call the after filter
             if (def.task.filter) {
                 async.waterfall([
-                    def.task.filter.$bind(this._context, def.options),
+                    def.task.filter.$bind(def.context, def.options),
                     afterFilter
                 ], next);
             // otherwise simply call the after filter
@@ -239,29 +240,29 @@ var Automaton = d.Class.declare({
         batch.push(filter);
 
         // batch each task
-        def.task.tasks.forEach(function (currentSubtask) {
+        def.task.tasks.forEach(function (subtask) {
             var subtaskBatch;
 
             // if it's a function, just add it to the batch
-            if (utils.lang.isFunction(currentSubtask.task)) {
+            if (utils.lang.isFunction(subtask.task)) {
                 batch.push(function (next) {
                     // skip task if disabled
-                    if (!this._isTaskEnabled(currentSubtask, def.options)) {
+                    if (!this._isTaskEnabled(subtask, def.options)) {
                         return next();
                     }
-                    this._reportNextTask(this._createTaskDefinition(currentSubtask, def));
-                    currentSubtask.task.call(this._context, def.options, next);
+                    this._reportNextTask(this._createTaskDefinition(subtask, def));
+                    subtask.task.call(def.context, def.options, next);
                 }.$bind(this));
             // it's not a function, then it must be another task
             } else {
-                subtaskBatch = this._batchTask(this._createTaskDefinition(currentSubtask, def));
-                batch.push(function (subtask, subtaskBatch, next) {
+                subtaskBatch = this._batchTask(this._createTaskDefinition(subtask, def));
+                batch.push(function (next) {
                     // skip task if disabled
                     if (!this._isTaskEnabled(subtask, def.options)) {
                         return next();
                     }
                     async.waterfall(subtaskBatch, next);
-                }.$bind(this, currentSubtask, subtaskBatch));
+                }.$bind(this));
             }
         }, this);
 
@@ -280,9 +281,10 @@ var Automaton = d.Class.declare({
         return {
             task: task.task,
             description: task.description,
-            options: utils.lang.clone(task.options),
-            parentOptions: parentTaskDef.options,
-            depth: parentTaskDef.depth + 1
+            options: task.options ? utils.lang.clone(task.options) : {},
+            parentOptions: parentTaskDef.options || {},
+            depth: parentTaskDef.depth + 1,
+            context: parentTaskDef.context
         };
     },
 
@@ -364,14 +366,30 @@ var Automaton = d.Class.declare({
      * @param {Object} task The task definition
      */
     _reportNextTask: function (def) {
-        var desc;
+        var desc,
+            logger = def.context.log,
+            isPureFunction = utils.lang.isFunction(def.task);
 
-        this._logger.setDepth(def.depth);
+        logger.setDepth(def.depth);
 
-        if (def.description) {
-            desc = utils.lang.isFunction(def.description) ? def.description(def.options) : def.description;
-            this._logger.infoln(('> ' + desc).cyan);
+        // try out to extract the description, falling back to the name
+        desc = def.description || def.task.description || def.task.name;
+        if (utils.lang.isFunction(desc)) {
+            desc = desc(def.options) + '';
         }
+
+        if (!desc) {
+            // if is a pure function that has no description, then simply do not report
+            if (isPureFunction) {
+                return this;
+            }
+            // otherwise assume '??'
+            desc = '??';
+        }
+
+        desc = this._replacePlaceholders(desc, def.options, { purge: true });
+
+        logger.infoln(('> ' + desc).cyan);
     },
 
     /**
@@ -388,9 +406,7 @@ var Automaton = d.Class.declare({
         this._assertIsObject(task, 'Expected task to be an object', true);
         if (task.id !== undefined) {
             this._assertIsString(task.id, 'Expected id to be a string', true);
-            if (!task.id) {
-                this._throwError('Task id cannot be empty.', true);
-            }
+            this._assertIsNotEmpty(task.id, 'Task id cannot be empty.', true);
             taskId = task.id;
         } else {
             taskId = 'unknown';
@@ -398,12 +414,17 @@ var Automaton = d.Class.declare({
 
         if (task.name !== undefined) {
             this._assertIsString(task.name, 'Expected name to be a string in \'' + taskId + '\' task', true);
+            this._assertIsNotEmpty(task.name, 'Expected name to not be empty \'' + taskId + '\' task', true);
         }
         if (task.author !== undefined) {
             this._assertIsString(task.author, 'Expected author to be a string in \'' + taskId + '\' task', true);
+            this._assertIsNotEmpty(task.author, 'Expected author to not be empty \'' + taskId + '\' task.', true);
         }
-        if (task.description !== undefined && !utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
-            this._throwError('Expected description to be a string or a function in \'' + taskId + '\' task', true);
+        if (task.description !== undefined) {
+            if (!utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
+                this._throwError('Expected description to be a string or a function in \'' + taskId + '\' task', true);
+            }
+            this._assertIsNotEmpty(task.description, 'Expected description to not be empty \'' + taskId + '\' task');
         }
         if (task.filter !== undefined) {
             this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + taskId + '\' task', true);
@@ -536,6 +557,21 @@ var Automaton = d.Class.declare({
     },
 
     /**
+     * Assert not empty.
+     *
+     * @param {Mixed}   variable   The target to assert
+     * @param {String}  msg        The error message to show if the assert fails
+     * @param {Boolean} [$verbose] If verbose, an actual exception will be thrown
+     *
+     * @return {Error} The error object or null if none (only if not verbose)
+     */
+    _assertIsNotEmpty: function (variable, msg, $verbose) {
+        if (!variable) {
+            return this._throwError(msg, $verbose);
+        }
+    },
+
+    /**
      * Throws an error.
      *
      * @param {String}  msg        The error message
@@ -548,7 +584,7 @@ var Automaton = d.Class.declare({
             return new Error(msg);
         }
 
-        throw new Error(this._logger.uncolor(msg));
+        throw new Error(Logger.removeColors(msg));
     },
 
     $statics: {
