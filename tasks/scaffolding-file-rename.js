@@ -17,6 +17,10 @@ var task = {
         data: {
             description: 'The data to be used while renaming. Keys are placeholders and values the content of each placeholder.'
         },
+        recursive: {
+            description: 'For each dir passed in the dirs option, apply the rename recursively, finding matches in all the hierarchy',
+            'default': true
+        },
         glob: {
             description: 'The options to pass to glob (please look the available options in the glob package README)',
             'default': {
@@ -32,7 +36,7 @@ var task = {
 
                 // Do this in series, because it can give problems if the directories intersect eachother
                 async.forEachSeries(dirs, function (dir, next) {
-                    glob(dir + '/**/*{{*}}*', opt.glob, function (err, matches) {
+                    glob(dir + (opt.recursive ? '/**/*{{*}}*' : '/*{{*}}*'), opt.glob, function (err, matches) {
                         if (err) {
                             return next(err);
                         }
