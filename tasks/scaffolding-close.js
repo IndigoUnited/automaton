@@ -34,9 +34,10 @@ var task = {
             task: function (opt, next) {
                 opt.glob = opt.glob || {};
                 var files = !utils.lang.isArray(opt.files) ? [opt.files] : opt.files;
+                var placeholders = !utils.lang.isArray(opt.placeholders) ? [opt.placeholders] : opt.placeholders;
                 var data = {};
 
-                opt.placeholders.forEach(function (placeholder) {
+                placeholders.forEach(function (placeholder) {
                     data[placeholder] = '';
                 });
 

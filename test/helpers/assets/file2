@@ -1,1 +1,5 @@
-name and an email field
+Hi there, {{name}}
+
+{{body}}
+
+{{signature}}

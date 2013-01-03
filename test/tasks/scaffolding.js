@@ -7,14 +7,14 @@ var expect  = require('expect.js'),
 
 module.exports = function (automaton) {
     describe('scaffolding', function () {
-        beforeEach(function () {
-            // Copy assets to the tmp
-            var file1 = fs.readFileSync(__dirname + '/../helpers/assets/file1.json');
-            fs.writeFileSync(__dirname + '/../tmp/file1.json', file1);
-            fs.writeFileSync(__dirname + '/../tmp/file1_copy.json', file1);
-        });
-
         describe('append', function () {
+            beforeEach(function () {
+                // Copy assets to the tmp
+                var file1 = fs.readFileSync(__dirname + '/../helpers/assets/file1.json');
+                fs.writeFileSync(__dirname + '/../tmp/file1.json', file1);
+                fs.writeFileSync(__dirname + '/../tmp/file1_copy.json', file1);
+            });
+
             it('should append string to placeholder', function (done) {
                 automaton.run({
                     filter: function (opts, next) {
@@ -109,7 +109,7 @@ module.exports = function (automaton) {
                         {
                             task: 'scaffolding-append',
                             options: {
-                                files: ['{{__dirname}}/../tmp/file1*.json'],
+                                files: '{{__dirname}}/../tmp/file1*.json',
                                 data: {
                                     placeholder: 'awesome ',
                                     name: 'André',
@@ -282,7 +282,7 @@ module.exports = function (automaton) {
                         {
                             task: 'scaffolding-replace',
                             options: {
-                                files: ['{{__dirname}}/../tmp/file1*.json'],
+                                files: '{{__dirname}}/../tmp/file1*.json',
                                 data: {
                                     placeholder: 'awesome',
                                     name: 'André',
@@ -354,10 +354,178 @@ module.exports = function (automaton) {
         });
 
         describe('close', function () {
-            it.skip('should close placeholder');
-            it.skip('should close placeholder, trimming empty lines before or after it');
-            it.skip('should accept minimatch patterns');
-            it.skip('should pass over the glob options');
+            beforeEach(function () {
+                // Copy assets to the tmp
+                var file1 = fs.readFileSync(__dirname + '/../helpers/assets/file1.json');
+                fs.writeFileSync(__dirname + '/../tmp/file1.json', file1);
+                fs.writeFileSync(__dirname + '/../tmp/file1_copy.json', file1);
+
+                var file2 = fs.readFileSync(__dirname + '/../helpers/assets/file2');
+                fs.writeFileSync(__dirname + '/../tmp/file2', file2);
+            });
+
+            it('should close placeholder', function (done) {
+                automaton.run({
+                    filter: function (opts, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-close',
+                            options: {
+                                files: ['{{__dirname}}/../tmp/file1.json', '{{__dirname}}/../tmp/file1_copy.json'],
+                                placeholders: 'placeholder'
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    var contents = JSON.parse(fs.readFileSync(__dirname + '/../tmp/file1.json'));
+                    expect(contents.name).to.equal('{{name}}');
+                    expect(contents.email).to.equal('{{email}}');
+                    expect(contents.some_field).to.equal('This has an , you see?');
+                    expect(contents.other_field).to.equal('Here\'s the  again just in case..');
+
+                    contents = JSON.parse(fs.readFileSync(__dirname + '/../tmp/file1_copy.json'));
+                    expect(contents.name).to.equal('{{name}}');
+                    expect(contents.email).to.equal('{{email}}');
+                    expect(contents.some_field).to.equal('This has an , you see?');
+                    expect(contents.other_field).to.equal('Here\'s the  again just in case..');
+
+                    done();
+                });
+            });
+
+            it('should close placeholder, trimming empty lines before or after it', function (done) {
+                automaton.run({
+                    filter: function (opts, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-close',
+                            options: {
+                                files: '{{__dirname}}/../tmp/file2',
+                                placeholders: ['name', 'body', 'signature']
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    var contents = fs.readFileSync(__dirname + '/../tmp/file2').toString();
+                    expect(contents).to.equal('Hi there, ');
+
+                    done();
+                });
+            });
+
+            it('should close placeholder, not trimming empty lines if trim option is false', function (done) {
+                automaton.run({
+                    filter: function (opts, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-close',
+                            options: {
+                                files: '{{__dirname}}/../tmp/file2',
+                                placeholders: ['name', 'body', 'signature'],
+                                trim: false
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    var contents = fs.readFileSync(__dirname + '/../tmp/file2').toString();
+                    expect(contents).to.equal('Hi there, \n\n\n\n');
+
+                    done();
+                });
+            });
+
+            it('should accept minimatch patterns', function (done) {
+                automaton.run({
+                    filter: function (opts, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-close',
+                            options: {
+                                files: ['{{__dirname}}/../tmp/file1*.json'],
+                                placeholders: ['placeholder']
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    var contents = JSON.parse(fs.readFileSync(__dirname + '/../tmp/file1.json'));
+                    expect(contents.name).to.equal('{{name}}');
+                    expect(contents.email).to.equal('{{email}}');
+                    expect(contents.some_field).to.equal('This has an , you see?');
+                    expect(contents.other_field).to.equal('Here\'s the  again just in case..');
+
+                    contents = JSON.parse(fs.readFileSync(__dirname + '/../tmp/file1_copy.json'));
+                    expect(contents.name).to.equal('{{name}}');
+                    expect(contents.email).to.equal('{{email}}');
+                    expect(contents.some_field).to.equal('This has an , you see?');
+                    expect(contents.other_field).to.equal('Here\'s the  again just in case..');
+
+                    done();
+                });
+            });
+
+            it('should pass over the glob options', function (done) {
+                // Rename to .file1.json and tell glob to not match files starting with dot
+                fs.renameSync(__dirname + '/../tmp/file1.json', __dirname + '/../tmp/.file1.json');
+
+                automaton.run({
+                    filter: function (opts, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-close',
+                            options: {
+                                files: ['{{__dirname}}/../tmp/*file1.json'],
+                                placeholders: ['placeholder'],
+                                glob: {
+                                    dot: false
+                                }
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    var contents = JSON.parse(fs.readFileSync(__dirname + '/../tmp/.file1.json'));
+                    expect(contents.name).to.equal('{{name}}');
+                    expect(contents.email).to.equal('{{email}}');
+                    expect(contents.some_field).to.equal('This has an {{placeholder}}, you see?');
+                    expect(contents.other_field).to.equal('Here\'s the {{placeholder}} again just in case..');
+
+                    done();
+                });
+            });
         });
 
         describe('file-rename', function () {
@@ -435,7 +603,7 @@ module.exports = function (automaton) {
                         {
                             task: 'scaffolding-file-rename',
                             options: {
-                                dirs: ['{{__dirname}}/../tmp/file-rename'],
+                                dirs: '{{__dirname}}/../tmp/file-rename',
                                 data: {
                                     placeholder1: 'foo',
                                     placeholder2: 'bar'
@@ -487,7 +655,7 @@ module.exports = function (automaton) {
             });
 
             it('should pass over the glob options', function (done) {
-                // Rename to .file-reanme and tell glob to not match files starting with dot
+                // Rename to .file-rename and tell glob to not match files starting with dot
                 fs.renameSync(__dirname + '/../tmp/file-rename', __dirname + '/../tmp/.file-rename');
 
                 automaton.run({
@@ -499,7 +667,7 @@ module.exports = function (automaton) {
                         {
                             task: 'scaffolding-file-rename',
                             options: {
-                                dirs: ['{{__dirname}}/../tmp/file-rename'],
+                                dirs: ['{{__dirname}}/../tmp/*file-rename'],
                                 data: {
                                     placeholder1: 'foo',
                                     placeholder2: 'bar'
