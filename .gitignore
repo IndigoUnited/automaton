@@ -41,7 +41,7 @@ Session.vim
 
 # Sublime TextEditor #
 ######################
-/*.sublime-project
+*.sublime-project
 
 # Eclipse #
 ######################
@@ -55,6 +55,4 @@ npm-debug.*
 
 # Project specific #
 ######################
-components
-vendor
-test/tmp
+/test/tmp

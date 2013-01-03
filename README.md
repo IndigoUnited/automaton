@@ -27,22 +27,23 @@ An automaton task is a simple object, describing what the task will do.
 
 For illustration purposes, here's a simple `autofile` that just creates a folder and copies a file into it:
 
-```javascript
+```js
 var myTask = {
     tasks: [
         {
             task: 'mkdir',
-            description: 'create the project root folder',
+            description: 'Create the project root folder',
             options: {
-                dir: 'some_dir'
+                dirs: ['some_dir']
             }
         },
         {
             task: 'cp',
-            description: 'copy some file',
+            description: 'Copy some file',
             options: {
-                src: 'some_file',
-                dst: 'some_dir/dest_file'
+                files: {
+                    'some_file': 'some_dir/dest_file'
+                }
             }
         }
     ]
@@ -53,31 +54,37 @@ module.exports = myTask;
 
 To illustrate most of the capabilities of Automaton, here's a complete `autofile` with comments along the file:
 
-```javascript
+```js
 var task = {
     // This id is not mandatory but,
     // if you want to use this task in other tasks,
-    // must be provided and unique
+    // must be provided and should be unique.
     id: 'example_task',
 
     // A user friendly name,
-    // just for reference, not mandatory
+    // just for reference, not mandatory.
     name: 'Example task',
 
-    // also not mandatory
+    // Also not mandatory
     author: 'Indigo United',
+
+    // Description is not mandatory,
+    // but can be used to give a base description for the task.
+    // Can be a string or a function that receives the passed options
+    // and returns a string.
+    description: 'My example task',
 
     // Filter is not mandatory,
     // but can be used to perform some operation
-    // on the options before running the subtasks
+    // on the options before running the subtasks.
     filter: function (options, next) {
-        // You can change existing options
+        // You can change existing options.
         options.dir2 = options.dir2 + '_indigo';
 
         // and even define additional options.
         // In this case we're defining
         // a `dir3` option,
-        // which will be used by one of the subtasks
+        // which will be used by one of the subtasks.
         options.dir3 = 'united';
 
         next();
@@ -86,7 +93,8 @@ var task = {
     // This is also optional,
     // but useful if you want the automaton
     // to automatically check for required options,
-    // and some additional features, check below
+    // and some additional features
+    // Check below for more info.
     options: {
         dir1: {
             // Option description is not mandatory
@@ -108,16 +116,16 @@ var task = {
     },
 
     // A list of subtasks that will run
-    // when the example_task runs
+    // when the example_task runs.
     tasks: [
         {
             task: 'mkdir',
-            description: 'create the root and second folder',
+            description: 'Create the root and second folder',
             options: {
                 // the option below
                 // will have its placeholders replaced by
-                // the value that it receives
-                dir: '{{dir1}}/{{dir2}}'
+                // the value that it receives.
+                dirs: ['{{dir1}}/{{dir2}}']
             }
         },
         {
@@ -128,32 +136,37 @@ var task = {
             // In this case, we even used a placeholder,
             // allowing us to skip this subtask depending
             // on the run_all option. Of course, you have
-            // just setted it to something like `false`
+            // just setted it to something like `false`.
             on: '{{run_all}}',
             // Description messages can be generated according to the options
-            // by using a function instead of a static description
+            // by using a function instead of a static description.
             description: function (opt) {
                 return 'Creating ' + opt.dir1 + '/' + opt.dir2 + '/' + opt.dir3
             },
             options: {
-                dir: '{{dir1}}/{{dir2}}/{{dir3}}'
+                dirs: ['{{dir1}}/{{dir2}}/{{dir3}}']
             }
         },
         {
-            // if you find yourself looking
+            // If you find yourself looking
             // for something a bit more custom,
-            // you can just provide a function as the task
+            // you can just provide a function as the task.
             task : function (opt, next) {
                 // opt is a list of the options
-                // provided to the task
+                // provided to the task.
 
                 console.log('I can do whatever I want', opt);
 
-                // when the task is done,
+                // When the task is done,
                 // you just call next(),
                 // not like the MTV show, though…
                 // (- -')
                 next();
+            },
+            // The 'on' attribute can also be a function
+            // for more complex cases.
+            on: function (opt) {
+                return !!opt.run_all;
             }
         }
     ]
@@ -175,6 +188,7 @@ Please note that placeholders can be escaped with backslashes:
 
 - **chmod:** Change mode of files
 - **cp:** Copy files and directories
+- **mv:** Move files and directories
 - **mkdir:** Make directories recursively
 - **rm:** Remove several files or directories
 - **symlink:** Create symlink
@@ -213,18 +227,24 @@ In order to run an `autofile`, you simply run `automaton`. This will look for `a
 
 ### Node.js
 
-Automaton can also be used as a node module. Here's a quick example of its usage:
+Automaton can also be used programatically as a node module. Here's a quick example of its usage:
 
 ```javascript
-var automaton = require('automaton');
+var automaton = require('automaton').create();
 
 // Since autofiles are node modules themselves,
 // you can just require them
 // Note that you could have instead declared
-// the module inline, in JSON
+// the module inline, in JSON.
 var myTask = require('my_autofile');
 
-automaton.run(myTask, { 'some_option': 'that is handy' });
+automaton.run(myTask, { 'some_option': 'that is handy' }, function (err) {
+    if (err) {
+        console.log('Something went wrong: ' + err.message);
+    } else {
+        console.log('All done!');
+    }
+});
 ```
 
 ## Acknowledgements

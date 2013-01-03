@@ -13,7 +13,7 @@ module.exports = function (automaton) {
                 files: files
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 // TODO: test a lot of possibilities!

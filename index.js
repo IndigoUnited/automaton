@@ -142,6 +142,10 @@ var Automaton = d.Class.declare({
 
         // function to handle the completion of the task
         handle = function (err) {
+            if (utils.lang.isString(err)) {
+                err = new Error(err);
+            }
+
             if (err) {
                 this._logger.errorln(err.message);
             }
@@ -160,7 +164,8 @@ var Automaton = d.Class.declare({
         try {
             batch  = this._batchTask({
                 task: task,
-                options: $options
+                options: $options,
+                depth: 1
             });
         } catch (e) {
             return handle(e);
@@ -192,12 +197,13 @@ var Automaton = d.Class.declare({
         if (utils.lang.isString(def.task)) {
             this._assertTaskLoaded(def.task, true);
             def.task = this._tasks[def.task];
+        } else if (def.depth === 1) {
+            this._validateTask(def.task);
         }
 
         def.options = def.options || {};
         def.parentOptions = def.parentOptions || {};
         def.description = def.description || def.task.description;
-        def.depth = def.depth || 1;
 
         // fill in the options with default values where the option was not provided
         for (option in def.task.options) {
@@ -246,10 +252,8 @@ var Automaton = d.Class.declare({
                     this._reportNextTask(this._createTaskDefinition(currentSubtask, def));
                     currentSubtask.task.call(this._context, def.options, next);
                 }.$bind(this));
-            // it's not a function, then it must be another task, check if it is loaded, and batch it
-            } else if (utils.lang.isString(currentSubtask.task)) {
-                this._assertTaskLoaded(currentSubtask.task);
-
+            // it's not a function, then it must be another task
+            } else {
                 subtaskBatch = this._batchTask(this._createTaskDefinition(currentSubtask, def));
                 batch.push(function (subtask, subtaskBatch, next) {
                     // skip task if disabled
@@ -376,9 +380,10 @@ var Automaton = d.Class.declare({
      * @param {Object} task The task
      */
     _validateTask: function (task) {
-        var taskId = task.id || 'unknown',
+        var taskId,
             x,
-            curr;
+            curr,
+            length;
 
         this._assertIsObject(task, 'Expected task to be an object', true);
         if (task.id !== undefined) {
@@ -386,7 +391,11 @@ var Automaton = d.Class.declare({
             if (!task.id) {
                 this._throwError('Task id cannot be empty.', true);
             }
+            taskId = task.id;
+        } else {
+            taskId = 'unknown';
         }
+
         if (task.name !== undefined) {
             this._assertIsString(task.name, 'Expected name to be a string in \'' + taskId + '\' task', true);
         }
@@ -404,6 +413,9 @@ var Automaton = d.Class.declare({
             for (x in task.options) {
                 curr = task.options[x];
                 this._assertIsObject(curr, 'Expected options definition to be an object in \'' + taskId + '\' task', true);
+                if (curr.description !== undefined) {
+                    this._assertIsString(curr.description, 'Expected \'' + x + '\' option description to be a string in \'' + taskId + '\' task', true);
+                }
             }
         } else {
             task.options = {};
@@ -411,17 +423,18 @@ var Automaton = d.Class.declare({
 
         this._assertIsArray(task.tasks, 'Expected subtasks to be an array in \'' + taskId + '\' task', true);
 
-        for (x = 0; x < task.tasks; ++x) {
+        length = task.tasks.length;
+        for (x = 0; x < length; ++x) {
             curr = task.tasks[x];
 
-            this._assertIsObject('Expected subtask at index \'' + x + '\' to be an object', true);
+            this._assertIsObject(curr, 'Expected subtask at index \'' + x + '\' to be an object', true);
             if (utils.lang.isObject(curr.task)) {
-                this._assertIsValidTask(curr.task);
+                this._validateTask(curr.task);
             } else {
                 if (!utils.lang.isString(curr.task) && !utils.lang.isFunction(curr.task)) {
                     this._throwError('Expected subtask at index \'' + x + '\' to be a string, a function or a task object in \'' + taskId + '\' task', true);
                 }
-                if (curr.description !== undefined && !utils.lang.isString(task.description) && !utils.lang.isFunction(task.description)) {
+                if (curr.description !== undefined && !utils.lang.isString(curr.description) && !utils.lang.isFunction(curr.description)) {
                     this._throwError('Expected subtask description at index \'' + x + '\' to be a string or a function in \'' + taskId + '\' task', true);
                 }
                 if (curr.options !== undefined) {

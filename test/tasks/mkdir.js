@@ -13,7 +13,7 @@ module.exports = function (automaton) {
                 dirs: dir
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dir)).to.be(true);
@@ -29,7 +29,7 @@ module.exports = function (automaton) {
                 dirs: dir
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dir)).to.be(true);
@@ -48,7 +48,7 @@ module.exports = function (automaton) {
                 dirs: dirs
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dirs[0])).to.be(true);
@@ -60,7 +60,7 @@ module.exports = function (automaton) {
 
         it('should create directories with desired mode', function (done) {
             var dirs = [],
-                expectedMode = 16877,
+                expectedMode = process.platform === 'win32' ? 16822 : 16877,
                 dir3 = __dirname + '/../tmp/mkdir/mode/dir3',
                 dir4 = dir3 + '/dir4';
 
@@ -75,7 +75,7 @@ module.exports = function (automaton) {
                 mode: '0755'
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 // verify if is dir

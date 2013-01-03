@@ -104,7 +104,174 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/options/);
 
-            // TODO:
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    options: {
+                        opt1: {
+                            description: 1
+                        }
+                    },
+                    tasks: []
+                });
+            }).to.throwException(/option description/);
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    options: {
+                        opt1: {
+                            description: function () {}
+                        }
+                    },
+                    tasks: []
+                });
+            }).to.throwException(/option description/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    options: {
+                        opt1: {
+                            description: 'test'
+                        }
+                    },
+                    tasks: []
+                });
+            }).to.not.throwException();
+
+            // test filter
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    filter: 1,
+                    tasks: []
+                });
+            }).to.throwException(/filter/);
+
+            expect(function () {  // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    filter: function () {},
+                    tasks: []
+                });
+            }).to.not.throwException();
+
+            // test tasks
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [1]
+                });
+            }).to.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [{}]
+                });
+            }).to.throwException(/task/);
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 1
+                        }
+                    ]
+                });
+            }).to.throwException(/task/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp'
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            options: 1
+                        }
+                    ]
+                });
+            }).to.throwException(/options/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            options: {}
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            description: 1
+                        }
+                    ]
+                });
+            }).to.throwException(/description/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            description: 'copy something'
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
+            // test deep tasks validation
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: {
+                                tasks: 1
+                            },
+                            description: 'copy something'
+                        }
+                    ]
+                });
+            }).to.throwException(/tasks/);
+
+            // test that run also triggers validation for not loaded/added tasks
+            automaton.run({
+                tasks: [
+                    {
+                        task: {
+                            tasks: 1
+                        },
+                        description: 'copy something'
+                    }
+                ]
+            }, null, function (err) {
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/tasks/);
+            });
+
         });
 
         // test run
@@ -124,7 +291,7 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(called).to.be(true);
@@ -164,7 +331,7 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(stack).to.eql([1, 2, 3]);
@@ -179,7 +346,7 @@ module.exports = function (automaton) {
                 dirs: dirname
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dirname)).to.be(true);
@@ -187,7 +354,43 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should run deep tasks specified directly in tasks inside tasks (not by id)');
+        it('should run deep tasks specified directly in tasks inside tasks (not by id)', function (done) {
+            var stack = [];
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: {
+                            tasks: [
+                                {
+                                    task: 'callback',
+                                    options: {
+                                        callback: function () {
+                                            stack.push(1);
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        task: 'callback',
+                        options: {
+                            callback: function () {
+                                stack.push(2);
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(stack).to.eql([1, 2]);
+                done();
+            });
+        });
 
         it('should run inline subtasks', function (done) {
             var dirname = __dirname + '/tmp/dir';
@@ -202,7 +405,7 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isDir(dirname)).to.be(true);
@@ -211,8 +414,51 @@ module.exports = function (automaton) {
         });
 
         // test callback
-        it.skip('should call the callback once done running a task');
-        it.skip('should pass an error (without colors) to the callback if there was an one');
+        it('should call the callback once done running a task', function (done) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback'
+                    }
+                ]
+            }, null, function () {
+                done();
+            });
+        });
+
+        it('should pass an error (without colors) to the callback if there was an one', function (done) {
+            var assert = function (err) {
+                expect(err).to.be.ok();
+                expect(err.message).to.equal('wtf');
+                expect(/\x1B\[\d+m/.test(err.message)).to.equal(false);
+            };
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: function (opt, next) {
+                            next(new Error('wtf'));
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                assert(err);
+
+                automaton.run({
+                    tasks: [
+                        {
+                            task: function (opt, next) {
+                                next('wtf');
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    assert(err);
+
+                    done();
+                });
+            });
+        });
 
         // test if options are shared
         it('should run tasks in an isolated way', function (done) {
@@ -230,14 +476,14 @@ module.exports = function (automaton) {
                 tasks: [shared]
             }, { test: function () { counter++; }}, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 automaton.run({
                     tasks: [shared]
                 }, { test: function () { }}, function (err) {
                     if (err) {
-                        return done(err);
+                        throw err;
                     }
 
                     expect(counter).to.equal(1);
@@ -327,7 +573,7 @@ module.exports = function (automaton) {
                 ]
             }, { falsy1: false, falsy2: undefined, falsy3: null, truthy1: 'foo' }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(stack).to.eql([1, 3, 4]);
@@ -423,7 +669,7 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(stack).to.eql([1, 3, 4, 5]);
@@ -431,14 +677,62 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should throw if all required task options have not been passed');
-        it.skip('should assume default task options if absent');
+        // test required options
+        it('should throw if all required task options have not been passed', function (done) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'mkdir'
+                    }
+                ]
+            }, null, function (err) {
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/missing/i);
 
-        it.skip('should replace placeholders in task descriptions', function () {
-            // test description as string and function
+                done();
+            });
         });
-        it.skip('should ignore escaped placeholders in task options');
 
+        // test default options
+        it('should assume default task options if absent', function (done) {
+            automaton.run({
+                options: {
+                    foo: {
+                        'default': 'bar'
+                    }
+                },
+                filter: function (opt, next) {
+                    expect(opt.foo).to.equal('bar');
+                    next();
+                },
+                tasks: []
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                automaton.run({
+                    options: {
+                        foo: {
+                            'default': 'bar'
+                        }
+                    },
+                    filter: function (opt, next) {
+                        expect(opt.foo).to.equal('baz');
+                        next();
+                    },
+                    tasks: []
+                }, { foo: 'baz' }, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    done();
+                });
+            });
+        });
+
+        // test options replacement
         it('should replaced placeholders in task options', function (done) {
             var someObj = {};
             var opts = {
@@ -456,22 +750,55 @@ module.exports = function (automaton) {
                             foo: '{{opt1}}-{{opt2}}',
                             bar: '{{opt3}}',
                             baz: '{{opt4}}',
+                            arr: ['{{opt4}}', 'foo'],
+                            obj: {
+                                '{{opt1}}': '{{opt4}}',
+                                '{{opt2}}': '{{opt1}}-{{opt2}}'
+                            },
                             callback: function (opt) {
                                 expect(opt.foo).to.be.equal('x-y');
                                 expect(opt.bar === true).to.be.equal(true);
                                 expect(opt.baz === someObj).to.be.equal(true);
+                                expect(opt.arr[0] === someObj).to.be.equal(true);
+                                expect(opt.obj.x === someObj).to.be.equal(true);
+                                expect(opt.obj.y).to.be.equal('x-y');
                             }
                         }
                     }
                 ]
             }, opts, function (err) {
-                done(err);
-            });
+                if (err) {
+                    throw err;
+                }
 
-            // TODO: test if replacements is being done deeply in arrays and objects
-            //       in case of objects, its keys and values should be replaced
+                done();
+            });
         });
-        it.skip('should ignore escaped placeholders in task options');
+
+        it('should ignore escaped placeholders in task options', function (done) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            someOption: '\\{\\{foo\\}\\}',
+                            filterCallback: function (opt) {
+                                expect(opt.someOption).to.equal('\\{\\{foo\\}\\}');
+                            },
+                            callback: function (opt) {
+                                expect(opt.someOption).to.equal('{{foo}}');
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                done();
+            });
+        });
 
         it('should execute filters before their respective tasks', function (done) {
             var filtered = false,
@@ -495,11 +822,11 @@ module.exports = function (automaton) {
                 ]
             }, null, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 if (!filtered || wrong) {
-                    return done(new Error('Filtered not called or called after task'));
+                    throw new Error('Filtered not called or called after task');
                 }
 
                 done();
@@ -533,12 +860,52 @@ module.exports = function (automaton) {
                     }
                 ]
             }, { ultra: 'cool' }, function (err) {
-                done(err);
+                if (err) {
+                    throw err;
+                }
+
+                done();
             });
         });
-    });
 
-    describe('Logger', function () {
-        // TODO: add tests for the logger
+        it('should offer a logging interface for tasks to report', function (done) {
+            var assert = function (ctx) {
+                expect(ctx.log).to.be.ok();
+                expect(ctx.log.info).to.be.a('function');
+                expect(ctx.log.infoln).to.be.a('function');
+                expect(ctx.log.warn).to.be.a('function');
+                expect(ctx.log.warnln).to.be.a('function');
+                expect(ctx.log.error).to.be.a('function');
+                expect(ctx.log.errorln).to.be.a('function');
+                expect(ctx.log.success).to.be.a('function');
+                expect(ctx.log.successln).to.be.a('function');
+            };
+
+            automaton.run({
+                filter: function (opt, next) {
+                    assert(this);
+                    next();
+                },
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            filterCallback: function () {
+                                assert(this);
+                            },
+                            callback: function () {
+                                assert(this);
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                done();
+            });
+        });
     });
 };
