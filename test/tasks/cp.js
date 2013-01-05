@@ -6,8 +6,8 @@ module.exports = function (automaton) {
     describe('cp', function () {
         it('should copy a file', function (done) {
             var files = {};
-            files[__dirname + '/../helpers/assets/file1.json'] = __dirname + '/../tmp/file1.json';
-            files[__dirname + '/../helpers/assets/file2'] = __dirname + '/../tmp/';
+            files[__dirname + '/../helpers/assets/file1.json'] = __dirname + '/../tmp/cp/file1.json';
+            files[__dirname + '/../helpers/assets/file2'] = __dirname + '/../tmp/cp/';
 
             automaton.run('cp', {
                 files: files
@@ -16,9 +16,8 @@ module.exports = function (automaton) {
                     throw err;
                 }
 
-                // TODO: test a lot of possibilities!
-                expect(isFile(__dirname + '/../tmp/file1.json')).to.be(true);
-                expect(isFile(__dirname + '/../tmp/file2')).to.be(true);
+                expect(isFile(__dirname + '/../tmp/cp/file1.json')).to.be(true);
+                expect(isFile(__dirname + '/../tmp/cp/file2')).to.be(true);
                 done();
             });
         });
@@ -30,9 +29,23 @@ module.exports = function (automaton) {
         it.skip('should work with sources as symlinks (directly or deep)');
         it.skip('should work with destinations as symlinks');
         it.skip('should copy file and folders permissions');
-        it.skip('should pass over the glob options', function () {
-            // There is a special case handled inside for the dot option
-            // It needs to be tested with special care
+        it('should pass over the glob options', function (done) {
+            var files = {};
+            files[__dirname + '/../helpers/assets/.file'] = __dirname + '/../tmp/cp/';
+
+            automaton.run('cp', {
+                files: files,
+                glob: {
+                    dot: false
+                }
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isFile(__dirname + '/../tmp/cp/.file')).to.be(false);
+                done();
+            });
         });
     });
 };
