@@ -166,7 +166,9 @@ module.exports = function (automaton) {
             automaton.run('chmod', {
                 files: dir + '*.js',
                 mode: '0755',
-                dot: false
+                glob: {
+                    dot: false
+                }
             }, function (err) {
                 console.log(err);
 
