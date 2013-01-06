@@ -36,7 +36,7 @@ var commands = [
         },
         {
             opt: '--debug, -D',
-            desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
+            desc: 'Enables debug mode'
         },
         {
             opt: '--no-color',
@@ -287,14 +287,18 @@ function getTaskFromFile(file) {
     return require(autofile);
 }
 
-function runTask(task, options) {
+function runTask(task, taskOpts) {
     if (utils.lang.isString(task)) {
         task = automaton.getTask(task);
     }
 
     automaton
-        .run(task, options, function (err) {
+        .run(task, taskOpts, function (err) {
             if (err) {
+                // if debug is on, throw the error (to make the stack visible)
+                if (options.debug) {
+                    throw err;
+                }
                 process.exit(1);
             }
         })
