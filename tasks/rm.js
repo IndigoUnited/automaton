@@ -32,7 +32,7 @@ var task = {
                             return next(err);
                         }
 
-                        async.forEach(matches, function (match) {
+                        async.forEach(matches, function (match, next) {
                             rimraf(match, next);
                         }, next);
                     });
