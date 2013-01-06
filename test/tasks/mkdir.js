@@ -99,5 +99,7 @@ module.exports = function (automaton) {
                 done();
             });
         });
+
+        it.skip('should error if target already exists');
     });
 };
