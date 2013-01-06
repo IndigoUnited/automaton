@@ -7,7 +7,7 @@ module.exports = function (automaton) {
     describe('mkdir', function () {
         var mode755_dir;
 
-        before(function () {
+        beforeEach(function () {
             var target = __dirname + '/../tmp/mkdir/';
 
             // get the OS modes for dir
@@ -100,6 +100,19 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should error if target already exists');
+        it('should error if target already exists', function (done) {
+            var dir   = __dirname + '/../tmp/mkdir/';
+
+            automaton.run('mkdir', {
+                dirs: dir,
+                mode: '0755'
+            }, function (err) {
+
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/already exists/);
+
+                done();
+            });
+        });
     });
 };

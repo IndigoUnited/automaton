@@ -86,7 +86,19 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should error if target does not exists');
+        it('should error if target does not exists', function (done) {
+            var file = __dirname + '/../tmp/chmod/file_not_exists.js';
+
+            automaton.run('chmod', {
+                files: file,
+                mode: '0755'
+            }, function (err) {
+
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/ENOENT/);
+                done();
+            });
+        });
 
         it('should accept minimatch patterns', function (done) {
             var dir   = __dirname + '/../tmp/chmod/',
