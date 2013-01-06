@@ -18,6 +18,8 @@ var task = {
         }
     },
     filter     : function (opt, next) {
+        var error;
+
         if (utils.string.endsWith(opt.name, '.js')) {
             opt.name = opt.name.slice(0, -3);
         }
@@ -26,7 +28,9 @@ var task = {
 
         fs.stat(opt.filename, function (err) {
             if (!err || err.code !== 'ENOENT') {
-                return next(new Error('Filename ' + opt.filename + ' already exists.'));
+                error = new Error('EEXIST, file already exists \'' + opt.filename + '\'');
+                error.code = 'EXISTS';
+                return next(error);
             }
 
             next();
