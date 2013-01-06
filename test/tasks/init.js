@@ -1,6 +1,5 @@
 var expect = require('expect.js'),
     isFile = require('../helpers/util/is-file'),
-    isDir  = require('../helpers/util/is-dir'),
     fs     = require('fs')
 ;
 
@@ -14,7 +13,7 @@ module.exports = function (automaton) {
                 dst: dir
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isFile(dir + filename)).to.be(true);
@@ -32,7 +31,7 @@ module.exports = function (automaton) {
                 dst: dir
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
                 expect(isFile(dir + file)).to.be(true);
@@ -41,29 +40,14 @@ module.exports = function (automaton) {
         });
 
         it('should throw an error if the autofile already exists', function (done) {
-
             var dir      = __dirname + '/../tmp/init/',
                 file     = 'autofile_exists.js';
 
             // create dir
-            fs.mkdirSync(dir, parseInt('0777', 8), function (err) {
-
-                if (err) {
-                    return done(err);
-                }
-
-                expect(isDir(dir)).to.be(true);
-            });
+            fs.mkdirSync(dir);
 
             // create file
-            fs.writeFileSync(dir + file, 'dummy', 'utf8', function (err) {
-
-                if (err) {
-                    return done(err);
-                }
-
-                expect(isFile(dir + file)).to.be(true);
-            });
+            fs.writeFileSync(dir + file, 'dummy');
 
             automaton.run('init', {
                 name: file,

@@ -1,167 +1,138 @@
 var expect = require('expect.js'),
-    isFile = require('../helpers/util/is-file'),
-    isDir  = require('../helpers/util/is-dir'),
     fs     = require('fs')
 ;
 
 module.exports = function (automaton) {
     describe('chmod', function () {
-        it('should change mode of files', function (done) {
+        var mode755_dir,
+            mode777_dir,
+            mode755_file,
+            mode777_file;
 
-            var dir          = __dirname + '/../tmp/chmod/',
-                file         = 'file.js',
-                expectedMode = process.platform === 'win32' ? 16822 : 16877;
+        before(function () {
+            var target = __dirname + '/../tmp/chmod/';
+
+            // get the OS modes for dir
+            fs.mkdirSync(target);
+            mode777_dir = fs.statSync(target).mode;
+            fs.chmodSync(target, '0775');
+            mode755_dir = fs.statSync(target).mode;
+
+            // get the OS modes for file
+            target += 'dummy';
+            fs.writeFileSync(target, 'dummy');
+            fs.chmodSync(target, '0777');
+            mode777_file = fs.statSync(target).mode;
+            fs.chmodSync(target, '0755');
+            mode755_file = fs.statSync(target).mode;
+        });
+
+        it('should change mode of files', function (done) {
+            var dir  = __dirname + '/../tmp/chmod/',
+                file = 'file.js';
 
             // create dir
-            fs.mkdirSync(dir, parseInt('0777', 8), function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isDir(dir)).to.be(true);
-            });
+            fs.mkdirSync(dir);
 
             // create file
-            fs.writeFileSync(dir + file, 'dummy', 'utf8', function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isFile(dir + file)).to.be(true);
-            });
-
+            fs.writeFileSync(dir + file, 'dummy');
+            fs.chmodSync(dir + file, '0777');
 
             automaton.run('chmod', {
                 files: dir + file,
                 mode: '0755'
             }, function (err) {
                 if (err) {
-                    done(err);
+                    throw err;
                 }
 
-                expect(fs.statSync(dir + file).mode === expectedMode).to.be(true);
+                expect(fs.statSync(dir + file).mode).to.equal(mode755_file);
                 done();
             });
         });
 
         it('should accept a file or an array of files', function (done) {
-            var dir          = __dirname + '/../tmp/chmod/',
-                file1        = 'file1.js',
-                file2        = 'file2.js',
-                files        = [],
-                expectedMode = process.platform === 'win32' ? 16822 : 16877;
+            var dir   = __dirname + '/../tmp/chmod/',
+                file1 = 'file1.js',
+                file2 = 'file2.js',
+                files = [];
 
             files.push(dir + file1);
             files.push(dir + file2);
 
             // create dir
-            fs.mkdirSync(dir, parseInt('0777', 8), function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isDir(dir)).to.be(true);
-            });
+            fs.mkdirSync(dir);
 
             // create file1
-            fs.writeFileSync(files[0], 'dummy', 'utf8', function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isFile(files[0])).to.be(true);
-            });
+            fs.writeFileSync(files[0], 'dummy');
+            fs.chmodSync(files[0], '0777');
 
             // create file2
-            fs.writeFileSync(files[1], 'dummy', 'utf8', function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isFile(files[1])).to.be(true);
-            });
-
+            fs.writeFileSync(files[1], 'dummy');
+            fs.chmodSync(files[1], '0777');
 
             automaton.run('chmod', {
                 files: files,
                 mode: '0755'
             }, function (err) {
                 if (err) {
-                    done(err);
+                    throw err;
                 }
 
-                expect(fs.statSync(files[0]).mode === expectedMode).to.be(true);
-                expect(fs.statSync(files[1]).mode === expectedMode).to.be(true);
+                expect(fs.statSync(files[0]).mode).to.equal(mode755_file);
+                expect(fs.statSync(files[1]).mode).to.equal(mode755_file);
 
                 done();
             });
         });
 
+        it.skip('should error if target does not exists');
+
         it('should accept minimatch patterns', function (done) {
-            var dir          = __dirname + '/../tmp/chmod/',
-                file1        = 'file1.js',
-                file2        = 'file2.js',
-                files        = [],
-                expectedMode = process.platform === 'win32' ? 16822 : 16877;
+            var dir   = __dirname + '/../tmp/chmod/',
+                file1 = 'file1.js',
+                file2 = 'file2.js',
+                files = [];
 
             files.push(dir + file1);
             files.push(dir + file2);
 
             // create dir
-            fs.mkdirSync(dir, parseInt('0777', 8), function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isDir(dir)).to.be(true);
-            });
+            fs.mkdirSync(dir);
 
             // create file1
-            fs.writeFileSync(files[0], 'dummy', 'utf8', function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isFile(files[0])).to.be(true);
-            });
+            fs.writeFileSync(files[0], 'dummy');
+            fs.chmodSync(files[0], '0777');
 
             // create file2
-            fs.writeFileSync(files[1], 'dummy', 'utf8', function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isFile(files[1])).to.be(true);
-            });
-
+            fs.writeFileSync(files[1], 'dummy');
+            fs.chmodSync(files[1], '0777');
 
             automaton.run('chmod', {
                 files: dir + '*.js',
                 mode: '0755'
             }, function (err) {
                 if (err) {
-                    done(err);
+                    throw err;
                 }
 
-                expect(fs.statSync(files[0]).mode === expectedMode).to.be(true);
-                expect(fs.statSync(files[1]).mode === expectedMode).to.be(true);
+                expect(fs.statSync(files[0]).mode).to.equal(mode755_file);
+                expect(fs.statSync(files[1]).mode).to.equal(mode755_file);
 
                 done();
             });
         });
 
         it('should pass over the glob options', function (done) {
-            var dir          = __dirname + '/../tmp/chmod/',
-                file         = '.file.js',
-                expectedMode = process.platform === 33188;
+            var dir  = __dirname + '/../tmp/chmod/',
+                file = '.file.js';
 
             // create dir
-            fs.mkdirSync(dir, parseInt('0777', 8), function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isDir(dir)).to.be(true);
-            });
+            fs.mkdirSync(dir);
 
             // create file
-            fs.writeFileSync(dir + file, 'dummy', 'utf8', function (err) {
-                if (err) {
-                    return done(err);
-                }
-                expect(isFile(dir + file)).to.be(true);
-            });
+            fs.writeFileSync(dir + file);
+            fs.chmodSync(dir + file, '0777');
 
             automaton.run('chmod', {
                 files: dir + '*.js',
@@ -170,10 +141,11 @@ module.exports = function (automaton) {
                     dot: false
                 }
             }, function (err) {
-                console.log(err);
+                if (err) {
+                    throw err;
+                }
 
-
-                expect(fs.statSync(dir + file).mode === expectedMode).to.be(true);
+                expect(fs.statSync(dir + file).mode).to.equal(mode777_file);
                 done();
             });
         });

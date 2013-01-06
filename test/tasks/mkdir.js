@@ -5,6 +5,16 @@ var expect = require('expect.js'),
 
 module.exports = function (automaton) {
     describe('mkdir', function () {
+        var mode755_dir;
+
+        before(function () {
+            var target = __dirname + '/../tmp/mkdir/';
+
+            // get the OS modes for dir
+            fs.mkdirSync(target, '0755');
+            mode755_dir = fs.statSync(target).mode;
+        });
+
         it('should create directory - single depth folder', function (done) {
 
             var dir = __dirname + '/../tmp/mkdir/single_dir';
@@ -59,16 +69,12 @@ module.exports = function (automaton) {
         });
 
         it('should create directories with desired mode', function (done) {
-            var dirs = [],
-                expectedMode = process.platform === 'win32' ? 16822 : 16877,
-                dir3 = __dirname + '/../tmp/mkdir/mode/dir3',
-                dir4 = dir3 + '/dir4';
+            var dirs = [];
 
             dirs.push(__dirname + '/../tmp/mkdir/mode/dir1');
             dirs.push(__dirname + '/../tmp/mkdir/mode/dir2');
-            dirs.push(dir4);
-
-
+            dirs.push(__dirname + '/../tmp/mkdir/mode/dir3');
+            dirs.push(__dirname + '/../tmp/mkdir/mode/dir3/dir4');
 
             automaton.run('mkdir', {
                 dirs: dirs,
@@ -81,14 +87,14 @@ module.exports = function (automaton) {
                 // verify if is dir
                 expect(isDir(dirs[0])).to.be(true);
                 expect(isDir(dirs[1])).to.be(true);
-                expect(isDir(dir3)).to.be(true);
-                expect(isDir(dir4)).to.be(true);
+                expect(isDir(dirs[2])).to.be(true);
+                expect(isDir(dirs[3])).to.be(true);
 
                 // verify mode
-                expect(fs.statSync(dirs[0]).mode === expectedMode).to.be(true);
-                expect(fs.statSync(dirs[1]).mode === expectedMode).to.be(true);
-                expect(fs.statSync(dir3).mode === expectedMode).to.be(true);
-                expect(fs.statSync(dir4).mode === expectedMode).to.be(true);
+                expect(fs.statSync(dirs[0]).mode).to.equal(mode755_dir);
+                expect(fs.statSync(dirs[1]).mode).to.equal(mode755_dir);
+                expect(fs.statSync(dirs[2]).mode).to.equal(mode755_dir);
+                expect(fs.statSync(dirs[3]).mode).to.equal(mode755_dir);
 
                 done();
             });

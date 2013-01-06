@@ -4,20 +4,23 @@ var expect = require('expect.js'),
 
 module.exports = function (automaton) {
     describe('symlink', function () {
-        it.skip('should create symlink', function (done) {
-
-            var dir      = __dirname + '/../tmp/init/',
-                filename = 'autofile.js';
+        it('should create symlink for files', function (done) {
+            var dst = __dirname + '/../tmp/base_autofile.js';
 
             automaton.run('symlink', {
+                dst: dst,
+                src: __dirname + '/../../base_autofile.js',
+                type: 'file'
             }, function (err) {
                 if (err) {
-                    return done(err);
+                    throw err;
                 }
 
-                expect(isFile(dir + filename)).to.be(true);
+                expect(isFile(dst)).to.be(true);
                 done();
             });
         });
+
+        it.skip('should create symlink for directories');
     });
 };

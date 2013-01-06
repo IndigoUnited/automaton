@@ -26,6 +26,8 @@ module.exports = function (automaton) {
             // TODO: test a lot of possibilities!
         });
 
+        // TODO: add more tests when copying files that do not exists, etc!
+
         it.skip('should work with sources as symlinks (directly or deep)');
         it.skip('should work with destinations as symlinks');
         it.skip('should copy file and folders permissions');

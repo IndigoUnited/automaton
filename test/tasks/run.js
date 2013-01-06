@@ -4,7 +4,7 @@ var expect = require('expect.js'),
 
 module.exports = function (automaton) {
     describe('run', function () {
-        it.skip('should run command', function (done) {
+        it('should run command', function (done) {
             var dir = __dirname + '/../tmp/run';
 
             automaton.run('run', {
@@ -18,6 +18,7 @@ module.exports = function (automaton) {
                 done();
             });
         });
+
         it('should run command in a different cwd', function (done) {
             var dir    = __dirname + '/../tmp/',
                 folder = 'run';

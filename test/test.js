@@ -14,7 +14,7 @@ function cleanUpTmp(done) {
 function prepareTmp(done) {
     cleanUpTmp(function (err) {
         if (err) {
-            return done(err);
+            throw err;
         }
 
         fs.mkdir(__dirname + '/tmp', parseInt('0777', 8), done);
