@@ -43,27 +43,35 @@ var task = {
 
                 // data is done at this time
                 // For each item in the files array, perform a glob
-                opt.glob.mark = true;
                 async.forEach(files, function (file, next) {
                     glob(file, opt.glob, function (err, matches) {
                         if (err) {
                             return next(err);
                         }
 
-                        var files = matches.filter(function (match) {
-                            return !utils.string.endsWith(match, '/');
-                        });
-
-                        // For each file in the glob result,
+                        // For each match in the glob result,
                         // perform the interpolation
-                        async.forEach(files, function (file, next) {
-                            fs.readFile(file, function (err, contents) {
+                        async.forEach(matches, function (file, next) {
+                            // Check if is an actual file
+                            // We couldn't use mark option because is bugged
+                            // See: https://github.com/isaacs/node-glob/issues/50
+                            fs.stat(file, function (err, stat) {
                                 if (err) {
                                     return next(err);
                                 }
 
-                                contents = interp(contents.toString(), data, { trim: opt.trim });
-                                fs.writeFile(file, contents, next);
+                                if (!stat.isFile()) {
+                                    next();
+                                }
+
+                                fs.readFile(file, function (err, contents) {
+                                    if (err) {
+                                        return next(err);
+                                    }
+
+                                    contents = interp(contents.toString(), data, { trim: opt.trim });
+                                    fs.writeFile(file, contents, next);
+                                });
                             });
                         }, next);
                     });

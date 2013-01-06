@@ -2,6 +2,7 @@ var fstream = require('fstream');
 var glob    = require('glob');
 var async   = require('async');
 var path    = require('path');
+var fs      = require('fs');
 var utils   = require('amd-utils');
 
 var task = {
@@ -47,6 +48,10 @@ var task = {
                     // Expand the files to get an array of files and directories
                     // The files do not overlap directories and directories do not overlay eachother
                     expand(pattern, opt.glob, function (err, files, dirs, directMatch) {
+                        if (err) {
+                            return next(err);
+                        }
+
                         // If the source pattern was a direct match
                         // Copy directly to the dests
                         if (directMatch) {
@@ -101,33 +106,47 @@ function expand(pattern, options, next) {
     var lastMatch;
 
     options = options || {};
-    options.mark = true;
+    // Mark option is bugged for single * patterns
+    // See: https://github.com/isaacs/node-glob/issues/50
+    // For now we stat ourselves
+    //options.mark = true;
     glob(pattern, options, function (err, matches) {
         if (err) {
             return next(err);
         }
 
-        matches.forEach(function (match) {
-            var isDir = utils.string.endsWith(match, '/');
-            match = path.normalize(match);
+        async.forEach(matches, function (match, next) {
+            fs.stat(match, function (err, stat) {
+                if (err) {
+                    return next(err);
+                }
 
-            if (isDir) {
-                lastMatch = match.replace(/[\/\\]+$/, '');
-                dirs.push(path.normalize(lastMatch));
-            } else {
-                lastMatch = match;
-                files.push(lastMatch);
+                match = path.normalize(match);
+
+                if (stat.isDirectory()) {
+                    lastMatch = match.replace(/[\/\\]+$/, '');
+                    dirs.push(path.normalize(lastMatch));
+                } else {
+                    lastMatch = match;
+                    files.push(lastMatch);
+                }
+
+                next();
+            });
+        }, function (err) {
+            if (err) {
+                return next(err);
             }
+
+            // If we only got one match and it was the same as the original pattern,
+            // then it was a direct match
+            var directMatch = matches.length === 1 && lastMatch === path.normalize(pattern).replace(/[\/\\]+$/, '');
+            if (!directMatch) {
+                cleanup(files, dirs);
+            }
+
+            next(null, files, dirs, directMatch);
         });
-
-        // If we only got one match and it was the same as the original pattern,
-        // then it was a direct match
-        var directMatch = matches.length === 1 && lastMatch === path.normalize(pattern).replace(/[\/\\]+$/, '');
-        if (!directMatch) {
-            cleanup(files, dirs);
-        }
-
-        next(null, files, dirs, directMatch);
     });
 }
 
