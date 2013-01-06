@@ -1,5 +1,6 @@
 var mkdirp = require('mkdirp');
 var fs     = require('fs');
+var path   = require('path');
 var utils  = require('amd-utils');
 var async  = require('async');
 
@@ -31,6 +32,8 @@ var task = {
                 var error;
 
                 async.forEach(dirs, function (dir, next) {
+                    dir = path.normalize(dir);
+
                     fs.stat(dir, function (err) {
                         if (!err || err.code !== 'ENOENT') {
                             error = new Error('EEXIST, file already exists \'' + dir + '\'');
