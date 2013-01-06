@@ -16,9 +16,7 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (please look the available options in the glob package README)',
-            'default': {
-                dot: true
-            }
+            'default': null
         }
     },
     tasks      :
@@ -39,11 +37,6 @@ var task = {
                 async.forEachSeries(sources, function (pattern, next) {
                     var dsts = utils.lang.isArray(opt.files[pattern]) ? opt.files[pattern] : [opt.files[pattern]];
                     dsts = utils.array.unique(dsts.map(function (dst) { return path.normalize(dst); }));
-
-                    // If the user specified a /**/* pattern, optimize it
-                    if (!opt.glob || !opt.glob.noglobstar) {
-                        pattern = pattern.replace(/(\/\*\*\/\*)+$/g, '/*');
-                    }
 
                     // Expand the files to get an array of files and directories
                     // The files do not overlap directories and directories do not overlay eachother
@@ -81,6 +74,7 @@ var task = {
                         async.forEachSeries(batch, function (obj, next) {
                             async.forEach(dsts, function (dst, next) {
                                 dst = path.join(dst, relativePath(obj.src, pattern));
+                                console.log('Copying ' + obj.src);
                                 copy(obj.src, dst, obj.type, next);
                             }, next);
                         }, next);
@@ -103,9 +97,16 @@ var task = {
 function expand(pattern, options, next) {
     var files = [];
     var dirs = [];
+    var hasGlobStar = false;
     var lastMatch;
 
     options = options || {};
+
+    // Check if ** pattern was passed
+    if (!options.glob || !options.glob.noglobstar) {
+        hasGlobStar = pattern.indexOf('**') !== -1;
+    }
+
     // Mark option is bugged for single * patterns
     // See: https://github.com/isaacs/node-glob/issues/50
     // For now we stat ourselves
@@ -123,12 +124,12 @@ function expand(pattern, options, next) {
 
                 match = path.normalize(match);
 
-                if (stat.isDirectory()) {
-                    lastMatch = match.replace(/[\/\\]+$/, '');
-                    dirs.push(path.normalize(lastMatch));
-                } else {
+                if (stat.isFile()) {
                     lastMatch = match;
                     files.push(lastMatch);
+                } else if (hasGlobStar) {
+                    lastMatch = match.replace(/[\/\\]+$/, '');
+                    dirs.push(path.normalize(lastMatch));
                 }
 
                 next();
@@ -160,19 +161,6 @@ function expand(pattern, options, next) {
 function cleanup(files, dirs) {
     var x, y;
 
-    // Cleanup files that overlap dirs
-    dirs.forEach(function (dir) {
-        for (x = files.length - 1; x >= 0; --x) {
-            if (path.dirname(files[x]).indexOf(dir) !== -1) {
-                files.splice(x, 1);
-            }
-        }
-    });
-
-    // Sort dirs and files, from lower path to higher path size
-    files.sort(sortFunc);
-    dirs.sort(sortFunc);
-
     // Cleanup dirs that overlap eachother
     for (x = 0; x < dirs.length; ++x) {
         for (y = x + 1; y < dirs.length; ++y) {
@@ -183,23 +171,17 @@ function cleanup(files, dirs) {
             }
         }
     }
-}
 
-/**
- * Sort function used in the cleanup.
- */
-function sortFunc(first, second) {
-    var firstLength = first.length;
-    var secondLength = second.length;
-
-    if (firstLength > secondLength) {
-        return 1;
+    // Cleanup dirs that overlap files
+    for (x = 0; x < dirs.length; ++x) {
+        for (y = files.length - 1; y >= 0; --y) {
+            if (files[y].indexOf(dirs[x]) === 0) {
+                dirs.splice(x, 1);
+                --x;
+                break;
+            }
+        }
     }
-    if (firstLength < secondLength) {
-        return -1;
-    }
-
-    return 0;
 }
 
 /**
@@ -239,7 +221,10 @@ function relativePath(file, pattern) {
  * @param {Function} callback The function to call when done (follows node conventions)
  */
 function copy(src, dst, type, callback) {
-    var reader = fstream.Reader(src).pipe(
+    var reader = fstream.Reader({
+        path: src,
+        follow: true
+    }).pipe(
         fstream.Writer({
             type: type,
             path: dst
