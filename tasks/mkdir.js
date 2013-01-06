@@ -29,12 +29,9 @@ var task = {
             task: function (opt, next) {
                 var dirs = utils.lang.isArray(opt.dirs) ? opt.dirs : [opt.dirs];
                 async.forEach(dirs, function (dir, next) {
-                    fs.stat(dir, function (err, stat) {
+                    fs.stat(dir, function (err) {
                         if (!err || err.code !== 'ENOENT') {
-                            if (stat && !stat.isDirectory()) {
-                                return next(new Error(dir + ' already exists and is not a directory.'));
-                            }
-                            return next(err);
+                            return next(new Error(dir + ' already exists'));
                         }
 
                         mkdirp(dir, opt.mode, next);
