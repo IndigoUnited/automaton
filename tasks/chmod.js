@@ -40,7 +40,6 @@ var task = {
                         }
 
                         async.forEach(files, function (file, next) {
-                            // TODO: give better error messages if file does not exist
                             fs.chmod(file, opt.mode, next);
                         }, next);
                     });
