@@ -20,7 +20,7 @@ var task = {
     tasks      :
     [
         {
-            task: function (ctx, opt, next) {
+            task: function (opt, next) {
                 fs.symlink(opt.src, opt.dst, opt.type, next);
             }
         }
