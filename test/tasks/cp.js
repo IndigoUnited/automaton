@@ -38,7 +38,7 @@ module.exports = function (automaton) {
         it('should work with sources as symlinks (directly or deep)', function (done) {
             var dir     = 'cp_dst/',
                 file    = 'file.js',
-                symlink = target + '../symlink',
+                symlink = target + '../file.js',
                 files   = {};
 
             // create file
@@ -82,7 +82,7 @@ module.exports = function (automaton) {
 
             // copy file in /tmp/cp/file.js to /tmp/symlink/file.js
             // where symlink = cp/folder
-            files[target + file] = symlink;
+            files[target + file] = symlink + '/';
 
             automaton.run('cp', {
                 files: files
@@ -92,33 +92,53 @@ module.exports = function (automaton) {
                 }
 
                 expect(isFile(symlink + '/' + file)).to.be(true);
-                done();
+                fs.unlinkSync(symlink);
+
+                // copy file in /tmp/cp/file.js to /tmp/symlink
+                // where symlink = cp/folder
+                files[target + file] = symlink;
+
+                automaton.run('cp', {
+                    files: files
+                }, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(isFile(symlink)).to.be(true);
+                    done();
+                });
+
             });
         });
 
-        it('should copy file and folders permissions', function (done) {
+        it('should copy file and folders with default permissions', function (done) {
 
             var dir         = target + 'permissions/',
                 folder      = 'folder/',
                 file        = 'file.js',
                 toCopy      = {},
-                mode755_file,
-                mode777_dir;
+                mode_dir,
+                mode_file;
 
             // create dirs
             fs.mkdirSync(dir);
             fs.mkdirSync(target + folder);
-            fs.chmodSync(target + folder, '0777');
 
-            // get mode
-            mode777_dir = fs.statSync(target + folder).mode;
+            // get default dir mode
+            mode_dir = fs.statSync(target + folder).mode;
+
+            // change it to something else
+            fs.chmodSync(target + folder, '0777');
 
             // create file
             fs.writeFileSync(target + file, 'dummy');
-            fs.chmodSync(target + file, '0755');
 
-            // get mode
-            mode755_file = fs.statSync(target + file).mode;
+            // get file mode
+            mode_file = fs.statSync(target + file).mode;
+
+            // change it to something else
+            fs.chmodSync(target + file, '0777');
 
             // file to copy
             toCopy[target + file]   = dir;
@@ -131,15 +151,15 @@ module.exports = function (automaton) {
                     throw err;
                 }
 
-                expect(fs.statSync(toCopy[target + file]).mode).to.equal(mode755_file);
-                expect(fs.statSync(toCopy[target + folder]).mode).to.equal(mode777_dir);
+                expect(fs.statSync(toCopy[target + file] + file).mode).to.equal(mode_file);
+                expect(fs.statSync(toCopy[target + folder]).mode).to.equal(mode_dir);
                 done();
             });
         });
 
         it('should pass over the glob options - should not copy the file', function (done) {
             var files = {};
-            files[__dirname + '/../helpers/assets/.file'] = target;
+            files[__dirname + '/../helpers/assets/*file'] = target;
 
             automaton.run('cp', {
                 files: files
@@ -147,6 +167,7 @@ module.exports = function (automaton) {
                 if (err) {
                     throw err;
                 }
+
                 expect(isFile(target + '.file')).to.be(false);
                 done();
             });
