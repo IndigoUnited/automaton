@@ -41,6 +41,9 @@ var task = {
                     // Expand the files to get an array of files and directories
                     // The files do not overlap directories and directories do not overlay eachother
                     expand(pattern, opt.glob, function (err, files, dirs, directMatch) {
+                        var src,
+                            isFile;
+
                         if (err) {
                             return next(err);
                         }
@@ -48,9 +51,10 @@ var task = {
                         // If the source pattern was a direct match
                         // Copy directly to the dests
                         if (directMatch) {
+                            src = dirs[0] || files[0];
+                            isFile = src === files[0];
+
                             return async.forEach(dsts, function (dst, next) {
-                                var src = dirs[0] || files[0];
-                                var isFile = src === files[0];
                                 // If the source is a directory
                                 // or a file which dst ends with /, concatenate the source basename.
                                 if (/[\/\\]$/.test(dst)) {
@@ -97,6 +101,7 @@ function expand(pattern, options, next) {
     var files = [];
     var dirs = [];
     var hasGlobStar = false;
+    var hasStar = pattern.indexOf('*') !== -1;
     var lastMatch;
 
     options = options || {};
@@ -128,7 +133,7 @@ function expand(pattern, options, next) {
                 if (stat.isFile()) {
                     lastMatch = match;
                     files.push(lastMatch);
-                } else if (hasGlobStar) {
+                } else if (!hasStar || hasGlobStar) {
                     lastMatch = match.replace(/[\/\\]+$/, '');
                     dirs.push(path.normalize(lastMatch));
                 }
