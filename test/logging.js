@@ -117,60 +117,12 @@ module.exports = function (automaton) {
                 .on('data', function (data) { log += data; });
         });
 
-        it('should report running tasks, replacing placeholders in the descripton', function (done) {
-            var log = '';
-
-            automaton
-                .run({
-                    description: 'foo {{foo}}{{wtf}}',
-                    tasks: []
-                }, { foo: 'bar' }, function (err) {
-                    if (err) {
-                        throw err;
-                    }
-
-                    log = removeColors(log);
-                    expect(log).to.equal(
-                        arrow('foo bar', 1)
-                    );
-
-                    log = '';
-
-                    automaton
-                        .run({
-                            description: function (opt) {
-                                return 'foo ' + opt.foo;
-                            },
-                            tasks: [
-                                {
-                                    task: function (opt, next) { next(); },
-                                    description: function () { return ''; } // empty desc should not be logged
-                                }
-                            ]
-                        }, { foo: 'bar' }, function (err) {
-                            if (err) {
-                                throw err;
-                            }
-
-                            log = removeColors(log);
-                            expect(log).to.equal(
-                                arrow('foo bar', 1)
-                            );
-
-                            done();
-                        })
-                        .on('data', function (data) { log += data; });
-                })
-                .on('data', function (data) { log += data; });
-        });
-
-
         it('should not throw error when logging types other than strings', function (done) {
             var log = '';
 
             automaton
                 .run({
-                    description: function () { return ''; },
+                    description: '',
                     tasks: [
                         {
                             task: function (opt, next) {

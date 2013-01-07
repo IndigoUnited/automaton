@@ -374,10 +374,6 @@ var Automaton = d.Class.declare({
 
         // try out to extract the description, falling back to the name
         desc = def.description || def.task.description || def.task.name;
-        if (utils.lang.isFunction(desc)) {
-            desc = desc(def.options) + '';
-        }
-
         if (!desc) {
             // if is a pure function that has no description, then simply do not report
             if (isPureFunction) {
@@ -386,8 +382,6 @@ var Automaton = d.Class.declare({
             // otherwise assume '??'
             desc = '??';
         }
-
-        desc = this._replacePlaceholders(desc, def.options, { purge: true });
 
         logger.infoln(('> ' + desc).cyan);
     },

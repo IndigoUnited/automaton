@@ -70,8 +70,6 @@ var task = {
 
     // Description is not mandatory,
     // but can be used to give a base description for the task.
-    // Can be a string or a function that receives the passed options
-    // and returns a string.
     description: 'My example task',
 
     // Filter is not mandatory,
