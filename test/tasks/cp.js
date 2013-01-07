@@ -11,7 +11,7 @@ module.exports = function (automaton) {
             fs.mkdirSync(target, '0777');
         });
 
-        it('should copy a file', function (done) {
+        it('should copy file to file', function (done) {
             var files = {};
             files[__dirname + '/../helpers/assets/file1.json'] = target + 'file1.json';
             files[__dirname + '/../helpers/assets/file2'] = target;
@@ -29,13 +29,35 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should copy a folder', function () {
-            // TODO: test a lot of possibilities!
+        it.skip('should copy file to folder', function () {
+            // test file to folder/
+            // test file to folder where folder already exists
+            // please confirm this behavior in the command line
         });
 
-        // TODO: add more tests when copying files that do not exists, etc!
+        it.skip('should copy folder to folder', function () {
+            // test folder to folder/
+            // test folder to folder where folder does not exist
+            //  - it should copy folder to folder
+            // test folder to folder where folder alredy exist
+            //  - it should copy folder to folder/folder
+        });
 
-        it('should work with sources as symlinks (directly or deep)', function (done) {
+        it.skip('should copy files with single dot pattern', function () {
+            // test if ONLY files are copied with source/*
+        });
+
+        it.skip('should copy files and folders recursivelly', function () {
+            // test if files and folders are recursivelly with with source/**/*
+        });
+
+        it.skip('should give error if source file does not exist');
+        it.skip('should give error if source folder does not exist');
+        it.skip('should give error if sources do not exist', function () {
+            // test with source/* and source/**/*
+        });
+
+        it('should work with sources as symlinks', function (done) {
             var dir     = 'cp_dst/',
                 file    = 'file.js',
                 symlink = target + '../file.js',
@@ -63,6 +85,15 @@ module.exports = function (automaton) {
                 expect(isFile(target + '../' + dir + file)).to.be(true);
                 done();
             });
+        });
+
+        it.skip('should work sources containing symlinks deeply inside them', function () {
+            // test with a symlink inside the folder being copied
+            // also test with source/**/* with a symlink deeply inside the source
+            // it's important to make those separate tests because they have different piecies of code handling it
+            //
+            // check what is the unix behavior here.. to copy it as a symlink or follow the symlink
+            // still an ISSUE should be created to add an option to the cp in order to change this behavior
         });
 
         it('should work with destinations as symlinks', function (done) {
@@ -112,8 +143,7 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should copy file and folders with default permissions', function (done) {
-
+        it('should copy with default permissions', function (done) {
             var dir         = target + 'permissions/',
                 folder      = 'folder/',
                 file        = 'file.js',
