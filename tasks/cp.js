@@ -74,7 +74,6 @@ var task = {
                         async.forEachSeries(batch, function (obj, next) {
                             async.forEach(dsts, function (dst, next) {
                                 dst = path.join(dst, relativePath(obj.src, pattern));
-                                console.log('Copying ' + obj.src);
                                 copy(obj.src, dst, obj.type, next);
                             }, next);
                         }, next);
@@ -102,7 +101,9 @@ function expand(pattern, options, next) {
 
     options = options || {};
 
-    // Check if ** pattern was passed
+    // TODO: throw an error on commas
+
+    // Check if ** pattern was used
     if (!options.glob || !options.glob.noglobstar) {
         hasGlobStar = pattern.indexOf('**') !== -1;
     }
