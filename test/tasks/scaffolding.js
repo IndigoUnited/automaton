@@ -140,7 +140,7 @@ module.exports = function (automaton) {
             });
 
             it('should pass over the glob options', function (done) {
-                // Rename to .file1 and tell glob to not match files starting with dot
+                // Rename to .file1 and tell glob to match files starting with dot
                 fs.renameSync(__dirname + '/../tmp/file1.json', __dirname + '/../tmp/.file1.json');
 
                 automaton.run({
@@ -159,7 +159,7 @@ module.exports = function (automaton) {
                                     email: 'andre@indigounited.com'
                                 },
                                 glob: {
-                                    dot: false
+                                    dot: true
                                 }
                             }
                         }
@@ -170,10 +170,10 @@ module.exports = function (automaton) {
                     }
 
                     var contents = JSON.parse(fs.readFileSync(__dirname + '/../tmp/.file1.json'));
-                    expect(contents.name).to.equal('{{name}}');
-                    expect(contents.email).to.equal('{{email}}');
-                    expect(contents.some_field).to.equal('This has an {{placeholder}}, you see?');
-                    expect(contents.other_field).to.equal('Here\'s the {{placeholder}} again just in case..');
+                    expect(contents.name).to.equal('André{{name}}');
+                    expect(contents.email).to.equal('andre@indigounited.com{{email}}');
+                    expect(contents.some_field).to.equal('This has an awesome {{placeholder}}, you see?');
+                    expect(contents.other_field).to.equal('Here\'s the awesome {{placeholder}} again just in case..');
 
                     done();
                 });
@@ -313,7 +313,7 @@ module.exports = function (automaton) {
             });
 
             it('should pass over the glob options', function (done) {
-                // Rename to .file1 and tell glob to not match files starting with dot
+                // Rename to .file1 and tell glob to match files starting with dot
                 fs.renameSync(__dirname + '/../tmp/file1.json', __dirname + '/../tmp/.file1.json');
 
                 automaton.run({
@@ -327,12 +327,12 @@ module.exports = function (automaton) {
                             options: {
                                 files: ['{{__dirname}}/../tmp/*file1.json'],
                                 data: {
-                                    placeholder: 'awesome ',
+                                    placeholder: 'awesome',
                                     name: 'André',
                                     email: 'andre@indigounited.com'
                                 },
                                 glob: {
-                                    dot: false
+                                    dot: true
                                 }
                             }
                         }
@@ -343,10 +343,10 @@ module.exports = function (automaton) {
                     }
 
                     var contents = JSON.parse(fs.readFileSync(__dirname + '/../tmp/.file1.json'));
-                    expect(contents.name).to.equal('{{name}}');
-                    expect(contents.email).to.equal('{{email}}');
-                    expect(contents.some_field).to.equal('This has an {{placeholder}}, you see?');
-                    expect(contents.other_field).to.equal('Here\'s the {{placeholder}} again just in case..');
+                    expect(contents.name).to.equal('André');
+                    expect(contents.email).to.equal('andre@indigounited.com');
+                    expect(contents.some_field).to.equal('This has an awesome, you see?');
+                    expect(contents.other_field).to.equal('Here\'s the awesome again just in case..');
 
                     done();
                 });
@@ -492,7 +492,7 @@ module.exports = function (automaton) {
             });
 
             it('should pass over the glob options', function (done) {
-                // Rename to .file1.json and tell glob to not match files starting with dot
+                // Rename to .file1.json and tell glob to match files starting with dot
                 fs.renameSync(__dirname + '/../tmp/file1.json', __dirname + '/../tmp/.file1.json');
 
                 automaton.run({
@@ -507,7 +507,7 @@ module.exports = function (automaton) {
                                 files: ['{{__dirname}}/../tmp/*file1.json'],
                                 placeholders: ['placeholder'],
                                 glob: {
-                                    dot: false
+                                    dot: true
                                 }
                             }
                         }
@@ -520,8 +520,8 @@ module.exports = function (automaton) {
                     var contents = JSON.parse(fs.readFileSync(__dirname + '/../tmp/.file1.json'));
                     expect(contents.name).to.equal('{{name}}');
                     expect(contents.email).to.equal('{{email}}');
-                    expect(contents.some_field).to.equal('This has an {{placeholder}}, you see?');
-                    expect(contents.other_field).to.equal('Here\'s the {{placeholder}} again just in case..');
+                    expect(contents.some_field).to.equal('This has an , you see?');
+                    expect(contents.other_field).to.equal('Here\'s the  again just in case..');
 
                     done();
                 });
@@ -655,7 +655,7 @@ module.exports = function (automaton) {
             });
 
             it('should pass over the glob options', function (done) {
-                // Rename to .file-rename and tell glob to not match files starting with dot
+                // Rename to .file-rename and tell glob to match files starting with dot
                 fs.renameSync(__dirname + '/../tmp/file-rename', __dirname + '/../tmp/.file-rename');
 
                 automaton.run({
@@ -673,7 +673,7 @@ module.exports = function (automaton) {
                                     placeholder2: 'bar'
                                 },
                                 glob: {
-                                    dot: false
+                                    dot: true
                                 }
                             }
                         }
@@ -683,8 +683,8 @@ module.exports = function (automaton) {
                         throw err;
                     }
 
-                    expect(isFile(__dirname + '/../tmp/.file-rename/file1_{{placeholder1}}_{{placeholder2}}.json')).to.equal(true);
-                    expect(isFile(__dirname + '/../tmp/.file-rename/dummy/file1_{{placeholder1}}_{{placeholder2}}.json')).to.equal(true);
+                    expect(isFile(__dirname + '/../tmp/.file-rename/file1_{{placeholder1}}_{{placeholder2}}.json')).to.equal(false);
+                    expect(isFile(__dirname + '/../tmp/.file-rename/dummy/file1_{{placeholder1}}_{{placeholder2}}.json')).to.equal(false);
 
                     done();
                 });

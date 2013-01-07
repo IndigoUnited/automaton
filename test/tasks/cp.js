@@ -5,7 +5,6 @@ var expect = require('expect.js'),
 
 module.exports = function (automaton) {
     describe('cp', function () {
-
         var target = __dirname + '/../tmp/cp/';
 
         beforeEach(function () {
@@ -65,6 +64,7 @@ module.exports = function (automaton) {
                 done();
             });
         });
+
         it('should work with destinations as symlinks', function (done) {
             var folder  = target + 'folder/',
                 file    = 'file.js',

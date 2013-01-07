@@ -85,8 +85,8 @@ module.exports = function (automaton) {
 
         it('should pass over the glob options', function (done) {
             var baseDir = __dirname + '/../tmp/rm/',
-                dir     = __dirname + '/../tmp/rm/dir',
-                file    = '.file.js';
+                dir     = baseDir + 'dir',
+                file    = baseDir + '.file.js';
 
             // create baseDir
             fs.mkdirSync(baseDir);
@@ -95,12 +95,12 @@ module.exports = function (automaton) {
             fs.mkdirSync(dir);
 
             // create file
-            fs.writeFileSync(baseDir + file, 'dummy');
+            fs.writeFileSync(file, 'dummy');
 
             automaton.run('rm', {
                 files: baseDir + '*',
                 glob: {
-                    dot: false
+                    dot: true
                 }
             }, function (err) {
                 if (err) {
@@ -109,7 +109,7 @@ module.exports = function (automaton) {
 
                 expect(isDir(baseDir)).to.be(true);
                 expect(isDir(dir)).to.be(false);
-                expect(isFile(baseDir + file)).to.be(true);
+                expect(isFile(file)).to.be(false);
                 done();
             });
         });

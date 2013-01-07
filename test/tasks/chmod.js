@@ -10,7 +10,7 @@ module.exports = function (automaton) {
             mode777_file;
 
         before(function () {
-            var target = __dirname + '/../tmp/chmod/';
+            var target = __dirname + '/../tmp/chmod_dummy/';
 
             // get the OS modes for dir
             fs.mkdirSync(target);
@@ -144,13 +144,13 @@ module.exports = function (automaton) {
 
             // create file
             fs.writeFileSync(dir + file);
-            fs.chmodSync(dir + file, '0777');
+            fs.chmodSync(dir + file, '0755');
 
             automaton.run('chmod', {
                 files: dir + '*.js',
-                mode: '0755',
+                mode: '0777',
                 glob: {
-                    dot: false
+                    dot: true
                 }
             }, function (err) {
                 if (err) {

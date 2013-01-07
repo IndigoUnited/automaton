@@ -7,12 +7,16 @@ module.exports = function (automaton) {
     describe('mkdir', function () {
         var mode755_dir;
 
-        beforeEach(function () {
-            var target = __dirname + '/../tmp/mkdir/';
+        before(function () {
+            var target = __dirname + '/../tmp/mkdir_dummy/';
 
             // get the OS modes for dir
             fs.mkdirSync(target, '0755');
             mode755_dir = fs.statSync(target).mode;
+        });
+
+        beforeEach(function () {
+            fs.mkdirSync(__dirname + '/../tmp/mkdir/', '0755');
         });
 
         it('should create directory - single depth folder', function (done) {
