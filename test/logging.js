@@ -117,6 +117,57 @@ module.exports = function (automaton) {
                 .on('data', function (data) { log += data; });
         });
 
+        it('should log every arguments passed', function (done) {
+            var log = '',
+                automaton = new Automaton({ debug: true });
+
+            automaton
+                .run({
+                    description: '',
+                    tasks: [
+                        {
+                            task: function (opt, next) {
+                                this.log.info('foo', 'bar');
+                                this.log.infoln('foo', 'bar');
+                                this.log.warn('foo', 'bar');
+                                this.log.warnln('foo', 'bar');
+                                this.log.error('foo', 'bar');
+                                this.log.errorln('foo', 'bar');
+                                this.log.success('foo', 'bar');
+                                this.log.successln('foo', 'bar');
+                                this.log.debug('foo', 'bar');
+                                this.log.debugln('foo', 'bar');
+
+                                next();
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    log = removeColors(log);
+                    expect(log).to.equal(
+                        arrow('??', 1) +
+                        indent('foo bar', 2) +
+                        indent('foo bar\n', 2) +
+                        indent('foo bar', 2) +
+                        indent('foo bar\n', 2) +
+                        indent('foo bar', 2) +
+                        indent('foo bar\n', 2) +
+                        indent('foo bar', 2) +
+                        indent('foo bar\n', 2) +
+                        indent('foo bar', 2) +
+                        indent('foo bar\n', 2)
+
+                    );
+
+                    done();
+                })
+                .on('data', function (data) { log += data; });
+        });
+
         it('should not throw error when logging types other than strings', function (done) {
             var log = '';
 
@@ -154,6 +205,36 @@ module.exports = function (automaton) {
                                 this.log.errorln(1);
                                 this.log.errorln(true);
 
+                                //////
+
+                                this.log.info({});
+                                this.log.info(['foo', 'bar']);
+                                this.log.info(null);
+                                this.log.info(undefined);
+                                this.log.info(1);
+                                this.log.info(true);
+
+                                this.log.warn({});
+                                this.log.warn(['foo', 'bar']);
+                                this.log.warn(null);
+                                this.log.warn(undefined);
+                                this.log.warn(1);
+                                this.log.warn(true);
+
+                                this.log.success({});
+                                this.log.success(['foo', 'bar']);
+                                this.log.success(null);
+                                this.log.success(undefined);
+                                this.log.success(1);
+                                this.log.success(true);
+
+                                this.log.error({});
+                                this.log.error(['foo', 'bar']);
+                                this.log.error(null);
+                                this.log.error(undefined);
+                                this.log.error(1);
+                                this.log.error(true);
+
                                 next();
                             }
                         }
@@ -192,7 +273,37 @@ module.exports = function (automaton) {
                         indent('null\n', 2) +
                         indent('undefined\n', 2) +
                         indent('1\n', 2) +
-                        indent('true\n', 2)
+                        indent('true\n', 2) +
+
+                        ///////
+
+                        indent('[object Object]', 2) +
+                        'foo,bar' +
+                        'null' +
+                        'undefined' +
+                        '1' +
+                        'true' +
+
+                        '[object Object]' +
+                        'foo,bar' +
+                        'null' +
+                        'undefined' +
+                        '1' +
+                        'true' +
+
+                        '[object Object]' +
+                        'foo,bar' +
+                        'null' +
+                        'undefined' +
+                        '1' +
+                        'true' +
+
+                        '[object Object]' +
+                        'foo,bar' +
+                        'null' +
+                        'undefined' +
+                        '1' +
+                        'true'
                     );
 
                     done();
@@ -209,9 +320,9 @@ module.exports = function (automaton) {
                         {
                             task: function (opt, next) {
                                 this.log.infoln('foo');
-                                this.log.info('bar');
+                                this.log.info('bar', 'ber');
                                 this.log.info('baz');
-                                this.log.ln();
+                                this.log.infoln();
                                 this.log.infoln('faa');
 
                                 next();
@@ -227,9 +338,9 @@ module.exports = function (automaton) {
                     expect(log).to.equal(
                         arrow('??', 1) +
                         indent('foo\n', 2) +
-                        indent('bar', 2) +
+                        indent('bar ber', 2) +
                         'baz' +
-                        '\n' +
+                        indent('\n', 2) +
                         indent('faa\n', 2)
                     );
 
@@ -292,23 +403,11 @@ module.exports = function (automaton) {
                     tasks: [
                         {
                             task: function (opt, next) {
-                                this.log.info('foo', true);
-                                this.log.infoln('foo', true);
-                                this.log.warn('foo', true);
-                                this.log.warnln('foo', true);
-                                this.log.error('foo', true);
-                                this.log.errorln('foo', true);
-                                this.log.success('foo', true);
-                                this.log.successln('foo', true);
+                                this.log.debug('foo');
+                                this.log.debugln('foo');
 
                                 this.log.info('bar');
                                 this.log.infoln('bar');
-                                this.log.warn('bar');
-                                this.log.warnln('bar');
-                                this.log.error('bar');
-                                this.log.errorln('bar');
-                                this.log.success('bar');
-                                this.log.successln('bar');
 
                                 next();
                             }
@@ -323,12 +422,6 @@ module.exports = function (automaton) {
                     expect(log).to.equal(
                         arrow('??', 1) +
                         indent('bar', 2) +
-                        indent('bar\n', 2) +
-                        indent('bar', 2) +
-                        indent('bar\n', 2) +
-                        indent('bar', 2) +
-                        indent('bar\n', 2) +
-                        indent('bar', 2) +
                         indent('bar\n', 2)
                     );
 
@@ -340,23 +433,11 @@ module.exports = function (automaton) {
                             tasks: [
                                 {
                                     task: function (opt, next) {
-                                        this.log.info('foo', true);
-                                        this.log.infoln('foo', true);
-                                        this.log.warn('foo', true);
-                                        this.log.warnln('foo', true);
-                                        this.log.error('foo', true);
-                                        this.log.errorln('foo', true);
-                                        this.log.success('foo', true);
-                                        this.log.successln('foo', true);
+                                        this.log.debug('foo');
+                                        this.log.debugln('foo');
 
                                         this.log.info('bar');
                                         this.log.infoln('bar');
-                                        this.log.warn('bar');
-                                        this.log.warnln('bar');
-                                        this.log.error('bar');
-                                        this.log.errorln('bar');
-                                        this.log.success('bar');
-                                        this.log.successln('bar');
 
                                         next();
                                     }
@@ -372,19 +453,7 @@ module.exports = function (automaton) {
                                 arrow('??', 1) +
                                 indent('foo', 2) +
                                 indent('foo\n', 2) +
-                                indent('foo', 2) +
-                                indent('foo\n', 2) +
-                                indent('foo', 2) +
-                                indent('foo\n', 2) +
-                                indent('foo', 2) +
-                                indent('foo\n', 2) +
 
-                                indent('bar', 2) +
-                                indent('bar\n', 2) +
-                                indent('bar', 2) +
-                                indent('bar\n', 2) +
-                                indent('bar', 2) +
-                                indent('bar\n', 2) +
                                 indent('bar', 2) +
                                 indent('bar\n', 2)
                             );
