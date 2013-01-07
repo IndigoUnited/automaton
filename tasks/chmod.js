@@ -32,11 +32,18 @@ var task = {
         {
             task: function (opt, next) {
                 var files = utils.lang.isArray(opt.files) ? opt.files : [opt.files];
+                var error;
 
                 async.forEach(files, function (file, next) {
                     glob(file, opt.glob, function (err, files) {
                         if (err) {
                             return next(err);
+                        }
+
+                        if (!files.length) {
+                            error = new Error('ENOENT, no such file or directory \'' + file + '\'');
+                            error.code = 'ENOENT';
+                            return next(error);
                         }
 
                         async.forEach(files, function (file, next) {

@@ -36,7 +36,7 @@ var task = {
 
                     fs.stat(dir, function (err) {
                         if (!err || err.code !== 'ENOENT') {
-                            error = new Error('EEXIST, file already exists \'' + dir + '\'');
+                            error = new Error('EEXIST, target already exists \'' + dir + '\'');
                             error.code = 'EXISTS';
                             return next(error);
                         }
