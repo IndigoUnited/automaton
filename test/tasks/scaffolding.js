@@ -538,11 +538,11 @@ module.exports = function (automaton) {
                     }
 
                     fs.mkdirSync(__dirname + '/../tmp/file-rename');
-                    fs.mkdirSync(__dirname + '/../tmp/file-rename/dummy');
+                    fs.mkdirSync(__dirname + '/../tmp/file-rename/dummy{{empty}}');
 
                     // Create some assets in tmp/file-rename
                     fs.writeFileSync(__dirname + '/../tmp/file-rename/file1_{{placeholder1}}_{{placeholder2}}.json', '');
-                    fs.writeFileSync(__dirname + '/../tmp/file-rename/dummy/file1_{{placeholder1}}_{{placeholder2}}.json', '');
+                    fs.writeFileSync(__dirname + '/../tmp/file-rename/dummy{{empty}}/file1_{{placeholder1}}_{{placeholder2}}.json', '');
 
                     done();
                 });
@@ -572,10 +572,11 @@ module.exports = function (automaton) {
                             {
                                 task: 'scaffolding-file-rename',
                                 options: {
-                                    dirs: ['{{__dirname}}/../tmp/file-rename', '{{__dirname}}/../tmp/file-rename-copy'],
+                                    files: ['{{__dirname}}/../tmp/file-rename/**/*', '{{__dirname}}/../tmp/file-rename-copy/**/*'],
                                     data: {
                                         placeholder1: 'foo',
-                                        placeholder2: 'bar'
+                                        placeholder2: 'bar',
+                                        empty: ''
                                     }
                                 }
                             }
@@ -595,37 +596,6 @@ module.exports = function (automaton) {
                 });
             });
 
-            it('should not read dirs recursively if the recursive option is false', function (done) {
-                automaton.run({
-                    filter: function (opts, ctx, next) {
-                        opts.__dirname = __dirname;
-                        next();
-                    },
-                    tasks: [
-                        {
-                            task: 'scaffolding-file-rename',
-                            options: {
-                                dirs: '{{__dirname}}/../tmp/file-rename',
-                                data: {
-                                    placeholder1: 'foo',
-                                    placeholder2: 'bar'
-                                },
-                                recursive: false
-                            }
-                        }
-                    ]
-                }, null, function (err) {
-                    if (err) {
-                        throw err;
-                    }
-
-                    expect(isFile(__dirname + '/../tmp/file-rename/file1_foo_bar.json')).to.equal(true);
-                    expect(isFile(__dirname + '/../tmp/file-rename/dummy/file1_{{placeholder1}}_{{placeholder2}}.json')).to.equal(true);
-
-                    done();
-                });
-            });
-
             it('should accept minimatch patterns', function (done) {
                 automaton.run({
                     filter: function (opts, ctx, next) {
@@ -636,10 +606,11 @@ module.exports = function (automaton) {
                         {
                             task: 'scaffolding-file-rename',
                             options: {
-                                dirs: ['{{__dirname}}/../tmp/file*rename'],
+                                files: ['{{__dirname}}/../tmp/file*rename/**/*'],
                                 data: {
                                     placeholder1: 'foo',
-                                    placeholder2: 'bar'
+                                    placeholder2: 'bar',
+                                    empty: ''
                                 }
                             }
                         }
@@ -669,10 +640,11 @@ module.exports = function (automaton) {
                         {
                             task: 'scaffolding-file-rename',
                             options: {
-                                dirs: ['{{__dirname}}/../tmp/*file-rename'],
+                                files: ['{{__dirname}}/../tmp/*file-rename/**/*'],
                                 data: {
                                     placeholder1: 'foo',
-                                    placeholder2: 'bar'
+                                    placeholder2: 'bar',
+                                    empty: ''
                                 },
                                 glob: {
                                     dot: true
