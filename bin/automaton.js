@@ -30,6 +30,10 @@ var commands = [
             desc: 'Get help. If you specify a task, you\'ll be given the task usage.'
         },
         {
+            opt: '--tasks, -t',
+            desc: 'List all the available tasks (that are loaded).'
+        },
+        {
             opt: '--task-dir, -d <dir>',
             desc: 'Task include dir. All the tasks within the folder will be loaded.'
         },
@@ -192,6 +196,7 @@ function showUsage() {
 
     console.log('\n  Usage: ' + argv.$0.cyan, '[command]', '[options]'.grey);
 
+    // TODO: move to showCommands()
     console.log('\n  Commands:\n');
     firstColumnWidth = commands.reduce(function (prev, curr) {
         if (curr.cmd.length > prev) {
@@ -206,6 +211,9 @@ function showUsage() {
         console.log(utils.string.rpad('    ' + cmd.cmd, firstColumnWidth).grey + cmd.desc);
     }
 
+    showTasks();
+
+    // TODO: move to showOptions()
     console.log('\n  Options:\n');
     firstColumnWidth = automatonOptions.reduce(function (prev, curr) {
         if (curr.opt.length > prev) {
@@ -223,6 +231,39 @@ function showUsage() {
     }
 
     console.log('');
+}
+
+function showTasks() {
+    var i,
+        tasks = automaton.getTasks(),
+        firstColumnWidth,
+        list = [];
+
+    // discover left column width
+    firstColumnWidth = utils.object.reduce(tasks, function (prev, curr) {
+        if (curr.id && curr.id.length > prev) {
+            return curr.id.length;
+        }
+
+        return prev;
+    }, 0);
+
+    firstColumnWidth += 6;
+
+    console.log('\n  Tasks:\n');
+
+    // create list of tasks
+    for (i in tasks) {
+        if (tasks[i].id) {
+            list.push(utils.string.rpad('    ' + tasks[i].id, firstColumnWidth).grey + tasks[i].description);
+        }
+    }
+
+    // sort list
+    list = utils.array.sort(list);
+    for (i in list) {
+        console.log(list[i]);
+    }
 }
 
 function showTaskUsage(task) {
