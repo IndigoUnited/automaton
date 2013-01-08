@@ -8,20 +8,20 @@ var fs      = require('fs');
 var utils   = require('amd-utils');
 
 var task = {
-    id         : 'cp',
-    author     : 'Indigo United',
-    name       : 'Copy',
-    description: 'Copy files',
-    options    : {
+    id          : 'cp',
+    author      : 'Indigo United',
+    name        : 'Copy',
+    description : 'Copy a file or set of files.',
+    options: {
         files: {
-            description: 'The files to copy. Accepts an object in which keys are the source files and values the destination. Source values support minimatch.'
+            description: 'Which files should be copied. Accepts an object in which keys are the source files and values the destination. Source values support minimatch.'
         },
         glob: {
-            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
             'default': null
         }
     },
-    tasks      :
+    tasks:
     [
         {
             task: function (opt, ctx, next) {

@@ -8,23 +8,23 @@ var fs     = require('fs'),
 ;
 
 var task = {
-    id         : 'scaffolding-close',
-    author     : 'Indigo United',
-    name       : 'Scaffolding: close placeholder',
-    description: 'Close placeholders in files',
-    options    : {
+    id          : 'scaffolding-close',
+    author      : 'Indigo United',
+    name        : 'Scaffolding: close',
+    description : 'Close {{placeholders}} in files.',
+    options: {
         files: {
-            description: 'The files to scaffold. Accepts an array of files or a single one through a string. Works with minimatch.'
+            description: 'Which files to process. Accepts a filename and array of filenames. Also note that the filenames can be minimatch patterns.'
         },
         placeholders: {
-            description: 'Which placeholder(s) to close'
+            description: 'Which placeholders to close. Accepts a string, or an array of strings.'
         },
         trim: {
             description: 'Trim leading or trailing spaces',
             'default': true
         },
         glob: {
-            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
             'default': null
         }
     },

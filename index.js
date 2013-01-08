@@ -83,6 +83,15 @@ var Automaton = d.Class.declare({
     },
 
     /**
+     * Retrieve the loaded tasks.
+     *
+     * @return {Object} The tasks
+     */
+    getTasks: function () {
+        return this._tasks;
+    },
+
+    /**
      * Load tasks in a given folder.
      *
      * @param {String} folder The folder to search for tasks

@@ -5,17 +5,17 @@ var path  = require('path');
 var utils = require('amd-utils');
 
 var task = {
-    id         : 'init',
-    author     : 'Indigo United',
-    name       : 'Init',
-    description: 'Init autofile',
-    options    : {
+    id          : 'init',
+    author      : 'Indigo United',
+    name        : 'Init',
+    description : 'Init an empty autofile.',
+    options: {
         name: {
-            description: 'The task name',
+            description: 'The task name.',
             'default': 'autofile'
         },
         dst: {
-            description: 'Directory where the task will be created',
+            description: 'Directory in which the task will be created.',
             'default': process.cwd()
         }
     },
