@@ -1,3 +1,5 @@
+'use strict';
+
 var Automaton    = require('../index'),
     removeColors = require('../lib/Logger').removeColors,
     utils        = require('amd-utils'),

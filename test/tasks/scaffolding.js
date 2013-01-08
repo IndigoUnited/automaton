@@ -1,3 +1,5 @@
+'use strict';
+
 var expect  = require('expect.js'),
     fs      = require('fs'),
     rimraf  = require('rimraf'),

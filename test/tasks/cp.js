@@ -1,3 +1,5 @@
+'use strict';
+
 var expect = require('expect.js'),
     isFile = require('../helpers/util/is-file'),
     fs     = require('fs')

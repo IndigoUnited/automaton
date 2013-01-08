@@ -1,3 +1,5 @@
+'use strict';
+
 var cp     = require('child_process');
 var expect = require('expect.js');
 

@@ -1,3 +1,5 @@
+'use strict';
+
 var rimraf = require('rimraf');
 var utils  = require('amd-utils');
 var async  = require('async');

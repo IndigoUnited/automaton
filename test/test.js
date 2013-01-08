@@ -1,3 +1,5 @@
+'use strict';
+
 var Automaton = require('../index'),
     fs        = require('fs'),
     rimraf    = require('rimraf'),

@@ -1,5 +1,7 @@
 /*jshint regexp:false*/
 
+'use strict';
+
 var fs           = require('fs');
 var async        = require('async');
 var path         = require('path');

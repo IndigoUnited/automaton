@@ -1,3 +1,5 @@
+'use strict';
+
 var task = {
     id: '{{name}}',
     author: 'Task author',

@@ -1,3 +1,5 @@
+'use strict';
+
 var fs     = require('fs'),
     interp = require('../lib/string/interpolate'),
     glob   = require('glob'),

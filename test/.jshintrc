@@ -29,7 +29,7 @@
     "undef": true,
     "unused": true,
     "quotmark": "single",
-    "strict": false,
+    "strict": true,
     "trailing": true,
 
     "asi": false,

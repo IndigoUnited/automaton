@@ -1,3 +1,5 @@
+'use strict';
+
 var cp          = require('./tasks/cp'),
     mv          = require('./tasks/mv'),
     chmod       = require('./tasks/chmod'),

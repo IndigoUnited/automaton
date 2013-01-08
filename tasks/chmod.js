@@ -1,3 +1,5 @@
+'use strict';
+
 var fs = require('fs');
 var utils = require('amd-utils');
 var async = require('async');

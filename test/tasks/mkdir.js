@@ -1,3 +1,5 @@
+'use strict';
+
 var expect = require('expect.js'),
     fs     = require('fs'),
     isDir  = require('../helpers/util/is-dir')

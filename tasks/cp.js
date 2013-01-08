@@ -1,3 +1,5 @@
+'use strict';
+
 var fstream = require('fstream');
 var glob    = require('glob');
 var async   = require('async');

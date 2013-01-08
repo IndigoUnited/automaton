@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+'use strict';
+
 var utils          = require('amd-utils'),
     fs             = require('fs'),
     path           = require('path'),

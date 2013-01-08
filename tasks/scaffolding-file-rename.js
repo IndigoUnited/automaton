@@ -1,3 +1,5 @@
+'use strict';
+
 var fs     = require('fs'),
     glob   = require('glob'),
     async  = require('async'),
