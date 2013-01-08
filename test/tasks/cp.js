@@ -45,12 +45,12 @@ module.exports = function (automaton) {
             //  - it should copy folder to folder/folder
         });
 
-        it.skip('should copy files with single dot pattern', function () {
+        it.skip('should copy files with single star pattern', function () {
             // test if ONLY files are copied with source/*
         });
 
         it.skip('should copy files and folders recursivelly', function () {
-            // test if files and folders are recursivelly with with source/**/*
+            // test if files and folders are recursivelly copied with source/**/*
         });
 
         it.skip('should give error if source file does not exist');
