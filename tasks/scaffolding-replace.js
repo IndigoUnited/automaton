@@ -29,7 +29,7 @@ var task = {
     tasks      :
     [
         {
-            task: function (opt, next) {
+            task: function (opt, ctx, next) {
                 opt.glob = opt.glob || {};
                 var files = !utils.lang.isArray(opt.files) ? [opt.files] : opt.files;
                 var data = {};

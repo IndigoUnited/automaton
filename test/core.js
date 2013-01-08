@@ -506,7 +506,7 @@ module.exports = function (automaton) {
             automaton.run({
                 tasks: [
                     {
-                        task: function (opt, next) {
+                        task: function (opt, ctx, next) {
                             fs.mkdir(dirname, parseInt('0777', 8), next);
                         }
                     }
@@ -544,7 +544,7 @@ module.exports = function (automaton) {
             automaton.run({
                 tasks: [
                     {
-                        task: function (opt, next) {
+                        task: function (opt, ctx, next) {
                             next(new Error('wtf'));
                         }
                     }
@@ -555,7 +555,7 @@ module.exports = function (automaton) {
                 automaton.run({
                     tasks: [
                         {
-                            task: function (opt, next) {
+                            task: function (opt, ctx, next) {
                                 next('wtf');
                             }
                         }
@@ -605,7 +605,7 @@ module.exports = function (automaton) {
             var stack = [];
 
             automaton.run({
-                filter: function (opt, next) {
+                filter: function (opt, ctx, next) {
                     opt.truthy2 = true;
                     next();
                 },
@@ -809,7 +809,7 @@ module.exports = function (automaton) {
                         'default': 'bar'
                     }
                 },
-                filter: function (opt, next) {
+                filter: function (opt, ctx, next) {
                     expect(opt.foo).to.equal('bar');
                     next();
                 },
@@ -825,7 +825,7 @@ module.exports = function (automaton) {
                             'default': 'bar'
                         }
                     },
-                    filter: function (opt, next) {
+                    filter: function (opt, ctx, next) {
                         expect(opt.foo).to.equal('baz');
                         next();
                     },
@@ -943,7 +943,7 @@ module.exports = function (automaton) {
 
         it('should let filters modify options and infer new ones', function (done) {
             automaton.run({
-                filter: function (opt, next) {
+                filter: function (opt, ctx, next) {
                     opt.very = 'awesome';
                     opt.ultra = 'awesome';
                     next();
@@ -990,7 +990,7 @@ module.exports = function (automaton) {
             };
 
             automaton.run({
-                filter: function (opt, next) {
+                filter: function (opt, ctx, next) {
                     assert(this);
                     next();
                 },

@@ -14,7 +14,7 @@ var task = {
     // Filter is not mandatory,
     // but can be used to perform some operation
     // on the options before running the subtasks
-    filter: function (options, next) {
+    filter: function (options, ctx, next) {
         // You can change existing options
         options.dir2 = options.dir2 + '_indigo';
 
@@ -86,11 +86,11 @@ var task = {
             // if you find yourself looking
             // for something a bit more custom,
             // you can just provide a function as the task
-            task : function (opt, next) {
+            task : function (opt, ctx, next) {
                 // opt is a list of the options
                 // provided to the task
 
-                console.log('I can do whatever I want.',
+                ctx.log.infoln('I can do whatever I want.',
                     'Here\'s the list of options\n', opt);
 
                 // when the task is done,

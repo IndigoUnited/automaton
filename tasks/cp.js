@@ -22,7 +22,7 @@ var task = {
     tasks      :
     [
         {
-            task: function (opt, next) {
+            task: function (opt, ctx, next) {
                 // TODO: standardize behavior with unix cp
                 //       - If dst does not exist, give error
                 //       - Copying a directory into a file should give error

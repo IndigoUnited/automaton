@@ -20,7 +20,7 @@ var task = {
     tasks      :
     [
         {
-            task: function (opt, next) {
+            task: function (opt, ctx, next) {
                 // TODO: optimize this with the expand function
                 var files = utils.lang.isArray(opt.files) ? opt.files : [opt.files];
 

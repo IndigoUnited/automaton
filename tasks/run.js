@@ -17,7 +17,7 @@ var task = {
     tasks      :
     [
         {
-            task: function (opt, next) {
+            task: function (opt, ctx, next) {
                 var child,
                     that = this,
                     output = '',

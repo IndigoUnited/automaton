@@ -17,7 +17,7 @@ module.exports = function (automaton) {
 
             it('should append string to placeholder', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -61,7 +61,7 @@ module.exports = function (automaton) {
                 fs.writeFileSync(__dirname + '/../tmp/dummy2', 'bar');
 
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -101,7 +101,7 @@ module.exports = function (automaton) {
 
             it('should accept minimatch patterns', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -144,7 +144,7 @@ module.exports = function (automaton) {
                 fs.renameSync(__dirname + '/../tmp/file1.json', __dirname + '/../tmp/.file1.json');
 
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -190,7 +190,7 @@ module.exports = function (automaton) {
 
             it('should replace placeholder with string', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -234,7 +234,7 @@ module.exports = function (automaton) {
                 fs.writeFileSync(__dirname + '/../tmp/dummy2', 'bar');
 
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -274,7 +274,7 @@ module.exports = function (automaton) {
 
             it('should accept minimatch patterns', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -317,7 +317,7 @@ module.exports = function (automaton) {
                 fs.renameSync(__dirname + '/../tmp/file1.json', __dirname + '/../tmp/.file1.json');
 
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -366,7 +366,7 @@ module.exports = function (automaton) {
 
             it('should close placeholder', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -402,7 +402,7 @@ module.exports = function (automaton) {
 
             it('should close placeholder, trimming empty lines before or after it', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -429,7 +429,7 @@ module.exports = function (automaton) {
 
             it('should close placeholder, not trimming empty lines if trim option is false', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -457,7 +457,7 @@ module.exports = function (automaton) {
 
             it('should accept minimatch patterns', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -496,7 +496,7 @@ module.exports = function (automaton) {
                 fs.renameSync(__dirname + '/../tmp/file1.json', __dirname + '/../tmp/.file1.json');
 
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -562,7 +562,7 @@ module.exports = function (automaton) {
 
                 reader.on('end', function () {
                     automaton.run({
-                        filter: function (opts, next) {
+                        filter: function (opts, ctx, next) {
                             opts.__dirname = __dirname;
                             next();
                         },
@@ -595,7 +595,7 @@ module.exports = function (automaton) {
 
             it('should not read dirs recursively if the recursive option is false', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -626,7 +626,7 @@ module.exports = function (automaton) {
 
             it('should accept minimatch patterns', function (done) {
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },
@@ -659,7 +659,7 @@ module.exports = function (automaton) {
                 fs.renameSync(__dirname + '/../tmp/file-rename', __dirname + '/../tmp/.file-rename');
 
                 automaton.run({
-                    filter: function (opts, next) {
+                    filter: function (opts, ctx, next) {
                         opts.__dirname = __dirname;
                         next();
                     },

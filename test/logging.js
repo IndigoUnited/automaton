@@ -34,17 +34,17 @@ module.exports = function (automaton) {
 
             automaton
                 .run({
-                    filter: function (opt, next) {
-                        this.log.infoln('Level 1 task info');
-                        this.log.warnln('Level 1 task warn');
-                        this.log.successln('Level 1 task success');
-                        this.log.errorln('Level 1 task error');
+                    filter: function (opt, ctx, next) {
+                        ctx.log.infoln('Level 1 task info');
+                        ctx.log.warnln('Level 1 task warn');
+                        ctx.log.successln('Level 1 task success');
+                        ctx.log.errorln('Level 1 task error');
                         next();
                     },
                     description: 'Level 1 task',
                     tasks: [
                         {
-                            task: function (opt, next) {
+                            task: function (opt, ctx, next) {
                                 next();
                             },
                             description: 'Level 2 task'
@@ -54,11 +54,11 @@ module.exports = function (automaton) {
                                 description: 'This should not appear',
                                 tasks: [
                                     {
-                                        task: function (opt, next) {
-                                            this.log.infoln('Level 3 task info');
-                                            this.log.warnln('Level 3 task warn');
-                                            this.log.successln('Level 3 task success');
-                                            this.log.errorln('Level 3 task error');
+                                        task: function (opt, ctx, next) {
+                                            ctx.log.infoln('Level 3 task info');
+                                            ctx.log.warnln('Level 3 task warn');
+                                            ctx.log.successln('Level 3 task success');
+                                            ctx.log.errorln('Level 3 task error');
                                             next();
                                         },
                                         description: 'Level 3 task'
@@ -71,7 +71,7 @@ module.exports = function (automaton) {
                             task: {
                                 tasks: [
                                     {
-                                        task: function (opt, next) { next(); },
+                                        task: function (opt, ctx, next) { next(); },
                                         description: 'Other level 3 task'
                                     }
                                 ]
@@ -82,7 +82,7 @@ module.exports = function (automaton) {
                                 name: 'Even other level 2 task',
                                 tasks: [
                                     {
-                                        task: function (opt, next) { next(); }
+                                        task: function (opt, ctx, next) { next(); }
                                     }
                                 ]
                             }
@@ -126,17 +126,17 @@ module.exports = function (automaton) {
                     description: '',
                     tasks: [
                         {
-                            task: function (opt, next) {
-                                this.log.info('foo', 'bar');
-                                this.log.infoln('foo', 'bar');
-                                this.log.warn('foo', 'bar');
-                                this.log.warnln('foo', 'bar');
-                                this.log.error('foo', 'bar');
-                                this.log.errorln('foo', 'bar');
-                                this.log.success('foo', 'bar');
-                                this.log.successln('foo', 'bar');
-                                this.log.debug('foo', 'bar');
-                                this.log.debugln('foo', 'bar');
+                            task: function (opt, ctx, next) {
+                                ctx.log.info('foo', 'bar');
+                                ctx.log.infoln('foo', 'bar');
+                                ctx.log.warn('foo', 'bar');
+                                ctx.log.warnln('foo', 'bar');
+                                ctx.log.error('foo', 'bar');
+                                ctx.log.errorln('foo', 'bar');
+                                ctx.log.success('foo', 'bar');
+                                ctx.log.successln('foo', 'bar');
+                                ctx.log.debug('foo', 'bar');
+                                ctx.log.debugln('foo', 'bar');
 
                                 next();
                             }
@@ -176,64 +176,64 @@ module.exports = function (automaton) {
                     description: '',
                     tasks: [
                         {
-                            task: function (opt, next) {
-                                this.log.infoln({});
-                                this.log.infoln(['foo', 'bar']);
-                                this.log.infoln(null);
-                                this.log.infoln(undefined);
-                                this.log.infoln(1);
-                                this.log.infoln(true);
+                            task: function (opt, ctx, next) {
+                                ctx.log.infoln({});
+                                ctx.log.infoln(['foo', 'bar']);
+                                ctx.log.infoln(null);
+                                ctx.log.infoln(undefined);
+                                ctx.log.infoln(1);
+                                ctx.log.infoln(true);
 
-                                this.log.warnln({});
-                                this.log.warnln(['foo', 'bar']);
-                                this.log.warnln(null);
-                                this.log.warnln(undefined);
-                                this.log.warnln(1);
-                                this.log.warnln(true);
+                                ctx.log.warnln({});
+                                ctx.log.warnln(['foo', 'bar']);
+                                ctx.log.warnln(null);
+                                ctx.log.warnln(undefined);
+                                ctx.log.warnln(1);
+                                ctx.log.warnln(true);
 
-                                this.log.successln({});
-                                this.log.successln(['foo', 'bar']);
-                                this.log.successln(null);
-                                this.log.successln(undefined);
-                                this.log.successln(1);
-                                this.log.successln(true);
+                                ctx.log.successln({});
+                                ctx.log.successln(['foo', 'bar']);
+                                ctx.log.successln(null);
+                                ctx.log.successln(undefined);
+                                ctx.log.successln(1);
+                                ctx.log.successln(true);
 
-                                this.log.errorln({});
-                                this.log.errorln(['foo', 'bar']);
-                                this.log.errorln(null);
-                                this.log.errorln(undefined);
-                                this.log.errorln(1);
-                                this.log.errorln(true);
+                                ctx.log.errorln({});
+                                ctx.log.errorln(['foo', 'bar']);
+                                ctx.log.errorln(null);
+                                ctx.log.errorln(undefined);
+                                ctx.log.errorln(1);
+                                ctx.log.errorln(true);
 
                                 //////
 
-                                this.log.info({});
-                                this.log.info(['foo', 'bar']);
-                                this.log.info(null);
-                                this.log.info(undefined);
-                                this.log.info(1);
-                                this.log.info(true);
+                                ctx.log.info({});
+                                ctx.log.info(['foo', 'bar']);
+                                ctx.log.info(null);
+                                ctx.log.info(undefined);
+                                ctx.log.info(1);
+                                ctx.log.info(true);
 
-                                this.log.warn({});
-                                this.log.warn(['foo', 'bar']);
-                                this.log.warn(null);
-                                this.log.warn(undefined);
-                                this.log.warn(1);
-                                this.log.warn(true);
+                                ctx.log.warn({});
+                                ctx.log.warn(['foo', 'bar']);
+                                ctx.log.warn(null);
+                                ctx.log.warn(undefined);
+                                ctx.log.warn(1);
+                                ctx.log.warn(true);
 
-                                this.log.success({});
-                                this.log.success(['foo', 'bar']);
-                                this.log.success(null);
-                                this.log.success(undefined);
-                                this.log.success(1);
-                                this.log.success(true);
+                                ctx.log.success({});
+                                ctx.log.success(['foo', 'bar']);
+                                ctx.log.success(null);
+                                ctx.log.success(undefined);
+                                ctx.log.success(1);
+                                ctx.log.success(true);
 
-                                this.log.error({});
-                                this.log.error(['foo', 'bar']);
-                                this.log.error(null);
-                                this.log.error(undefined);
-                                this.log.error(1);
-                                this.log.error(true);
+                                ctx.log.error({});
+                                ctx.log.error(['foo', 'bar']);
+                                ctx.log.error(null);
+                                ctx.log.error(undefined);
+                                ctx.log.error(1);
+                                ctx.log.error(true);
 
                                 next();
                             }
@@ -318,12 +318,12 @@ module.exports = function (automaton) {
                 .run({
                     tasks: [
                         {
-                            task: function (opt, next) {
-                                this.log.infoln('foo');
-                                this.log.info('bar', 'ber');
-                                this.log.info('baz');
-                                this.log.infoln();
-                                this.log.infoln('faa');
+                            task: function (opt, ctx, next) {
+                                ctx.log.infoln('foo');
+                                ctx.log.info('bar', 'ber');
+                                ctx.log.info('baz');
+                                ctx.log.infoln();
+                                ctx.log.infoln('faa');
 
                                 next();
                             }
@@ -356,13 +356,13 @@ module.exports = function (automaton) {
                 .run({
                     tasks: [
                         {
-                            task: function (opt, next) {
-                                this.log.infoln('foo\nbar\nbaz');
-                                this.log.infoln('foo\r\nbar\r\nbaz');
-                                this.log.infoln('\r\nbar\r\nbaz');
+                            task: function (opt, ctx, next) {
+                                ctx.log.infoln('foo\nbar\nbaz');
+                                ctx.log.infoln('foo\r\nbar\r\nbaz');
+                                ctx.log.infoln('\r\nbar\r\nbaz');
 
-                                this.log.info('foo');
-                                this.log.info('\r\nbar\r\nbaz');
+                                ctx.log.info('foo');
+                                ctx.log.info('\r\nbar\r\nbaz');
                                 next();
                             }
                         }
@@ -402,12 +402,12 @@ module.exports = function (automaton) {
                 .run({
                     tasks: [
                         {
-                            task: function (opt, next) {
-                                this.log.debug('foo');
-                                this.log.debugln('foo');
+                            task: function (opt, ctx, next) {
+                                ctx.log.debug('foo');
+                                ctx.log.debugln('foo');
 
-                                this.log.info('bar');
-                                this.log.infoln('bar');
+                                ctx.log.info('bar');
+                                ctx.log.infoln('bar');
 
                                 next();
                             }
@@ -432,12 +432,12 @@ module.exports = function (automaton) {
                         .run({
                             tasks: [
                                 {
-                                    task: function (opt, next) {
-                                        this.log.debug('foo');
-                                        this.log.debugln('foo');
+                                    task: function (opt, ctx, next) {
+                                        ctx.log.debug('foo');
+                                        ctx.log.debugln('foo');
 
-                                        this.log.info('bar');
-                                        this.log.infoln('bar');
+                                        ctx.log.info('bar');
+                                        ctx.log.infoln('bar');
 
                                         next();
                                     }
@@ -471,17 +471,17 @@ module.exports = function (automaton) {
 
             automaton
                 .run({
-                    filter: function (opt, next) {
-                        this.log.infoln('Level 1 task info');
-                        this.log.warnln('Level 1 task warn');
-                        this.log.successln('Level 1 task success');
-                        this.log.errorln('Level 1 task error');
+                    filter: function (opt, ctx, next) {
+                        ctx.log.infoln('Level 1 task info');
+                        ctx.log.warnln('Level 1 task warn');
+                        ctx.log.successln('Level 1 task success');
+                        ctx.log.errorln('Level 1 task error');
                         next();
                     },
                     description: 'Level 1 task',
                     tasks: [
                         {
-                            task: function (opt, next) {
+                            task: function (opt, ctx, next) {
                                 next();
                             },
                             description: 'Level 2 task'
@@ -491,11 +491,11 @@ module.exports = function (automaton) {
                                 description: 'This should not appear',
                                 tasks: [
                                     {
-                                        task: function (opt, next) {
-                                            this.log.infoln('Level 3 task info');
-                                            this.log.warnln('Level 3 task warn');
-                                            this.log.successln('Level 3 task success');
-                                            this.log.errorln('Level 3 task error');
+                                        task: function (opt, ctx, next) {
+                                            ctx.log.infoln('Level 3 task info');
+                                            ctx.log.warnln('Level 3 task warn');
+                                            ctx.log.successln('Level 3 task success');
+                                            ctx.log.errorln('Level 3 task error');
                                             next();
                                         },
                                         description: 'Level 3 task'
@@ -508,7 +508,7 @@ module.exports = function (automaton) {
                             task: {
                                 tasks: [
                                     {
-                                        task: function (opt, next) { next(); },
+                                        task: function (opt, ctx, next) { next(); },
                                         description: 'Other level 3 task'
                                     }
                                 ]
@@ -519,7 +519,7 @@ module.exports = function (automaton) {
                                 name: 'Even other level 2 task',
                                 tasks: [
                                     {
-                                        task: function (opt, next) { next(); }
+                                        task: function (opt, ctx, next) { next(); }
                                     }
                                 ]
                             }
@@ -552,15 +552,15 @@ module.exports = function (automaton) {
                 .run({
                     tasks: [
                         {
-                            task: function (opt, next) {
-                                this.log.info('foo');
-                                this.log.infoln('foo'.green);
-                                this.log.warn('foo');
-                                this.log.warnln('foo');
-                                this.log.error('foo'.blue);
-                                this.log.errorln('foo');
-                                this.log.success('foo');
-                                this.log.successln('foo'.yellow);
+                            task: function (opt, ctx, next) {
+                                ctx.log.info('foo');
+                                ctx.log.infoln('foo'.green);
+                                ctx.log.warn('foo');
+                                ctx.log.warnln('foo');
+                                ctx.log.error('foo'.blue);
+                                ctx.log.errorln('foo');
+                                ctx.log.success('foo');
+                                ctx.log.successln('foo'.yellow);
 
                                 next();
                             }

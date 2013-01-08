@@ -21,7 +21,7 @@ var task = {
             'default': null
         }
     },
-    filter     : function (opt, next) {
+    filter     : function (opt, ctx, next) {
         if (!utils.lang.isNumber(opt.mode)) {
             opt.mode = parseInt(opt.mode, 8);
         }
@@ -30,7 +30,7 @@ var task = {
     tasks      :
     [
         {
-            task: function (opt, next) {
+            task: function (opt, ctx, next) {
                 var files = utils.lang.isArray(opt.files) ? opt.files : [opt.files];
                 var error;
 

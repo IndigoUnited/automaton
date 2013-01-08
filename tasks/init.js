@@ -17,7 +17,7 @@ var task = {
             'default': process.cwd()
         }
     },
-    filter     : function (opt, next) {
+    filter     : function (opt, ctx, next) {
         var error;
 
         if (utils.string.endsWith(opt.name, '.js')) {

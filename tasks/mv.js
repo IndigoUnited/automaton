@@ -24,7 +24,7 @@ var task = {
     tasks      :
     [
         {
-            task: function (opt, next) {
+            task: function (opt, ctx, next) {
                 // TODO: standardize behavior with unix mv
                 //       - If dst does not exist, give error
                 //       - Moving a directory into a file should give error

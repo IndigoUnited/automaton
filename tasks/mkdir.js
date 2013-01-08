@@ -18,7 +18,7 @@ var task = {
             'default': '0777'
         }
     },
-    filter     : function (opt, next) {
+    filter     : function (opt, ctx, next) {
         if (!utils.lang.isNumber(opt.mode)) {
             opt.mode = parseInt(opt.mode, 8);
         }
@@ -27,7 +27,7 @@ var task = {
     tasks      :
     [
         {
-            task: function (opt, next) {
+            task: function (opt, ctx, next) {
                 var dirs = utils.lang.isArray(opt.dirs) ? opt.dirs : [opt.dirs];
                 var error;
 

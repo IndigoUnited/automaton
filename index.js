@@ -229,7 +229,7 @@ var Automaton = d.Class.declare({
             // if there is an actual filter, run it and call the after filter
             if (def.task.filter) {
                 async.waterfall([
-                    def.task.filter.$bind(def.context, def.options),
+                    def.task.filter.$bind(def.context, def.options, def.context),
                     afterFilter
                 ], next);
             // otherwise simply call the after filter
@@ -251,7 +251,7 @@ var Automaton = d.Class.declare({
                         return next();
                     }
                     this._reportNextTask(this._createTaskDefinition(subtask, def));
-                    subtask.task.call(def.context, def.options, next);
+                    subtask.task.call(def.context, def.options, def.context, next);
                 }.$bind(this));
             // it's not a function, then it must be another task
             } else {
