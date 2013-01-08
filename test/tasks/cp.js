@@ -45,7 +45,7 @@ module.exports = function (automaton) {
             //  - it should copy folder to folder/folder
         });
 
-        it.skip('should copy files with single dot pattern', function () {
+        it.skip('should copy files with single star pattern', function () {
             // test if ONLY files are copied with source/*
         });
 
