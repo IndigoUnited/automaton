@@ -72,7 +72,7 @@ var task = {
                                     }
 
                                     if (!stat.isFile()) {
-                                        next();
+                                        return next();
                                     }
 
                                     fs.readFile(file, function (err, contents) {
