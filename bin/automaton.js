@@ -30,10 +30,6 @@ var commands = [
             desc: 'Get help. If you specify a task, you\'ll be given the task usage.'
         },
         {
-            opt: '--tasks, -t',
-            desc: 'List all the available tasks (that are loaded).'
-        },
-        {
             opt: '--task-dir, -d <dir>',
             desc: 'Task include dir. All the tasks within the folder will be loaded.'
         },
