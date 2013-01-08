@@ -3,16 +3,16 @@
 var spawn = require('child_process').spawn;
 
 var task = {
-    id         : 'run',
-    author     : 'Indigo United',
-    name       : 'Run',
-    description: 'Run command',
-    options    : {
+    id          : 'run',
+    author      : 'Indigo United',
+    name        : 'Run',
+    description : 'Run command. This can be used to run anything you want, just like you would in the command line.',
+    options: {
         cmd: {
-            description: 'What command to execute'
+            description: 'The command you want to execute.'
         },
         cwd: {
-            description: 'Current working directory of the child process',
+            description: 'Current working directory of the child process.',
             'default': null
         }
     },

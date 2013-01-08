@@ -8,27 +8,27 @@ var fs     = require('fs'),
 ;
 
 var task = {
-    id         : 'scaffolding-file-rename',
-    author     : 'Indigo United',
-    name       : 'Scaffolding: file rename',
-    description: 'Replace placeholders in file names',
-    options    : {
+    id          : 'scaffolding-file-rename',
+    author      : 'Indigo United',
+    name        : 'Scaffolding: file rename',
+    description : 'Replaces placeholders in a set of files.',
+    options: {
         dirs: {
-            description: 'The directories you want to to use as the base of the rename. Accepts an array of directories or a single one through a string. Works with minimatch.'
+            description: 'From which dir to start looking for files with placeholders. Accepts a dir and array of dirs. Also note that the dirs can be minimatch patterns.'
         },
         data: {
-            description: 'The data to be used while renaming. Keys are placeholders and values the content of each placeholder.'
+            description: 'The data to be used while renaming. Keys are placeholder names and the values are the content for each placeholder.'
         },
         recursive: {
-            description: 'For each dir passed in the dirs option, apply the rename recursively, finding matches in all the hierarchy',
+            description: 'For each dir passed in the dirs option, apply the rename recursively, finding matches in all the hierarchy.',
             'default': true
         },
         glob: {
-            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
             'default': null
         }
     },
-    tasks      :
+    tasks:
     [
         {
             task: function (opt, ctx, next) {

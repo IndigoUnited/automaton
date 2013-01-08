@@ -6,16 +6,16 @@ var async  = require('async');
 var glob   = require('glob');
 
 var task = {
-    id         : 'rm',
-    author     : 'Indigo United',
-    name       : 'Remove',
-    description: 'Remove files',
+    id          : 'rm',
+    author      : 'Indigo United',
+    name        : 'Remove',
+    description : 'Remove file or set of files.',
     options: {
         files: {
-            description: 'The files or directories to remove. Accepts an array of entries or a single one through a string. Works with minimatch.'
+            description: 'Which files should be removed. Accepts a filename and array of filenames. Also note that the filenames can be minimatch patterns.'
         },
         glob: {
-            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
             'default': null
         }
     },

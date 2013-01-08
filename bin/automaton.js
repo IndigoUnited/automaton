@@ -233,6 +233,10 @@ function showTaskUsage(task) {
         k
     ;
 
+    if (task.description) {
+        console.log('\n  ' + task.description.green);
+    }
+    
     console.log('\n  Usage: ' + argv.$0.cyan, task.id, '[--option1 value1 --option2 value2]'.grey);
     console.log('\n  Options:\n');
 

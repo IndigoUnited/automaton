@@ -7,16 +7,16 @@ var utils  = require('amd-utils');
 var async  = require('async');
 
 var task = {
-    id         : 'mkdir',
-    author     : 'Indigo United',
-    name       : 'Make dir recursively',
-    description: 'Make directories',
-    options    : {
+    id          : 'mkdir',
+    author      : 'Indigo United',
+    name        : 'Make directory',
+    description : 'Make directory recursively, just like `mkdir -p`',
+    options: {
         dirs: {
-            description: 'The directories you want to create. Accepts an array of directories or a single one through a string.'
+            description: 'The directory you want to create. Accepts a directory or an array of directories.'
         },
         mode: {
-            description: 'The directory permissions',
+            description: 'The directory permissions.',
             'default': '0777'
         }
     },

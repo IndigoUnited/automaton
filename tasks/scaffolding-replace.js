@@ -8,23 +8,23 @@ var fs     = require('fs'),
 ;
 
 var task = {
-    id         : 'scaffolding-replace',
-    author     : 'Indigo United',
-    name       : 'Scaffolding: replace',
-    description: 'Replace placeholders in file names',
-    options    : {
+    id          : 'scaffolding-replace',
+    author      : 'Indigo United',
+    name        : 'Scaffolding: replace',
+    description : 'Replace {{placeholders}} in files with data. This will look for the placeholder in a file, and replace it with a string.',
+    options: {
         files: {
-            description: 'The files to scaffold. Accepts an array of files or a single one through a string. Works with minimatch.'
+            description: 'Which files to process. Accepts a filename and array of filenames. Also note that the filenames can be minimatch patterns.'
         },
         data: {
-            description: 'The data to replace. Keys are placeholders and values the content of each placeholder.'
+            description: 'The data to replace with. Keys are placeholders and values the content for each placeholder.'
         },
         type: {
-            description: 'The type of the data. Accepts "string" (default) and "file"',
+            description: 'The type of data. Accepts "string" and "file"',
             'default': 'string'
         },
         glob: {
-            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
             'default': null
         }
     },

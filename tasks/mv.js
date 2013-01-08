@@ -10,16 +10,16 @@ var expand       = require('./cp').expand;
 var relativePath = require('./cp').relativePath;
 
 var task = {
-    id         : 'mv',
-    author     : 'Indigo United',
-    name       : 'Copy',
-    description: 'Move files',
-    options    : {
+    id          : 'mv',
+    author      : 'Indigo United',
+    name        : 'Move',
+    description : 'Move a file or set of files.',
+    options: {
         files: {
-            description: 'The files to copy. Accepts an object in which keys are the source files and values the destination. Source values support minimatch.'
+            description: 'Which files to move. Accepts an object in which keys are the source files and values the destination. Source values support minimatch.'
         },
         glob: {
-            description: 'The options to pass to glob (please look the available options in the glob package README)',
+            description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
             'default': null
         }
     },
