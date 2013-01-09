@@ -21,7 +21,6 @@ var task = {
         {
             task: function (opt, ctx, next) {
                 var child,
-                    that = this,
                     output = '',
                     onData;
 
@@ -31,7 +30,7 @@ var task = {
                     child = spawn('sh', ['-c', opt.cmd], { cwd: opt.cwd });
                 }
 
-                this.log.infoln('Running: '.green + opt.cmd + '\n');
+                ctx.log.infoln('Running: '.green + opt.cmd + '\n');
 
                 onData = function (data) {
                     // Buffer the response until we find a new line
@@ -40,7 +39,7 @@ var task = {
                     var pos = output.lastIndexOf('\n');
                     if (pos !== -1) {
                         // If there is a new line in the buffer, output it
-                        that.log.infoln(output.substr(0, pos));
+                        ctx.log.infoln(output.substr(0, pos));
                         output = output.substr(pos + 1);
                     }
                 };
@@ -51,7 +50,7 @@ var task = {
                 child.on('exit', function (code) {
                     // Log the remaining buffer
                     if (output) {
-                        this.log.infoln(output);
+                        ctx.log.infoln(output);
                     }
 
                     if (code === 0) {
@@ -59,7 +58,7 @@ var task = {
                     }
 
                     next(new Error('Error running command: ' + opt.cmd));
-                }.bind(this));
+                });
             }
         }
     ]
