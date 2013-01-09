@@ -177,11 +177,7 @@ var task = {
             // on the run_all option. Of course, you have
             // just setted it to something like `false`.
             on: '{{run_all}}',
-            // Description messages can be generated according to the options
-            // by using a function instead of a static description.
-            description: function (opt) {
-                return 'Creating ' + opt.dir1 + '/' + opt.dir2 + '/' + opt.dir3
-            },
+            description: 'Creating other folder',
             options: {
                 dirs: ['{{dir1}}/{{dir2}}/{{dir3}}']
             }
@@ -238,6 +234,7 @@ The `Logger` provides the following methods:
 - Information logging: `info()`, `infoln()`
 - Warnings logging: `warn()`, `warnln()`
 - Error logging: `error()`, `errorln()`
+- Success logging: `success()`, `successln()`
 - Debug logging: `debug()`, `debugln()` (These will only be outputted when in debug mode)
 
 The *ln* variants of each method output a new line (`\n`) in the end. Note that these methods work just like your typical `console.*` methods, so you can pass multiple arguments, and they will all get logged.
@@ -259,7 +256,7 @@ var task = {
                     'here\'s the process',
                     inspect(process)
                 );
-                
+
                 next();
             }
         }

@@ -169,17 +169,6 @@ function expand(pattern, options, next) {
 function cleanup(files, dirs) {
     var x, y;
 
-    // Cleanup dirs that overlap eachother
-    for (x = 0; x < dirs.length; ++x) {
-        for (y = x + 1; y < dirs.length; ++y) {
-            if (dirs[y].indexOf(dirs[x]) === 0) {
-                dirs.splice(y, 1);
-                --x;
-                --y;
-            }
-        }
-    }
-
     // Cleanup dirs that overlap files
     for (x = 0; x < dirs.length; ++x) {
         for (y = files.length - 1; y >= 0; --y) {

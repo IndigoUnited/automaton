@@ -39,7 +39,7 @@ var task = {
                         }
 
                         // Grab the list of files to rename
-                        // Note that we have walk the matches backwards
+                        // Note that matches must be traversed backwards
                         var x;
                         var filesToRename = [];
                         var before;

@@ -180,6 +180,36 @@ module.exports = function (automaton) {
                     done();
                 });
             });
+
+            it('should skip folders', function (next) {
+                // Create dir inside tmp
+                fs.mkdirSync(__dirname + '/../tmp/some_dir');
+
+                // Scaffolding, matching the newly created it
+                automaton.run({
+                    filter: function (opts, ctx, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-append',
+                            options: {
+                                files: ['{{__dirname}}/../tmp/**/*'],
+                                data: {
+                                    placeholder: 'awesome'
+                                }
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    next();
+                });
+            });
         });
 
         describe('replace', function () {
@@ -351,6 +381,36 @@ module.exports = function (automaton) {
                     expect(contents.other_field).to.equal('Here\'s the awesome again just in case..');
 
                     done();
+                });
+            });
+
+            it('should skip folders', function (next) {
+                // Create dir inside tmp
+                fs.mkdirSync(__dirname + '/../tmp/some_dir');
+
+                // Scaffolding, matching the newly created it
+                automaton.run({
+                    filter: function (opts, ctx, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-replace',
+                            options: {
+                                files: ['{{__dirname}}/../tmp/**/*'],
+                                data: {
+                                    placeholder: 'awesome'
+                                }
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    next();
                 });
             });
         });
@@ -526,6 +586,34 @@ module.exports = function (automaton) {
                     expect(contents.other_field).to.equal('Here\'s the  again just in case..');
 
                     done();
+                });
+            });
+
+            it('should skip folders', function (next) {
+                // Create dir inside tmp
+                fs.mkdirSync(__dirname + '/../tmp/some_dir');
+
+                // Scaffolding, matching the newly created it
+                automaton.run({
+                    filter: function (opts, ctx, next) {
+                        opts.__dirname = __dirname;
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'scaffolding-close',
+                            options: {
+                                files: ['{{__dirname}}/../tmp/**/*'],
+                                placeholders: 'placeholder'
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    next();
                 });
             });
         });
