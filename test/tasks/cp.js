@@ -2,6 +2,7 @@
 
 var expect = require('expect.js'),
     isFile = require('../helpers/util/is-file'),
+    isDir  = require('../helpers/util/is-dir'),
     fs     = require('fs')
 ;
 
@@ -31,32 +32,276 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should copy file to folder', function () {
-            // test file to folder/
-            // test file to folder where folder already exists
-            // please confirm this behavior in the command line
+        it('should copy file to folder', function (done) {
+            var files         = {},
+                folder        = 'file_to_folder/',
+                folder_exists = 'file_to_folder_exists/';
+
+            files[__dirname + '/../helpers/assets/file1.json'] = target + folder;
+            files[__dirname + '/../helpers/assets/file2'] = target + folder_exists;
+
+            // create dir
+            fs.mkdirSync(target + folder_exists);
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isFile(target + folder + 'file1.json')).to.be(true);
+                expect(isFile(target + folder_exists + 'file2')).to.be(true);
+                done();
+            });
         });
 
-        it.skip('should copy folder to folder', function () {
+        it('should copy folder to folder', function (done) {
+            var files  = {},
+                src    = 'src/',
+                dst    = 'dst/',
+                file   = 'file.js';
+
+            // create dir
+            fs.mkdirSync(target + src);
+            fs.mkdirSync(target + dst);
+
+            // create file
+            fs.writeFileSync(target + src + file, 'dummy');
+
+            files[target + src + file] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isFile(target + dst + file)).to.be(true);
+                done();
+            });
+        });
+
+        it('should copy folder to folder - destination folder does not exist', function (done) {
             // test folder to folder/
             // test folder to folder where folder does not exist
             //  - it should copy folder to folder
             // test folder to folder where folder alredy exist
             //  - it should copy folder to folder/folder
+            var files  = {},
+                src    = 'src/',
+                dst    = 'dst/',
+                file   = 'file.js';
+
+            // create dir
+            fs.mkdirSync(target + src);
+
+            // create file
+            fs.writeFileSync(target + src + file, 'dummy');
+
+            files[target + src + file] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isFile(target + dst + file)).to.be(true);
+                done();
+            });
         });
 
-        it.skip('should copy files with single star pattern', function () {
+        it('should copy folder to folder - destination folder already exist', function (done) {
+            var files  = {},
+                src    = 'src/',
+                dst    = 'dst/',
+                folder = 'folder/',
+                file   = 'file.js';
+
+            // create dir
+            fs.mkdirSync(target + src);
+            fs.mkdirSync(target + src + folder);
+            fs.mkdirSync(target + dst);
+            fs.mkdirSync(target + dst + folder);
+
+            // create file
+            fs.writeFileSync(target + src + file, 'dummy');
+
+            files[target + src + file] = target + dst;
+            files[target + src + folder] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isFile(target + dst + file)).to.be(true);
+                expect(isDir(target + dst + folder + folder)).to.be(true);
+                done();
+            });
+        });
+
+        it('should copy files with single star pattern - source/*', function (done) {
             // test if ONLY files are copied with source/*
+            var files  = {},
+                src    = '../cp_single_star/',
+                dst    = 'dst/',
+                folder = 'folder',
+                file   = 'file.js'
+            ;
+            // create dir
+            fs.mkdirSync(target + src);
+            fs.mkdirSync(target + src + folder);
+            fs.mkdirSync(target + dst);
+
+            // create file
+            fs.writeFileSync(target + src + file, 'dummy');
+
+            files[target + src + '*'] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isFile(target + dst + file)).to.be(true);
+                expect(isDir(target + dst + folder)).to.be(false);
+                done();
+            });
         });
 
-        it.skip('should copy files and folders recursivelly', function () {
+        it('should copy files and folders recursivelly - source/**/*', function (done) {
             // test if files and folders are recursivelly copied with source/**/*
+            var files  = {},
+                src    = '../cp_single_star/',
+                dst    = 'dst/',
+                folder = 'folder',
+                file   = 'file.js'
+            ;
+            // create dir
+            fs.mkdirSync(target + src);
+            fs.mkdirSync(target + src + folder);
+            fs.mkdirSync(target + dst);
+
+            // create file
+            fs.writeFileSync(target + src + file, 'dummy');
+
+            files[target + src + '**/*'] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isFile(target + dst + file)).to.be(true);
+                expect(isDir(target + dst + folder)).to.be(true);
+                done();
+            });
         });
 
-        it.skip('should give error if source file does not exist');
-        it.skip('should give error if source folder does not exist');
-        it.skip('should give error if sources do not exist', function () {
-            // test with source/* and source/**/*
+        it('should give error if source file does not exist', function (done) {
+            var files  = {},
+                dst    = 'dst/';
+
+            // create dir
+            fs.mkdirSync(target + dst);
+
+            files[target + 'file.js'] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/ENOENT/);
+                done();
+            });
+        });
+
+        it('should give error if source folder does not exist', function (done) {
+            var files  = {},
+                dst    = 'dst/';
+
+            // create dir
+            fs.mkdirSync(target + dst);
+
+            files[target + 'folder'] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/ENOENT/);
+                done();
+            });
+        });
+
+        it('should give error if sources do not exist - simple', function (done) {
+            var files  = {},
+                dst    = 'dst/';
+
+            // create dir
+            fs.mkdirSync(target + dst);
+
+            files[target + 'folder'] = target + dst;
+            files[target + 'file.js'] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/ENOENT/);
+                done();
+            });
+        });
+
+        it('should give error if sources do not exist - source/*', function (done) {
+            var files  = {},
+                dst    = 'dst/';
+
+            // create dir
+            fs.mkdirSync(target + dst);
+
+            files[target + 'folder/*'] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/ENOENT/);
+                done();
+            });
+        });
+
+        it('should give error if sources do not exist - source/**/*', function (done) {
+            var files  = {},
+                dst    = 'dst/';
+
+            // create dir
+            fs.mkdirSync(target + dst);
+
+            files[target + 'folder/**/*'] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+
+                expect(err).to.be.ok();
+                expect(err.message).to.match(/ENOENT/);
+                done();
+            });
         });
 
         it('should work with sources as symlinks', function (done) {
@@ -71,7 +316,7 @@ module.exports = function (automaton) {
             // create dir
             fs.mkdirSync(target + '../' + dir);
 
-            // create symlink to folder in tmp
+            // create symlink to file
             fs.symlinkSync(target + file, symlink, 'file');
 
             // copy file
@@ -89,13 +334,72 @@ module.exports = function (automaton) {
             });
         });
 
-        it.skip('should work sources containing symlinks deeply inside them', function () {
-            // test with a symlink inside the folder being copied
-            // also test with source/**/* with a symlink deeply inside the source
-            // it's important to make those separate tests because they have different piecies of code handling it
-            //
-            // check what is the unix behavior here.. to copy it as a symlink or follow the symlink
-            // still an ISSUE should be created to add an option to the cp in order to change this behavior
+        it('should work sources containing symlinks deeply inside them', function (done) {
+            var files     = {},
+                cp_folder = '../cp_folder_to_symlink/',
+                src       = 'src_with_symlink/',
+                dst       = 'dst_with_symlink/',
+                symlink   = 'symlink',
+                file      = 'file.js';
+
+            fs.mkdirSync(target + cp_folder);
+            fs.mkdirSync(target + src);
+
+            // create file
+            fs.writeFileSync(target + cp_folder + file, 'dummy');
+
+            // create symlink to folder
+            fs.symlinkSync(target + cp_folder, target + src + symlink, 'dir');
+
+            files[target + src] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isDir(target + dst + src)).to.be(true);
+                expect(isDir(target + dst + src + symlink)).to.be(true);
+                expect(isFile(target + dst + src + symlink + '/' + file)).to.be(true);
+                done();
+            });
+
+        });
+
+        it('should work sources containing symlinks deeply inside them - with source/**/* ', function (done) {
+            var files     = {},
+                cp_folder = '../cp_folder_to_symlink/',
+                src       = 'src_with_symlink/',
+                dst       = 'dst_with_symlink/',
+                symlink   = 'symlink',
+                file      = 'file.js';
+
+            fs.mkdirSync(target + cp_folder);
+            fs.mkdirSync(target + src);
+
+            // create file
+            fs.writeFileSync(target + cp_folder + file, 'dummy');
+
+            // create symlink to folder
+            fs.symlinkSync(target + cp_folder, target + src + symlink, 'dir');
+
+            files[target + src + '/**/*'] = target + dst;
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isDir(target + dst)).to.be(true);
+                expect(isDir(target + dst + symlink)).to.be(true);
+                expect(isFile(target + dst + symlink + '/' + file)).to.be(true);
+                done();
+            });
+
         });
 
         it('should work with destinations as symlinks', function (done) {
@@ -185,6 +489,39 @@ module.exports = function (automaton) {
 
                 expect(fs.statSync(toCopy[target + file] + file).mode).to.equal(mode_file);
                 expect(fs.statSync(toCopy[target + folder]).mode).to.equal(mode_dir);
+                done();
+            });
+        });
+
+        it('should copy empty folders', function (done) {
+            var files         = {},
+                destination   = 'empty_folders/',
+                folder1       = 'not_empty_folder/',
+                folder2       = 'folder2/',
+                folder3       = 'folder3/',
+                file          = 'file.js';
+
+            files[target + folder1] = target + destination;
+
+            // create folders
+            fs.mkdirSync(target + folder1);
+            fs.mkdirSync(target + folder1 + folder2);
+            fs.mkdirSync(target + folder1 + folder2 + folder3);
+
+            // create file
+            fs.writeFileSync(target + folder1 + folder2 + file, 'dummy');
+
+            automaton.run('cp', {
+                files: files
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isDir(target + destination + folder1)).to.be(true);
+                expect(isDir(target + destination + folder1 + folder2)).to.be(true);
+                expect(isDir(target + destination + folder1 + folder2 + folder3)).to.be(true);
+                expect(isFile(target + destination + folder1 + folder2 + file)).to.be(true);
                 done();
             });
         });
