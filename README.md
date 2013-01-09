@@ -281,7 +281,7 @@ If you are using `automaton` programatically, you have a bigger range of possibi
 
 2. `require()` the task yourself, just like you would with any `NodeJS` module, and then call `automaton.addTask(your_task)`. Just like `loadTasks()`, this will make the task you just added available on `automaton` as if it is a built-in task.
 
-3. `require()` the task only in the task that depends on it, and use it directly in the task list, where you would typically put a task name, or an inline function.
+3. `require()` the task in the task that depends on it, and use it directly in the subtask list, where you would typically put a task name, or an inline function.
 
 
 ## Usage
