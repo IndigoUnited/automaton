@@ -149,11 +149,17 @@ var task = {
             // If you find yourself looking
             // for something a bit more custom,
             // you can just provide a function as the task.
-            task : function (opt, next) {
+            task : function (opt, ctx, next) {
                 // opt is a list of the options
                 // provided to the task.
 
-                console.log('I can do whatever I want', opt);
+                // ctx.log gives you access to the Logger.
+                // The Logger should be used to perform any
+                // logging information, and is preferred to
+                // any console.* methods, as this gives additional
+                // control. More information on ctx in the
+                // "Inline Functions" section.
+                ctx.log.info('I can do whatever I want', opt);
 
                 // When the task is done,
                 // you just call next(),
@@ -173,14 +179,14 @@ var task = {
 module.exports = task;
 ```
 
-Please note that placeholders can be escaped with backslashes:
+Note that placeholders can be escaped with backslashes:
 `'\\{\\{dir1\\}\\}'`
 
 ## Built-in tasks
 
 `automaton` comes bundled with a few tasks to ease your own tasks.
 
-`ROADMAP` Note that we're working to have support for `gruntjs` tasks, so you can use them just as you would with native `automaton` tasks.
+`ROADMAP` Note that we're working on having support for `gruntjs` tasks, so you can use them just like native `automaton` tasks.
 
 ### Filesystem
 
@@ -204,6 +210,7 @@ Scaffolding tasks help you perform some typical tasks, like appending, replacing
 ### Miscellaneous
 
 - **run:** Run a shell command
+- **init:** Initialise an empty autofile
 - uglify (soon)
 - minify (soon)
 - concat (soon)
@@ -212,8 +219,45 @@ Scaffolding tasks help you perform some typical tasks, like appending, replacing
 
 If you find yourself trying to do something that is not supported by the existing tasks, you can just provide a function, instead of the task name, and it will be used as the task.
 
-This task will receive 2 arguments, an options object (the options that were provided to the subtask), and a callback that must be called once the subtask is over, giving you full flexibility, since your function can do whatever you like.
+This task will receive 3 arguments, an options object (the options that were provided to the subtask), a context object (more on this later), and a callback that must be called once the subtask is over, giving you full flexibility, since your function can do whatever you like.
 
+The second argument, the context, is used to provide you with a tool belt that will aid you while developing `automaton` tasks. It currently provides you a `log` object, which is an instance of [Logger](https://github.com/IndigoUnited/automaton/blob/master/lib/Logger.js), and can be used to handle logging. Using the `automaton` logger is preferred to using the traditional `console.*` methods, since it gives additional control over logging to whoever is running the task.
+
+The `Logger` provides the following methods:
+
+- Information logging: `info()`, `infoln()`
+- Warnings logging: `warn()`, `warnln()`
+- Error logging: `error()`, `errorln()`
+- Debug logging: `debug()`, `debugln()` (These will only be outputted when in debug mode)
+
+The *ln* variants of each method output a new line (`\n`) in the end. Note that these methods work just like your typical `console.*` methods, so you can pass multiple arguments, and they will all get logged.
+
+Here's an example usage:
+
+```javascript
+'use strict';
+
+var inspect = require('util').inspect;
+
+var task = {
+    id: 'bogus',
+    tasks: [
+        {
+            task: function (opt, ctx, next) {
+                ctx.log.infoln(
+                    'hello,',
+                    'here\'s the process',
+                    inspect(process)
+                );
+                
+                next();
+            }
+        }
+    ]
+};
+
+module.exports = task;
+```
 
 ## Usage
 
@@ -228,7 +272,7 @@ In order to run an `autofile`, you simply run `automaton`. This will look for `a
 Automaton can also be used programatically as a node module. Here's a quick example of its usage:
 
 ```javascript
-var automaton = require('automaton').create();
+var automaton = require('automaton').create(/*options go here*/);
 
 // Since autofiles are node modules themselves,
 // you can just require them
@@ -236,6 +280,11 @@ var automaton = require('automaton').create();
 // the module inline, in JSON.
 var myTask = require('my_autofile');
 
+// Note that we're running a task that you have loaded using node's
+// require, and passing it as the first argument of the run() function.
+// Instead, you can load the task using loadTask(), and then simply
+// pass its id (a string), as the first argument of run. You can find an
+// example of this below, in the Logging section.
 automaton.run(myTask, { 'some_option': 'that is handy' }, function (err) {
     if (err) {
         console.log('Something went wrong: ' + err.message);
@@ -244,6 +293,38 @@ automaton.run(myTask, { 'some_option': 'that is handy' }, function (err) {
     }
 });
 ```
+
+#### Logging
+
+`automaton.run()` returns a readable stream that is used for outputting log information. The depth of this log can be controlled by a `verbosity` option, provided upon instantiation.
+
+There are also a few other options. Here's a full list:
+
+- **verbosity:** Controls the depth of the log. Remember the box in a box analogy? This controls how many boxes deep you want to go, regarding logging information.
+  - **0:** no logging
+  - **1:** 1 level deep (default)
+  - ***n*:** *n* levels deep
+  - **-1:** show all levels
+- **debug:** If you want to receive debug logging messages. `false` by default.
+- **color:** If you want the logging information to contain colors. `true` by default.
+
+Here's an example of the usage of the stream, with custom options:
+
+```javascript
+var automaton = require('automaton').create({
+    verbosity: 3, // show me 3 level deep logging info
+    debug: true,  // show me debug logging
+    color: false  // disable colors
+});
+
+// run some task
+automaton
+    .run('run', { cmd: 'echo SUCCESS!' })
+    .pipe(process.stdout);
+```
+
+As you can see, we've tweaked all the `automaton` options, and even piped the logging information to `STDOUT`. What you do exactly with the stream, it's completely up to you.
+
 
 ## Acknowledgements
 
