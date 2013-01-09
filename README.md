@@ -16,14 +16,52 @@ Automaton eases this process, allowing you to quickly set up an `autofile`, whic
 A little detail that makes Automaton a powerful tool, is that every `autofile` you create can itself be used by another `autofile`, turning the first one into a single task (imagine boxes within boxes). If you are curious, you can take a look at the source code, and check for yourself that even the tasks that Automaton provides built-in are simple `autofiles`.
 
 
+## Built-in tasks
+
+`automaton` comes bundled with a few tasks to ease your own tasks.
+
+`ROADMAP` Note that we're working on having support for `gruntjs` tasks, so you can use them just like native `automaton` tasks.
+
+### Filesystem
+
+- **chmod:** Change mode of files
+- **cp:** Copy files and directories
+- **mv:** Move files and directories
+- **mkdir:** Make directories recursively
+- **rm:** Remove several files or directories
+- **symlink:** Create symlink
+
+
+### Scaffolding
+
+Scaffolding tasks help you perform some typical tasks, like appending, replacing, and others, to placeholders in a template file. Any text file can be a template. These tasks will look for a `{{placeholder_name}}` inside the file, and perform the operation on it.
+
+- **scaffolding-append:** Append something to a placeholder in a file
+- **scaffolding-replace:** Replace the placeholder with something
+- **scaffolding-close:** Close the placeholder (effectively removing the placeholder)
+- **scafolding-file-rename:** Rename files by replacing placeholders found in their names
+
+### Miscellaneous
+
+- **run:** Run a shell command
+- **init:** Initialise an empty autofile
+- uglify (soon)
+- minify (soon)
+- concat (soon)
+
+
 ## Installing
 
 You can simply install Automaton through NPM, by running `npm install -g automaton`. This will install Automaton globally, and you will be able to execute `automaton` in your terminal.
+
+If you only plan to use `automaton` programatically, you can just install it locally.
 
 
 ## Creating a task
 
 An automaton task is a simple object, describing what the task will do.
+
+### Simple task
 
 For illustration purposes, here's a simple `autofile` that just creates a folder and copies a file into it:
 
@@ -52,7 +90,10 @@ var myTask = {
 module.exports = myTask;
 ```
 
-To illustrate most of the capabilities of Automaton, here's a complete `autofile` with comments along the file:
+### More complete task
+
+
+To illustrate most of the capabilities of `automaton`, here's a complete `autofile` with comments along the file:
 
 ```js
 var task = {
@@ -149,6 +190,8 @@ var task = {
             // If you find yourself looking
             // for something a bit more custom,
             // you can just provide a function as the task.
+            // More details about inline functions below
+            // in the "Inline functions" section.
             task : function (opt, ctx, next) {
                 // opt is a list of the options
                 // provided to the task.
@@ -159,7 +202,7 @@ var task = {
                 // any console.* methods, as this gives additional
                 // control. More information on ctx in the
                 // "Inline Functions" section.
-                ctx.log.info('I can do whatever I want', opt);
+                ctx.log.infoln('I can do whatever I want', opt);
 
                 // When the task is done,
                 // you just call next(),
@@ -182,39 +225,6 @@ module.exports = task;
 Note that placeholders can be escaped with backslashes:
 `'\\{\\{dir1\\}\\}'`
 
-## Built-in tasks
-
-`automaton` comes bundled with a few tasks to ease your own tasks.
-
-`ROADMAP` Note that we're working on having support for `gruntjs` tasks, so you can use them just like native `automaton` tasks.
-
-### Filesystem
-
-- **chmod:** Change mode of files
-- **cp:** Copy files and directories
-- **mv:** Move files and directories
-- **mkdir:** Make directories recursively
-- **rm:** Remove several files or directories
-- **symlink:** Create symlink
-
-
-### Scaffolding
-
-Scaffolding tasks help you perform some typical tasks, like appending, replacing, and others, to placeholders in a template file. Any text file can be a template. These tasks will look for a `{{placeholder_name}}` inside the file, and perform the option you specified on it.
-
-- **scaffolding-append:** Append something to a placeholder in a file
-- **scaffolding-replace:** Replace the placeholder with something
-- **scaffolding-close:** Close the placeholder (effectively removing the placeholder)
-- **scafolding-file-rename:** Rename files replacing placeholders found in their names
-
-### Miscellaneous
-
-- **run:** Run a shell command
-- **init:** Initialise an empty autofile
-- uglify (soon)
-- minify (soon)
-- concat (soon)
-
 ### Inline functions
 
 If you find yourself trying to do something that is not supported by the existing tasks, you can just provide a function, instead of the task name, and it will be used as the task.
@@ -234,7 +244,7 @@ The *ln* variants of each method output a new line (`\n`) in the end. Note that 
 
 Here's an example usage:
 
-```javascript
+```js
 'use strict';
 
 var inspect = require('util').inspect;
@@ -259,6 +269,21 @@ var task = {
 module.exports = task;
 ```
 
+### Loading tasks
+
+Once you start building your own tasks, you will probably find yourself wanting to use some custom task within another task you're working on. In order to do this, you have a few options, depending on how you are using automaton.
+
+If you are using `automaton` in the CLI, you have the `--task-dir`. This tells automaton to load all the tasks in that folder, making them available to you, just like the built-in tasks.
+
+If you are using `automaton` programatically, you have a bigger range of possibilities:
+
+1. Run `automaton.loadTasks(/some/folder/with/tasks)`. This is the equivalent to what you would to in the CLI, with the exception that you can call this multiple times, loading multiple folders.
+
+2. `require()` the task yourself, just like you would with any `NodeJS` module, and then call `automaton.addTask(your_task)`. Just like `loadTasks()`, this will make the task you just added available on `automaton` as if it is a built-in task.
+
+3. `require()` the task only in the task that depends on it, and use it directly in the task list, where you would typically put a task name, or an inline function.
+
+
 ## Usage
 
 ### CLI
@@ -269,9 +294,9 @@ In order to run an `autofile`, you simply run `automaton`. This will look for `a
 
 ### Node.js
 
-Automaton can also be used programatically as a node module. Here's a quick example of its usage:
+`automaton` can also be used programatically as a node module. Here's a quick example of its usage:
 
-```javascript
+```js
 var automaton = require('automaton').create(/*options go here*/);
 
 // Since autofiles are node modules themselves,
@@ -310,7 +335,7 @@ There are also a few other options. Here's a full list:
 
 Here's an example of the usage of the stream, with custom options:
 
-```javascript
+```js
 var automaton = require('automaton').create({
     verbosity: 3, // show me 3 level deep logging info
     debug: true,  // show me debug logging
