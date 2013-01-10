@@ -6,6 +6,7 @@ var async   = require('async');
 var path    = require('path');
 var fs      = require('fs');
 var utils   = require('amd-utils');
+var mkdirp  = require('mkdirp');
 
 var task = {
     id          : 'cp',
@@ -25,63 +26,36 @@ var task = {
     [
         {
             task: function (opt, ctx, next) {
-                // TODO: standardize behavior with unix cp
-                //       - If dst does not exist, give error
-                //       - Copying a directory into a file should give error
-                //       - Copying a directory/file, into another directory that exists
-                //         but does not end with a /, it should act like it did
-                //       - Copying a file into a file is obvious
                 opt.glob = opt.glob || {};
                 var sources = Object.keys(opt.files);
+                var error;
 
-                // Foreach source file..
+                // Cycle through each source
                 // Note that series is used to avoid conflicts between each pattern
                 async.forEachSeries(sources, function (pattern, next) {
                     var dsts = utils.lang.isArray(opt.files[pattern]) ? opt.files[pattern] : [opt.files[pattern]];
                     dsts = utils.array.unique(dsts.map(function (dst) { return path.normalize(dst); }));
+                    pattern = path.normalize(pattern);
 
                     // Expand the files to get an array of files and directories
-                    // The files do not overlap directories and directories do not overlay eachother
                     expand(pattern, opt.glob, function (err, files, dirs, directMatch) {
-                        var src,
-                            isFile;
-
                         if (err) {
                             return next(err);
                         }
 
-                        // If the source pattern was a direct match
-                        // Copy directly to the dests
-                        if (directMatch) {
-                            src = dirs[0] || files[0];
-                            isFile = src === files[0];
-
-                            return async.forEach(dsts, function (dst, next) {
-                                // If the source is a directory
-                                // or a file which dst ends with /, concatenate the source basename.
-                                if (/[\/\\]$/.test(dst)) {
-                                    dst = path.join(dst, path.basename(src));
-                                }
-
-                                return copy(src, dst, isFile ? 'File': 'Directory', next);
-                            }, next);
+                        if (!files.length && !dirs.length) {
+                            error = new Error('ENOENT, no such file or directory \'' + pattern + '\'');
+                            error.code = 'ENOENT';
+                            return next(error);
                         }
 
-                        // Create a batch of files and folders
-                        var batch = files.map(function (file) {
-                            return { src: file, type: 'File' };
-                        });
-                        batch.push.apply(batch, dirs.map(function (dir) {
-                            return { src: dir, type: 'Directory' };
-                        }));
-
-                        // Finally copy everything
-                        // Series is used to prevent strange things from happening
-                        async.forEachSeries(batch, function (obj, next) {
-                            async.forEach(dsts, function (dst, next) {
-                                dst = path.join(dst, relativePath(obj.src, pattern));
-                                copy(obj.src, dst, obj.type, next);
-                            }, next);
+                        // Process the matches for each dst
+                        async.forEach(dsts, function (dst, next) {
+                            if (directMatch) {
+                                processDirectMatch(files, dirs, dst, next);
+                            } else {
+                                processPatternMatch(pattern, files, dirs, dst, next);
+                            }
                         }, next);
                     });
                 }, next);
@@ -91,13 +65,165 @@ var task = {
 };
 
 /**
- * Expands the given minimatch pattern to an array of files and an array of dirs.
- * The files are guaranteed to not overlap with the folders.
- * The dirs are guaranteed to not overlap eachother.
+ * Processes a direct match.
  *
- * @param {String}   pattern   The pattern
- * @param {Object}   [options] The options to pass to the glob
- * @param {Function} callback  The callback to call with the files and folders (follows node conventions)
+ * @param {Array}    files The files
+ * @param {Array}    dirs  The directories
+ * @param {String}   dst   The destination
+ * @param {Function} next  The callback to call with the files and folders (follows node conventions)
+ */
+function processDirectMatch(files, dirs, dst, next) {
+    var src = files[0] || dirs[0];
+    var srcType = files[0] === src ? 'file' : 'dir';
+    var dstType;
+    var error;
+
+    // Check if dirname of the dst exists
+    fs.stat(path.dirname(dst), function (err) {
+        if (err) {
+            return next(err);
+        }
+
+        // Dst is a folder if:
+        //  - if exists and is a folder
+        //  - ends with /
+        fs.stat(dst, function (err, stat) {
+            if (stat) {
+                dstType = stat.isFile() ? 'file' : 'dir';
+            } else {
+                dstType = utils.string.endsWith(dst, '/') ? 'dir' : srcType;
+            }
+
+            // Check if copy is possible
+            if (srcType === 'dir' && dstType === 'file') {
+                error = new Error('ENODIR, not a directory: \'' + dst + '\'');
+                error.code = 'ENODIR';
+                return next(error);
+            }
+
+            // Folder to folder
+            if (srcType === 'dir' && dstType === 'dir') {
+                // When copying to a folder that already exists
+                // or ends with a /, the user is trying to copy the folder
+                // inside it
+                if (stat || utils.string.endsWith(dst, '/')) {
+                    dst = path.join(dst, path.basename(src));
+                }
+
+                mkdirp(dst, function (err) {
+                    if (err) {
+                        return err;
+                    }
+
+                    copyDir(src, dst, next);
+                });
+            // File to folder
+            } else if (srcType === 'file' && dstType === 'dir') {
+                // If copying file to dir, ensure that the dir is created
+                // and perform a file to file copy afterwards
+                if (!stat) {
+                    fs.mkdir(dst, function (err) {
+                        if (err) {
+                            return err;
+                        }
+
+                        dst = path.join(dst, path.basename(src));
+                        copyFile(src, dst, next);
+                    });
+                } else {
+                    dst = path.join(dst, path.basename(src));
+                    copyFile(src, dst, next);
+                }
+            // File to file is simple
+            } else {
+                copyFile(src, dst, next);
+            }
+        });
+    });
+}
+
+/**
+ * Processes a pattern match.
+ *
+ * @param {String}   pattern The pattern
+ * @param {Array}    files   The files
+ * @param {Array}    dirs    The directories
+ * @param {String}   dst     The destination
+ * @param {Function} next    The callback to call with the files and folders (follows node conventions)
+ */
+function processPatternMatch(pattern, files, dirs, dst, next) {
+    // TODO: avoid doing mkdirp for each file
+    async.forEachLimit(files, 30, function (file, next) {
+        var currDst = path.join(dst, relativePath(file, pattern));
+
+        mkdirp(path.dirname(currDst), function (err) {
+            if (err) {
+                return next(err);
+            }
+
+            copyFile(file, currDst, next);
+        });
+    }, function (err) {
+        if (err) {
+            throw err;
+        }
+
+        async.forEachLimit(dirs, 30, function (dir, next) {
+            var currDst = path.join(dst, relativePath(dir, pattern));
+
+            mkdirp(currDst, function (err) {
+                if (err) {
+                    return next(err);
+                }
+
+                copyDir(dir, currDst, next);
+            });
+        }, next);
+    });
+}
+
+/**
+ * Copies a file asynchronously.
+ *
+ * @param {String}   src  The source
+ * @param {String}   dst  The destination
+ * @param {Function} next The function to call when done (follows node conventions)
+ */
+function copyFile(src, dst, next) {
+    var stream = fs.createReadStream(src)
+        .pipe(fs.createWriteStream(dst))
+        .on('close', next)
+        .on('error', function (err) {
+            stream.removeAllListeners();
+            next(err);
+        });
+}
+
+function copyDir(src, dst, next) {
+    var stream = fstream.Reader({
+            path: src
+        }).pipe(
+            fstream.Writer({
+                type: 'Directory',
+                path: dst
+            })
+        );
+
+    stream
+        .on('close', next)
+        .on('error', function (err) {
+            stream.removeAllListeners();
+            next(err);
+        });
+}
+
+/**
+ * Expands the given minimatch pattern to an array of files and an array of dirs.
+ * The dirs are guaranteed to not overlap files.
+ *
+ * @param {String}   pattern The pattern
+ * @param {Object}   options The options to pass to the glob
+ * @param {Function} next    The callback to call with the files and folders (follows node conventions)
  */
 function expand(pattern, options, next) {
     var files = [];
@@ -160,7 +286,7 @@ function expand(pattern, options, next) {
 }
 
 /**
- * Takes an array of files and folders and removes overlapping ones.
+ * Takes an array of files and folders and takes care of overlapping.
  * See the expand function for more info.
  *
  * @param {Array} files The array of files
@@ -207,29 +333,6 @@ function relativePath(file, pattern) {
     }
 
     return path.basename(file);
-}
-
-/**
- * Copies src to dst asynchronously.
- *
- * @param {String}   src      The source
- * @param {String}   dst      The destination
- * @param {String}   type     The type of the source ('File' or 'Directory')
- * @param {Function} callback The function to call when done (follows node conventions)
- */
-function copy(src, dst, type, callback) {
-    var reader = fstream.Reader({
-        path: src,
-        follow: true
-    }).pipe(
-        fstream.Writer({
-            type: type,
-            path: dst
-        })
-    );
-
-    reader.on('end', callback);
-    reader.on('error', callback);
 }
 
 module.exports = task;
