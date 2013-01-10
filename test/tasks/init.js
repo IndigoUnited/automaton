@@ -11,6 +11,8 @@ module.exports = function (automaton) {
             var dir      = __dirname + '/../tmp/init/',
                 filename = 'autofile.js';
 
+            fs.mkdirSync(dir);
+
             automaton.run('init', {
                 dst: dir
             }, function (err) {
@@ -25,8 +27,11 @@ module.exports = function (automaton) {
         });
 
         it('should initialize an empty task - with specific autofile name', function (done) {
-            var dir      = __dirname + '/../tmp/init/',
-                file     = 'autofile_test.js';
+            var dir  = __dirname + '/../tmp/init/',
+                file = 'autofile_test.js';
+
+            // create dir
+            fs.mkdirSync(dir);
 
             automaton.run('init', {
                 name: file,
@@ -42,8 +47,8 @@ module.exports = function (automaton) {
         });
 
         it('should throw an error if the autofile already exists', function (done) {
-            var dir      = __dirname + '/../tmp/init/',
-                file     = 'autofile_exists.js';
+            var dir  = __dirname + '/../tmp/init/',
+                file = 'autofile_exists.js';
 
             // create dir
             fs.mkdirSync(dir);

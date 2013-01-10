@@ -33,6 +33,8 @@ module.exports = function (automaton) {
         });
 
         it('should copy file to folder', function (done) {
+            // test with a folder that exists
+            // and with a folder that do not exists
             var files         = {},
                 folder        = 'file_to_folder/',
                 folder_exists = 'file_to_folder_exists/';
@@ -86,12 +88,10 @@ module.exports = function (automaton) {
         it('should copy folder to folder - destination folder does not exist', function (done) {
             // test folder to folder/
             // test folder to folder where folder does not exist
-            //  - it should copy folder to folder
-            // test folder to folder where folder alredy exist
-            //  - it should copy folder to folder/folder
             var files  = {},
                 src    = 'src/',
                 dst    = 'dst/',
+                dst2   = 'dst2',
                 file   = 'file.js';
 
             // create dir
@@ -100,7 +100,7 @@ module.exports = function (automaton) {
             // create file
             fs.writeFileSync(target + src + file, 'dummy');
 
-            files[target + src + file] = target + dst;
+            files[target + src] = [target + dst, target + dst2];
 
             automaton.run('cp', {
                 files: files
@@ -109,16 +109,21 @@ module.exports = function (automaton) {
                     throw err;
                 }
 
-                expect(isFile(target + dst + file)).to.be(true);
+                expect(isDir(target + dst)).to.be(true);
+                expect(isDir(target + dst + src)).to.be(true);
+                expect(isFile(target + dst + src + file)).to.be(true);
+                expect(isDir(target + dst2)).to.be(true);
+                expect(isFile(target + dst2 + '/' + file)).to.be(true);
                 done();
             });
         });
 
         it('should copy folder to folder - destination folder already exist', function (done) {
+            // test folder to folder where folder already exists
             var files  = {},
                 src    = 'src/',
                 dst    = 'dst/',
-                folder = 'folder/',
+                folder = 'folder',
                 file   = 'file.js';
 
             // create dir
@@ -128,10 +133,9 @@ module.exports = function (automaton) {
             fs.mkdirSync(target + dst + folder);
 
             // create file
-            fs.writeFileSync(target + src + file, 'dummy');
+            fs.writeFileSync(target + src + folder + '/' + file, 'dummy');
 
-            files[target + src + file] = target + dst;
-            files[target + src + folder] = target + dst;
+            files[target + src + folder] = target + dst + folder;
 
             automaton.run('cp', {
                 files: files
@@ -140,8 +144,8 @@ module.exports = function (automaton) {
                     throw err;
                 }
 
-                expect(isFile(target + dst + file)).to.be(true);
-                expect(isDir(target + dst + folder + folder)).to.be(true);
+                expect(isDir(target + dst + folder + '/' + folder)).to.be(true);
+                expect(isFile(target + dst + folder + '/' + folder + '/' + file)).to.be(true);
                 done();
             });
         });
@@ -180,7 +184,7 @@ module.exports = function (automaton) {
         it('should copy files and folders recursivelly - source/**/*', function (done) {
             // test if files and folders are recursivelly copied with source/**/*
             var files  = {},
-                src    = '../cp_single_star/',
+                src    = '../cp_double_star/',
                 dst    = 'dst/',
                 folder = 'folder',
                 file   = 'file.js'
@@ -526,9 +530,9 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should pass over the glob options - should not copy the file', function (done) {
+        it('should pass over the glob options - should not copy the .file', function (done) {
             var files = {};
-            files[__dirname + '/../helpers/assets/*file'] = target;
+            files[__dirname + '/../helpers/assets/*'] = target;
 
             automaton.run('cp', {
                 files: files
@@ -544,7 +548,7 @@ module.exports = function (automaton) {
 
         it('should pass over the glob options - should copy the file', function (done) {
             var files = {};
-            files[__dirname + '/../helpers/assets/.file'] = target;
+            files[__dirname + '/../helpers/assets/*'] = target;
 
             automaton.run('cp', {
                 files: files,
