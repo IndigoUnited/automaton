@@ -199,6 +199,13 @@ function copyFile(src, dst, next) {
         });
 }
 
+/**
+ * Copies a directory asynchronously.
+ *
+ * @param {String}   src  The source
+ * @param {String}   dst  The destination
+ * @param {Function} next The function to call when done (follows node conventions)
+ */
 function copyDir(src, dst, next) {
     var stream = fstream.Reader({
             path: src
@@ -263,7 +270,7 @@ function expand(pattern, options, next) {
                     files.push(lastMatch);
                 } else if (!hasStar || hasGlobStar) {
                     lastMatch = match.replace(/[\/\\]+$/, '');
-                    dirs.push(path.normalize(lastMatch));
+                    dirs.push(lastMatch);
                 }
 
                 next();
