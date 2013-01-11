@@ -343,5 +343,3 @@ function relativePath(file, pattern) {
 }
 
 module.exports = task;
-module.exports.expand = expand;
-module.exports.relativePath = relativePath;
