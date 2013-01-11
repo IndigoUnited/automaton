@@ -1,13 +1,11 @@
-/*jshint regexp:false*/
-
 'use strict';
 
-var fs           = require('fs');
-var async        = require('async');
-var path         = require('path');
-var utils        = require('amd-utils');
-var expand       = require('./cp').expand;
-var relativePath = require('./cp').relativePath;
+var glob    = require('glob');
+var async   = require('async');
+var path    = require('path');
+var fs      = require('fs');
+var utils   = require('amd-utils');
+var mkdirp  = require('mkdirp');
 
 var task = {
     id          : 'mv',
@@ -16,84 +14,48 @@ var task = {
     description : 'Move a file or set of files.',
     options: {
         files: {
-            description: 'Which files to move. Accepts an object in which keys are the source files and values the destination. Source values support minimatch.'
+            description: 'Which files should be moved. Accepts an object in which keys are the source files and values the destination. Source values support minimatch.'
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
             'default': null
         }
     },
-    tasks      :
+    tasks:
     [
         {
             task: function (opt, ctx, next) {
-                // TODO: standardize behavior with unix mv
-                //       - If dst does not exist, give error
-                //       - Moving a directory into a file should give error
-                //       - Moving a directory/file, into another directory that exists
-                //         but does not end with a /, it should act like it did
-                //       - Moving a file into a file is obvious
                 opt.glob = opt.glob || {};
                 var sources = Object.keys(opt.files);
+                var error;
 
-                // Foreach source file..
+                // Cycle through each source
                 // Note that series is used to avoid conflicts between each pattern
                 async.forEachSeries(sources, function (pattern, next) {
                     var dsts = utils.lang.isArray(opt.files[pattern]) ? opt.files[pattern] : [opt.files[pattern]];
                     dsts = utils.array.unique(dsts.map(function (dst) { return path.normalize(dst); }));
-
-                    // If the user specified a /**/* pattern, optimize it
-                    if (!opt.glob || !opt.glob.noglobstar) {
-                        pattern = pattern.replace(/(\/\*\*\/\*)+$/g, '/*');
-                    }
+                    pattern = path.normalize(pattern);
 
                     // Expand the files to get an array of files and directories
-                    // The files do not overlap directories and directories do not overlay eachother
                     expand(pattern, opt.glob, function (err, files, dirs, directMatch) {
-                        // If the source pattern was a direct match
-                        // Move directly to the dests
-                        if (directMatch) {
-                            return async.forEach(dsts, function (dst, next) {
-                                var src = dirs[0] || files[0];
-                                // If the source is a directory
-                                // or a file which dst ends with /, concatenate the source basename.
-                                if (/[\/\\]$/.test(dst)) {
-                                    dst = path.join(dst, path.basename(src));
-                                }
-
-                                return fs.rename(src, dst, next);
-                            }, next);
+                        if (err) {
+                            return next(err);
                         }
 
-                        // Create a batch of files and folders
-                        var batch = [],
-                            cache;
+                        if (!files.length && !dirs.length) {
+                            error = new Error('ENOENT, no such file or directory \'' + pattern + '\'');
+                            error.code = 'ENOENT';
+                            return next(error);
+                        }
 
-                        batch.push.apply(batch, files);
-                        batch.push.apply(batch, dirs);
-
-                        // Analyze the structure of the source entries,
-                        // generating a cache of stat's
-                        cache = analyzeStructure(batch, pattern, null, function (err) {
-                            if (err) {
-                                return next(err);
+                        // Process the matches for each dst
+                        async.forEach(dsts, function (dst, next) {
+                            if (directMatch) {
+                                processDirectMatch(files, dirs, dst, next);
+                            } else {
+                                processPatternMatch(pattern, files, dirs, dst, next);
                             }
-
-                            // For each dst, replicate the structure before actually proceed to the rename
-                            async.forEach(dsts, function (dst, next) {
-                                replicateStructure(dst, cache, pattern, function (err) {
-                                    if (err) {
-                                        return next(err);
-                                    }
-
-                                    // Rename everything
-                                    async.forEach(batch, function (src, next) {
-                                        var finalDst = path.join(dst, relativePath(src, pattern));
-                                        fs.rename(src, finalDst, next);
-                                    }, next);
-                                });
-                            }, next);
-                        });
+                        }, next);
                     });
                 }, next);
             }
@@ -102,139 +64,242 @@ var task = {
 };
 
 /**
- * Analyzes the structure of an array of files,
- * generating a stat cache (mode only) for each subpath found.
+ * Processes a direct match.
  *
- * @param {Array}    files    The files
- * @param {String}   pattern  The original path used in glob
- * @param {Object}   [cache]  The cache to be used, will create one if not specified.
- * @param {Function} callback The function to call when done, following the node convetion
- *
- * @return {Object}  The cache object
+ * @param {Array}    files The files
+ * @param {Array}    dirs  The directories
+ * @param {String}   dst   The destination
+ * @param {Function} next  The callback to call with the files and folders (follows node conventions)
  */
-function analyzeStructure(files, pattern, cache, callback) {
-    cache = cache || {};
+function processDirectMatch(files, dirs, dst, next) {
+    var src = files[0] || dirs[0];
+    var srcType = files[0] === src ? 'file' : 'dir';
+    var dstType;
+    var error;
 
-    if (!files.length) {
-        return callback();
-    }
-
-    // Extract the base path
-    var currPath = files[0],
-        length = currPath.length,
-        basePath,
-        x,
-        remaining = [];
-
-
-    for (x = 0; x < length; ++x) {
-        if (currPath[x] !== pattern[x]) {
-            basePath = path.normalize(currPath.substr(0, x)).replace(/[\/\\]+$/, '');
-            break;
+    // Check if dirname of the dst exists
+    fs.stat(path.dirname(dst), function (err) {
+        if (err) {
+            return next(err);
         }
-    }
 
-    // Then, find paths that have not being stated yet
-    length = files.length;
-    for (x = 0; x < length; x++) {
-        currPath = files[x];
-
-        while ((currPath = path.dirname(currPath)) && currPath !== basePath) {
-            if (cache[currPath]) {
-                break;
+        // Dst is a folder if:
+        //  - if exists and is a folder
+        //  - ends with /
+        fs.stat(dst, function (err, stat) {
+            if (stat) {
+                dstType = stat.isFile() ? 'file' : 'dir';
             } else {
-                cache[currPath] = -1;
-                remaining.push(currPath);
+                dstType = utils.string.endsWith(dst, '/') ? 'dir' : srcType;
             }
-        }
+
+            // Check if move is possible
+            if (srcType === 'dir' && dstType === 'file') {
+                error = new Error('ENODIR, not a directory: \'' + dst + '\'');
+                error.code = 'ENODIR';
+                return next(error);
+            }
+
+            // Folder to folder
+            if (srcType === 'dir' && dstType === 'dir') {
+                // When moving to a folder that already exists
+                // or ends with a /, the user is trying to move the folder
+                // inside it
+                if (stat || utils.string.endsWith(dst, '/')) {
+                    dst = path.join(dst, path.basename(src));
+                }
+
+                mkdirp(dst, function (err) {
+                    if (err) {
+                        return err;
+                    }
+
+                    move(src, dst, next);
+                });
+            // File to folder
+            } else if (srcType === 'file' && dstType === 'dir') {
+                // If moving file to dir, ensure that the dir is created
+                // and perform a file to file move afterwards
+                if (!stat) {
+                    fs.mkdir(dst, function (err) {
+                        if (err) {
+                            return err;
+                        }
+
+                        dst = path.join(dst, path.basename(src));
+                        move(src, dst, next);
+                    });
+                } else {
+                    dst = path.join(dst, path.basename(src));
+                    move(src, dst, next);
+                }
+            // File to file is simple
+            } else {
+                move(src, dst, next);
+            }
+        });
+    });
+}
+
+/**
+ * Processes a pattern match.
+ *
+ * @param {String}   pattern The pattern
+ * @param {Array}    files   The files
+ * @param {Array}    dirs    The directories
+ * @param {String}   dst     The destination
+ * @param {Function} next    The callback to call with the files and folders (follows node conventions)
+ */
+function processPatternMatch(pattern, files, dirs, dst, next) {
+    files.push.apply(files, dirs);
+
+    async.forEachLimit(files, 30, function (file, next) {
+        var currDst = path.join(dst, relativePath(file, pattern));
+
+        mkdirp(path.dirname(currDst), function (err) {
+            if (err) {
+                return next(err);
+            }
+
+            move(file, currDst, next);
+        });
+    }, next);
+}
+
+/**
+ * Moves a file or directory.
+ *
+ * @param {String}   src  The source
+ * @param {String}   dst  The destination
+ * @param {Function} next The function to call when done (follows node conventions)
+ */
+function move(src, dst, next) {
+    fs.rename(src, dst, next);
+}
+
+/**
+ * Expands the given minimatch pattern to an array of files and an array of dirs.
+ * The dirs are guaranteed to not overlap files.
+ *
+ * @param {String}   pattern The pattern
+ * @param {Object}   options The options to pass to the glob
+ * @param {Function} next    The callback to call with the files and folders (follows node conventions)
+ */
+function expand(pattern, options, next) {
+    var files = [];
+    var dirs = [];
+    var lastMatch;
+
+    options = options || {};
+
+    // TODO: throw an error on commas
+
+    // If the user specified a /**/* pattern, optimize it
+    if (!options.glob || !options.glob.noglobstar) {
+        pattern = pattern.replace(/(\/\*\*\/\*)+$/g, '/*');
     }
 
-    // Finally, stat them and add them to the cache
-    async.forEachSeries(remaining, function (entry, next) {
-        var parts = entry.split(path.sep),
-            partsLength = parts.length,
-            i = 1;
+    // Mark option is bugged for single * patterns
+    // See: https://github.com/isaacs/node-glob/issues/50
+    // For now we stat ourselves
+    //options.mark = true;
+    glob(pattern, options, function (err, matches) {
+        if (err) {
+            return next(err);
+        }
 
-        async.until(function () { return i > partsLength; }, function (next) {
-            var curr = path.join.apply(path, parts.slice(0, i));
-            ++i;
-
-            if (cache[curr] !== -1) {
-                return next();
-            }
-
-            cache[curr] = true;
-            fs.stat(curr, function (err, stat) {
+        async.forEach(matches, function (match, next) {
+            fs.stat(match, function (err, stat) {
                 if (err) {
                     return next(err);
                 }
 
-                cache[curr] = stat.mode;
+                match = path.normalize(match);
+
+                if (stat.isFile()) {
+                    lastMatch = match;
+                    files.push(lastMatch);
+                } else {
+                    lastMatch = match.replace(/[\/\\]+$/, '');
+                    dirs.push(lastMatch);
+                }
+
                 next();
             });
-        }, next);
-    }, callback);
+        }, function (err) {
+            if (err) {
+                return next(err);
+            }
 
-    return cache;
+            // If we only got one match and it was the same as the original pattern,
+            // then it was a direct match
+            var directMatch = matches.length === 1 && lastMatch === path.normalize(pattern).replace(/[\/\\]+$/, '');
+            if (!directMatch) {
+                cleanup(files, dirs);
+            }
+
+            next(null, files, dirs, directMatch);
+        });
+    });
 }
 
 /**
- * Replicates the structure present in the cache into dst.
+ * Takes an array of files and folders and takes care of overlapping.
+ * See the expand function for more info.
  *
- * @param {String}   dst      The dst path
- * @param {String}   pattern  The original path used in glob
- * @param {Object}   cache    The cache.
- * @param {Function} callback The function to call when done, following the node convetion
+ * @param {Array} files The array of files
+ * @param {Array} dirs  The array of dirs
  */
-function replicateStructure(dst, pattern, cache, callback) {
-    var basePathPos = 0,
-        paths = Object.keys(cache),
-        currPath,
-        length,
+function cleanup(files, dirs) {
+    var x, y;
+
+    // Cleanup files that overlap dirs
+    dirs.forEach(function (dir) {
+        for (x = files.length - 1; x >= 0; --x) {
+            if (path.dirname(files[x]).indexOf(dir) === 0) {
+                files.splice(x, 1);
+            }
+        }
+    });
+
+    // Cleanup dirs that overlap eachother
+    for (x = 0; x < dirs.length; ++x) {
+        for (y = x + 1; y < dirs.length; ++y) {
+            if (dirs[y].indexOf(dirs[x]) === 0) {
+                dirs.splice(y, 1);
+                --x;
+                --y;
+            }
+        }
+    }
+}
+
+/**
+ * Gets the relative path of a file relative to the pattern.
+ * For instance:
+ *   file = /a/b.js
+ *   pattern = /a/*
+ *
+ * Should return b.js
+ *
+ * @param {String} file    The file
+ * @param {String} pattern The pattern
+ *
+ * @return {String} The relative path
+ */
+function relativePath(file, pattern) {
+    var length = file.length,
         x;
 
-    if (!paths.length) {
-        return callback();
-    }
-
-    // Find the base path pos
     pattern = path.normalize(pattern);
-    currPath = paths[0];
-    length = currPath.length;
+
     for (x = 0; x < length; ++x) {
-        if (currPath[x] !== pattern[x]) {
-            basePathPos = x;
-            break;
+        if (file[x] !== pattern[x]) {
+            return file.substr(x);
         }
     }
 
-    // Order the paths from small to large
-    paths.sort(sortFunc);
-
-    // For each path in the cache, create the correspondent directory
-    // in the dst, respecting the mode stored in the cache
-    length = paths.length;
-    async.forEachSeries(paths, function (currPath, next) {
-        var dstPath = path.join(dst, currPath.substr(basePathPos));
-        fs.mkdir(dstPath, cache[currPath], next);
-    }, callback);
-}
-
-/**
- * Sort function used in the replicate structure.
- */
-function sortFunc(first, second) {
-    var firstLength = first.length;
-    var secondLength = second.length;
-
-    if (firstLength > secondLength) {
-        return 1;
-    }
-    if (firstLength < secondLength) {
-        return -1;
-    }
-
-    return 0;
+    return path.basename(file);
 }
 
 module.exports = task;
