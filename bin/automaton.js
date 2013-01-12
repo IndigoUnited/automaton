@@ -110,9 +110,6 @@ if (notifier.update) {
     notifier.notify();
 }
 
-// NOTE: at this point, avoid doing process.exit() unless there is really an error
-//       this is because we must let the update notifier run until the end
-
 // if help was requested, just show the usage
 if (argv.help || argv.h) {
     var taskId = (argv.help === true ? false : argv.help) || (argv.h === true ? false : argv.h),
