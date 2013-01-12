@@ -73,7 +73,7 @@ var automaton;
 try {
     automaton = new Automaton(options);
 } catch (e) {
-    automaton.getLogger().errorln(e.message);
+    console.error(e.message.automaton_error);
     process.exit(1);
 }
 
@@ -85,7 +85,7 @@ if (taskDir) {
         try {
             automaton.loadTasks(taskDir);
         } catch (e) {
-            automaton.getLogger().errorln(e.message);
+            console.error(e.message.automaton_error);
             process.exit(1);
         }
     }
@@ -132,7 +132,7 @@ if (argv.help || argv.h) {
             showTaskUsage(task);
         // unknown task requested
         } catch (err) {
-            console.error(('Could not find any task or autofile "' + taskId + '"\n').error);
+            console.error(('Could not find any task or autofile "' + taskId + '"').automaton_error);
         }
     // no task was specified, show overall usage
     } else {
@@ -158,7 +158,7 @@ else if (argv._.length) {
             try {
                 task = automaton.getTask(taskId);
             } catch (err) {
-                console.error(('Could not find any task or autofile "' + taskId + '"\n').error);
+                console.error(('Could not find any task or autofile "' + taskId + '"').automaton_error);
                 process.exit(1);
             }
         }
@@ -273,7 +273,7 @@ function showTaskUsage(task) {
     if (task.description) {
         console.log('\n  ' + task.description.green);
     }
-    
+
     console.log('\n  Usage: ' + argv.$0.cyan, task.id, '[--option1 value1 --option2 value2]'.grey);
     console.log('\n  Options:\n');
 
@@ -308,7 +308,7 @@ function initTask(taskId) {
         'name': taskId
     }, function (err) {
         if (err) {
-            console.error(('Unable to create task\n').error);
+            console.error('Unable to create task'.automaton_error);
             process.exit(1);
         }
 
