@@ -37,6 +37,8 @@ var task = {
                 var placeholders = !utils.lang.isArray(opt.placeholders) ? [opt.placeholders] : opt.placeholders;
                 var data = {};
 
+                opt.glob.mark = true;
+
                 placeholders.forEach(function (placeholder) {
                     data[placeholder] = '';
                 });
@@ -49,29 +51,20 @@ var task = {
                             return next(err);
                         }
 
-                        // For each match in the glob result,
+                        var files = matches.filter(function (match) {
+                            return !utils.string.endsWith(match, '/');
+                        });
+
+                        // For each file in the glob result,
                         // perform the interpolation
-                        async.forEach(matches, function (file, next) {
-                            // Check if is an actual file
-                            // We couldn't use mark option because is bugged
-                            // See: https://github.com/isaacs/node-glob/issues/50
-                            fs.stat(file, function (err, stat) {
+                        async.forEach(files, function (file, next) {
+                            fs.readFile(file, function (err, contents) {
                                 if (err) {
                                     return next(err);
                                 }
 
-                                if (!stat.isFile()) {
-                                    return next();
-                                }
-
-                                fs.readFile(file, function (err, contents) {
-                                    if (err) {
-                                        return next(err);
-                                    }
-
-                                    contents = interp(contents.toString(), data, { trim: opt.trim });
-                                    fs.writeFile(file, contents, next);
-                                });
+                                contents = interp(contents.toString(), data, { trim: opt.trim });
+                                fs.writeFile(file, contents, next);
                             });
                         }, next);
                     });

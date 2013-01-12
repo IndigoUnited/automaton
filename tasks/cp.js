@@ -248,47 +248,33 @@ function expand(pattern, options, next) {
         hasGlobStar = pattern.indexOf('**') !== -1;
     }
 
-    // Mark option is bugged for single * patterns
-    // See: https://github.com/isaacs/node-glob/issues/50
-    // For now we stat ourselves
-    //options.mark = true;
+    // Expand with glob
+    options.mark = true;
     glob(pattern, options, function (err, matches) {
         if (err) {
             return next(err);
         }
 
-        async.forEach(matches, function (match, next) {
-            fs.stat(match, function (err, stat) {
-                if (err) {
-                    return next(err);
-                }
+        matches.forEach(function (match) {
+            var isFile = !utils.string.endsWith(match, '/');
 
-                match = path.normalize(match);
-
-                if (stat.isFile()) {
-                    lastMatch = match;
-                    files.push(lastMatch);
-                } else if (!hasStar || hasGlobStar) {
-                    lastMatch = match.replace(/[\/\\]+$/, '');
-                    dirs.push(lastMatch);
-                }
-
-                next();
-            });
-        }, function (err) {
-            if (err) {
-                return next(err);
+            if (isFile) {
+                lastMatch = match;
+                files.push(lastMatch);
+            } else if (!hasStar || hasGlobStar) {
+                lastMatch = match.replace(/[\/\\]+$/, '');
+                dirs.push(lastMatch);
             }
-
-            // If we only got one match and it was the same as the original pattern,
-            // then it was a direct match
-            var directMatch = matches.length === 1 && lastMatch === path.normalize(pattern).replace(/[\/\\]+$/, '');
-            if (!directMatch) {
-                cleanup(files, dirs);
-            }
-
-            next(null, files, dirs, directMatch);
         });
+
+        // If we only got one match and it was the same as the original pattern,
+        // then it was a direct match
+        var directMatch = matches.length === 1 && lastMatch === path.normalize(pattern).replace(/[\/\\]+$/, '');
+        if (!directMatch) {
+            cleanup(files, dirs);
+        }
+
+        next(null, files, dirs, directMatch);
     });
 }
 
