@@ -2,7 +2,7 @@
 
 var fs    = require('fs');
 var path  = require('path');
-var utils = require('amd-utils');
+var utils = require('mout');
 
 var task = {
     id          : 'init',

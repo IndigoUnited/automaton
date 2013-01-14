@@ -1,7 +1,7 @@
 'use strict';
 
 var d       = require('dejavu'),
-    utils   = require('amd-utils'),
+    utils   = require('mout'),
     fs      = require('fs'),
     async   = require('async'),
     path    = require('path'),
@@ -290,7 +290,7 @@ var Automaton = d.Class.declare({
         return {
             task: task.task,
             description: task.description,
-            options: task.options ? utils.lang.clone(task.options) : {},
+            options: task.options ? utils.lang.deepClone(task.options) : {},
             parentOptions: parentTaskDef.options || {},
             depth: parentTaskDef.depth + 1,
             context: parentTaskDef.context

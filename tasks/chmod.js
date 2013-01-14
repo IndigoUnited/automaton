@@ -1,7 +1,7 @@
 'use strict';
 
 var fs    = require('fs');
-var utils = require('amd-utils');
+var utils = require('mout');
 var async = require('async');
 var glob  = require('glob');
 

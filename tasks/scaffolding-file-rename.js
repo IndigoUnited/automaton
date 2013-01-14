@@ -3,7 +3,7 @@
 var fs     = require('fs'),
     glob   = require('glob'),
     async  = require('async'),
-    utils  = require('amd-utils'),
+    utils  = require('mout'),
     path   = require('path'),
     interp = require('../lib/string/interpolate')
 ;

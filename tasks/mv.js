@@ -4,7 +4,7 @@ var glob    = require('glob');
 var async   = require('async');
 var path    = require('path');
 var fs      = require('fs');
-var utils   = require('amd-utils');
+var utils   = require('mout');
 var mkdirp  = require('mkdirp');
 
 var task = {

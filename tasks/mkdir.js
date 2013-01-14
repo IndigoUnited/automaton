@@ -3,7 +3,7 @@
 var mkdirp = require('mkdirp');
 var fs     = require('fs');
 var path   = require('path');
-var utils  = require('amd-utils');
+var utils  = require('mout');
 var async  = require('async');
 
 var task = {

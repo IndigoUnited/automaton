@@ -2,7 +2,7 @@
 
 var Automaton    = require('../index'),
     removeColors = require('../lib/Logger').removeColors,
-    utils        = require('amd-utils'),
+    utils        = require('mout'),
     expect       = require('expect.js'),
     Stream       = require('stream')
 ;

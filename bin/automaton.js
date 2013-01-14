@@ -2,7 +2,7 @@
 
 'use strict';
 
-var utils          = require('amd-utils'),
+var utils          = require('mout'),
     fs             = require('fs'),
     path           = require('path'),
     argv           = require('optimist').argv,

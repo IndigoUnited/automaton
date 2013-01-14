@@ -4,7 +4,7 @@ var fs     = require('fs'),
     interp = require('../lib/string/interpolate'),
     glob   = require('glob'),
     async  = require('async'),
-    utils  = require('amd-utils')
+    utils  = require('mout')
 ;
 
 var task = {
