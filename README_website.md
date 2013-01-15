@@ -1,6 +1,8 @@
 Automaton
 ----------
 
+Task automation tool built in JavaScript.
+
 ## Why?
 
 You often find yourself needing to do some repetitive operation, and this is usually the time to quickly bake some ad-hoc script. Still, from project to project you find yourself needing to reuse some task you had already previously created.
