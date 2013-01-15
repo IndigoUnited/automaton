@@ -67,6 +67,7 @@ if (!window.siteVersion) {
     }
 
     function addBlock(els) {
+        console.log(els);
         els = $(els);
 
         var title = getBlockTitle(els),
@@ -123,6 +124,7 @@ if (!window.siteVersion) {
         for (x = 0; x < length; x += 1) {
             curr = children.get(x);
             tag = curr.tagName.toLowerCase();
+            console.log(tag);
             if ((tag === 'h1' || tag === 'h2'/* || tag === 'h3'*/) && els.length) {
                 addBlock(els);
                 els = [];
@@ -131,6 +133,7 @@ if (!window.siteVersion) {
             els.push(curr);
         }
 
+        console.log('everything', els);
         if (els.length) {
             addBlock(els);
         }

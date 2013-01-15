@@ -17,4 +17,4 @@ Grunt must be installed.
 - Run `grunt build`
 
 # Deploy #
-Copy `img`, `dist`, `tmpl`, `index.html`, `.htaccess`, `.favicon` to the web root folder.
+Copy `img`, `dist`, `tmpl`, `index.html`, `.htaccess`, `favicon.ico` to the web root folder.
