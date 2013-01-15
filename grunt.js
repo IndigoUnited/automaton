@@ -11,7 +11,7 @@ module.exports = function (grunt) {
     // Download README task
     grunt.registerTask('getreadme', 'Downloads the automaton README.md', function () {
         var file = fs.createWriteStream('automaton_readme.md');
-        var fileUrl = 'https://raw.github.com/IndigoUnited/automaton/master/README.md';
+        var fileUrl = 'https://raw.github.com/IndigoUnited/automaton/master/README_website.md';
         var taskDone = this.async();
         var options = {
             host: url.parse(fileUrl).host,

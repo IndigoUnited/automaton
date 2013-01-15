@@ -1,7 +1,4 @@
 <h2>Automaton</h2>
-<p>Task automation tool built in JavaScript.
-
-</p>
 <h2>Why?</h2>
 <p>You often find yourself needing to do some repetitive operation, and this is usually the time to quickly bake some ad-hoc script. Still, from project to project you find yourself needing to reuse some task you had already previously created.
 
@@ -304,7 +301,7 @@ var myTask = require(&#39;my_autofile&#39;);
 // Instead, you can load the task using loadTask(), and then simply
 // pass its id (a string), as the first argument of run. You can find an
 // example of this below, in the Logging section.
-automaton.run(myTask, { &#39;some_option&#39;: &#39;that is handy&#39; }, function (err) {
+automaton.run(myTask, { &#39;some_opt&#39;: &#39;that is handy&#39; }, function (err) {
     if (err) {
         console.log(&#39;Something went wrong: &#39; + err.message);
     } else {
