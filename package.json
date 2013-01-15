@@ -1,7 +1,7 @@
 {
   "name": "automaton",
   "version": "0.0.0",
-  "siteVersion": 25,
+  "siteVersion": 27,
   "devDependencies": {
     "marked": "~0.2.5",
     "grunt-contrib-requirejs": "~0.3.3",

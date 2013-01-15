@@ -67,7 +67,6 @@ if (!window.siteVersion) {
     }
 
     function addBlock(els) {
-        console.log(els);
         els = $(els);
 
         var title = getBlockTitle(els),
@@ -77,11 +76,22 @@ if (!window.siteVersion) {
 
         aEl.get(0).innerHTML = titleEl.get(0).innerHTML;
         titleEl.empty().append(aEl);
-
-        if (leftColumnEl.height() < rightColumnEl.height()) {
-            leftColumnEl.append(parseBlock(els));
-        } else {
-            rightColumnEl.append(parseBlock(els));
+        switch (title) {
+        case 'Automaton':
+        case 'Why?':
+        case 'Built-in tasks':
+        case 'Installing':
+            leftColumnEl.append(els);
+            break;
+        case 'Creating a task':
+            rightColumnEl.append(els);
+            break;
+        default:
+            if (leftColumnEl.height() < rightColumnEl.height()) {
+                leftColumnEl.append(parseBlock(els));
+            } else {
+                rightColumnEl.append(parseBlock(els));
+            }
         }
 
         // Finally add smooth scroll (for the headers)
@@ -112,8 +122,6 @@ if (!window.siteVersion) {
             tag,
             curr;
 
-        el.find('h1').eq(0).remove();          // Remove the first header
-        el.find('p').eq(0).remove();           // Remove first paragraph
         el.find('hr').remove();                // Remove all hr's
         el.find('a').attr('target', '_blank'); // All links should open a new window
 
@@ -124,7 +132,6 @@ if (!window.siteVersion) {
         for (x = 0; x < length; x += 1) {
             curr = children.get(x);
             tag = curr.tagName.toLowerCase();
-            console.log(tag);
             if ((tag === 'h1' || tag === 'h2'/* || tag === 'h3'*/) && els.length) {
                 addBlock(els);
                 els = [];
@@ -133,7 +140,6 @@ if (!window.siteVersion) {
             els.push(curr);
         }
 
-        console.log('everything', els);
         if (els.length) {
             addBlock(els);
         }
