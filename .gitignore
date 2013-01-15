@@ -55,5 +55,4 @@ npm-debug.*
 
 # Project specific #
 ######################
-components
-vendor
+automaton_readme.md
