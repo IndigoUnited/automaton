@@ -1,4 +1,4 @@
-var siteVersion = 22;
+var siteVersion = 24;
 
 /*jshint regexp:false*/
 /*global Documentation*/

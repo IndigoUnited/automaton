@@ -357,6 +357,7 @@ Should be noted that this tool was inspired by already existing tools, and you s
 
 To these guys, a big thanks for their work.
 
+Also, big thanks to [Ricardo Pereira](http://designer-freelancer.com/), for his awesome work with the mascot.
 
 ## Contributing
 

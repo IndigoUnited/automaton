@@ -2,6 +2,8 @@ Automaton website
 
 ---
 
+Grunt must be installed.
+
 # Development #
 - Run `npm install`
 - Run `grunt run`
