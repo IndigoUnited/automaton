@@ -301,7 +301,7 @@ var myTask = require('my_autofile');
 // Instead, you can load the task using loadTask(), and then simply
 // pass its id (a string), as the first argument of run. You can find an
 // example of this below, in the Logging section.
-automaton.run(myTask, { 'some_option': 'that is handy' }, function (err) {
+automaton.run(myTask, { 'some_opt': 'that is handy' }, function (err) {
     if (err) {
         console.log('Something went wrong: ' + err.message);
     } else {
