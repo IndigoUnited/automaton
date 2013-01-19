@@ -237,7 +237,7 @@ function expand(pattern, options, next) {
     var dirs = [];
     var hasGlobStar = false;
     var hasStar = pattern.indexOf('*') !== -1;
-    var lastMatch;
+    var lastMatch = '';
 
     options = options || {};
 
@@ -269,7 +269,12 @@ function expand(pattern, options, next) {
 
         // If we only got one match and it was the same as the original pattern,
         // then it was a direct match
-        var directMatch = matches.length === 1 && lastMatch === path.normalize(pattern).replace(/[\/\\]+$/, '');
+        // If we only got one match and it was the same as the original pattern,
+        // then it was a direct match
+        pattern = path.normalize(pattern).replace(/[\/\\]+$/, '');
+        lastMatch = path.normalize(lastMatch).replace(/[\/\\]+$/, '');
+
+        var directMatch = matches.length === 1 && lastMatch === pattern;
         if (!directMatch) {
             cleanup(files, dirs);
         }

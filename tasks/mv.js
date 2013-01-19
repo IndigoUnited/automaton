@@ -188,7 +188,7 @@ function move(src, dst, next) {
 function expand(pattern, options, next) {
     var files = [];
     var dirs = [];
-    var lastMatch;
+    var lastMatch = '';
 
     options = options || {};
 
@@ -220,7 +220,10 @@ function expand(pattern, options, next) {
 
         // If we only got one match and it was the same as the original pattern,
         // then it was a direct match
-        var directMatch = matches.length === 1 && lastMatch === path.normalize(pattern).replace(/[\/\\]+$/, '');
+        pattern = path.normalize(pattern).replace(/[\/\\]+$/, '');
+        lastMatch = path.normalize(lastMatch).replace(/[\/\\]+$/, '');
+
+        var directMatch = matches.length === 1 && lastMatch === pattern;
         if (!directMatch) {
             cleanup(files, dirs);
         }
@@ -279,7 +282,7 @@ function relativePath(file, pattern) {
 
     pattern = path.normalize(pattern);
     file = path.normalize(file);
-    
+
     for (x = 0; x < length; ++x) {
         if (file[x] !== pattern[x]) {
             return file.substr(x);
