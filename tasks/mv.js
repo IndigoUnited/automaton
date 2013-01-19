@@ -278,7 +278,8 @@ function relativePath(file, pattern) {
         x;
 
     pattern = path.normalize(pattern);
-
+    file = path.normalize(file);
+    
     for (x = 0; x < length; ++x) {
         if (file[x] !== pattern[x]) {
             return file.substr(x);
