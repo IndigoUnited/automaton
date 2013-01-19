@@ -90,6 +90,14 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/description/);
 
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    description: function () {},
+                    tasks: []
+                });
+            }).to.throwException(/description/);
+
             expect(function () { // test valid case
                 automaton.addTask({
                     id: 'foo',
@@ -98,10 +106,10 @@ module.exports = function (automaton) {
                 });
             }).to.not.throwException();
 
-            expect(function () { // test valid case
+            expect(function () {
                 automaton.addTask({
                     id: 'foo',
-                    description: function () { return 'Some Task'; },
+                    description: null,
                     tasks: []
                 });
             }).to.not.throwException();
@@ -259,6 +267,18 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/description/);
 
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            description: function () {}
+                        }
+                    ]
+                });
+            }).to.throwException(/description/);
+
             expect(function () { // test valid case
                 automaton.addTask({
                     id: 'foo',
@@ -266,6 +286,18 @@ module.exports = function (automaton) {
                         {
                             task: 'cp',
                             description: 'copy something'
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            description: null
                         }
                     ]
                 });
