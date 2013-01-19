@@ -383,10 +383,16 @@ var Automaton = d.Class.declare({
 
         // try out to extract the description, falling back to the name
         desc = def.description !== undefined ? def.description : def.task.description || def.task.name;
+
+        // if desc is null, simply do not report it
+        if (desc === null) {
+            return;
+        }
+
         if (!desc) {
             // if is a pure function that has no description, then simply do not report
             if (isPureFunction) {
-                return this;
+                return;
             }
             // otherwise assume '??'
             desc = '??';

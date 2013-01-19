@@ -2,6 +2,7 @@
 
 module.exports = {
     id: 'callback',
+    description: 'Callback task',
     options: {
         filterCallback: {
             'default': function () {}

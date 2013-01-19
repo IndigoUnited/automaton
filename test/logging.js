@@ -46,6 +46,68 @@ module.exports = function (automaton) {
                     description: 'Level 1 task',
                     tasks: [
                         {
+                            task: {
+                                description: 'This should not appear',
+                                tasks: [
+                                    {
+                                        task: 'callback',
+                                        description: null
+                                    },
+                                    {
+                                        task: function (opt, ctx, next) {
+                                            ctx.log.infoln('Level 3 task info');
+                                            ctx.log.warnln('Level 3 task warn');
+                                            ctx.log.successln('Level 3 task success');
+                                            ctx.log.errorln('Level 3 task error');
+                                            next();
+                                        },
+                                        description: 'Level 3 task'
+                                    }
+                                ]
+                            },
+                            description: null
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    log = removeColors(log);
+                    expect(log).to.equal(
+                        arrow('Level 1 task', 1) +
+                        indent('Level 1 task info\n', 1) +
+                        indent('Level 1 task warn\n', 1) +
+                        indent('Level 1 task success\n', 1) +
+                        indent('Level 1 task error\n', 1) +
+                        arrow('Level 3 task', 3) +
+                        indent('Level 3 task info\n', 3) +
+                        indent('Level 3 task warn\n', 3) +
+                        indent('Level 3 task success\n', 3) +
+                        indent('Level 3 task error\n', 3)
+                    );
+
+                    done();
+                })
+                .on('data', function (data) { log += data; });
+        });
+
+
+        it('should not report task descriptions if they are null', function (done) {
+            var log = '';
+
+            automaton
+                .run({
+                    filter: function (opt, ctx, next) {
+                        ctx.log.infoln('Level 1 task info');
+                        ctx.log.warnln('Level 1 task warn');
+                        ctx.log.successln('Level 1 task success');
+                        ctx.log.errorln('Level 1 task error');
+                        next();
+                    },
+                    description: 'Level 1 task',
+                    tasks: [
+                        {
                             task: function (opt, ctx, next) {
                                 next();
                             },

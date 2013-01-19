@@ -1,6 +1,6 @@
 {
   "name": "automaton",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Task automation tool",
   "main": "index.js",
   "scripts": {
