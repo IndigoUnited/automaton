@@ -91,7 +91,7 @@ function processDirectMatch(files, dirs, dst, next) {
             if (stat) {
                 dstType = stat.isFile() ? 'file' : 'dir';
             } else {
-                dstType = utils.string.endsWith(dst, '/') ? 'dir' : srcType;
+                dstType = /[\/\\]$/.test(dst) ? 'dir' : srcType;
             }
 
             // Check if copy is possible
@@ -106,7 +106,7 @@ function processDirectMatch(files, dirs, dst, next) {
                 // When copying to a folder that already exists
                 // or ends with a /, the user is trying to copy the folder
                 // inside it
-                if (stat || utils.string.endsWith(dst, '/')) {
+                if (stat || /[\/\\]$/.test(dst)) {
                     dst = path.join(dst, path.basename(src));
                 }
 
@@ -208,7 +208,8 @@ function copyFile(src, dst, next) {
  */
 function copyDir(src, dst, next) {
     var stream = fstream.Reader({
-            path: src
+            path: src,
+            follow: true
         }).pipe(
             fstream.Writer({
                 type: 'Directory',
@@ -256,7 +257,7 @@ function expand(pattern, options, next) {
         }
 
         matches.forEach(function (match) {
-            var isFile = !utils.string.endsWith(match, '/');
+            var isFile = !/[\/\\]$/.test(match);
 
             if (isFile) {
                 lastMatch = match;

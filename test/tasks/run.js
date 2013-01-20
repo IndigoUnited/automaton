@@ -1,13 +1,14 @@
 'use strict';
 
 var expect = require('expect.js'),
+    path   = require('path'),
     isDir  = require('../helpers/util/is-dir')
 ;
 
 module.exports = function (automaton) {
     describe('run', function () {
         it('should run command', function (done) {
-            var dir = __dirname + '/../tmp/run';
+            var dir = path.normalize(__dirname + '/../tmp/run');
 
             automaton.run('run', {
                 cmd: 'mkdir ' + dir

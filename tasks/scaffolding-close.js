@@ -52,7 +52,7 @@ var task = {
                         }
 
                         var files = matches.filter(function (match) {
-                            return !utils.string.endsWith(match, '/');
+                            return !/[\/\\]$/.test(match);
                         });
 
                         // For each file in the glob result,
