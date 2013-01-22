@@ -192,6 +192,25 @@ a:hover {
     margin: auto;
 }
 
+#header .social {
+    position: absolute;
+    right: 30px;
+    bottom: 40px;
+    background: #FBE170;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+#header .social .facebook {
+    margin-left: 5px;
+}
+
+#header .social .facebook,
+#header .social .twitter,
+#header .social iframe {
+    float: left;
+}
+
 #content-wrapper {
     background-image: url('../img/pattern.png');
     background-repeat: repeat;
