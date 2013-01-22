@@ -231,7 +231,7 @@ table {
 pre code {
   display: block; padding: 0.5em;
   color: #DCCF8F;
-  background: url(./pojoaque.jpg?v=31) repeat scroll left top #181914;
+  background: url(./pojoaque.jpg?v=32) repeat scroll left top #181914;
 }
 pre .comment,
 pre .template_comment,
@@ -387,10 +387,11 @@ a:hover {
 #header-wrapper {
     width: 100%;
     background-color: #f9c000;
+    position: relative;
 }
 #arrows {
     height: 15px;
-    background-image: url('../img/triangle.png?v=31');
+    background-image: url('../img/triangle.png?v=32');
     background-repeat: repeat-x;
     position: absolute;
     left: 0;
@@ -407,7 +408,7 @@ a:hover {
     width: 710px;
 }
 #header .indigo {
-    background-image: url('../img/indigo_logo.png?v=31');
+    background-image: url('../img/indigo_logo.png?v=32');
     width: 145px;
     height: 50px;
     position: absolute;
@@ -431,31 +432,32 @@ a:hover {
     bottom: 0;
 }
 #header .logo {
-    background-image: url('../img/stamp.png?v=31');
+    background-image: url('../img/stamp.png?v=32');
     width: 278px;
     height: 277px;
     position: relative;
     top: 20px;
     margin: auto;
 }
-#header .social {
+#header-wrapper .social {
     position: absolute;
     right: 30px;
     bottom: 40px;
     background: #FBE170;
     border-radius: 5px;
     padding: 5px;
+    height: 20px;
 }
-#header .social .facebook {
+#header-wrapper .social .facebook {
     margin-left: 5px;
 }
-#header .social .facebook,
-#header .social .twitter,
-#header .social iframe {
+#header-wrapper .social .facebook,
+#header-wrapper .social .twitter,
+#header-wrapper .social iframe {
     float: left;
 }
 #content-wrapper {
-    background-image: url('../img/pattern.png?v=31');
+    background-image: url('../img/pattern.png?v=32');
     background-repeat: repeat;
     min-height: 1500px;
     overflow: hidden;
@@ -467,7 +469,7 @@ a:hover {
     margin-top: 30px;
 }
 #content.loading {
-    background: url('../img/loaders/loader_square.gif?v=31') center 100px no-repeat;
+    background: url('../img/loaders/loader_square.gif?v=32') center 100px no-repeat;
 }
 .phone #content {
     width: 710px;

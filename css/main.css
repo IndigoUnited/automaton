@@ -132,6 +132,7 @@ a:hover {
 #header-wrapper {
     width: 100%;
     background-color: #f9c000;
+    position: relative;
 }
 
 #arrows {
@@ -192,22 +193,23 @@ a:hover {
     margin: auto;
 }
 
-#header .social {
+#header-wrapper .social {
     position: absolute;
     right: 30px;
     bottom: 40px;
     background: #FBE170;
     border-radius: 5px;
     padding: 5px;
+    height: 20px;
 }
 
-#header .social .facebook {
+#header-wrapper .social .facebook {
     margin-left: 5px;
 }
 
-#header .social .facebook,
-#header .social .twitter,
-#header .social iframe {
+#header-wrapper .social .facebook,
+#header-wrapper .social .twitter,
+#header-wrapper .social iframe {
     float: left;
 }
 
