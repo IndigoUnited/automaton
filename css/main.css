@@ -195,11 +195,21 @@ a:hover {
 
 #header .social {
     position: absolute;
-    right: 0px;
+    right: 0;
     bottom: 40px;
     background: #FBE170;
     border-radius: 5px;
     padding: 5px;
+    height: 20px;
+    width: 221px;
+}
+
+#header .social .facebook,
+#header .social .twitter,
+#header .social iframe,
+#header .social .fb-like,
+#header .social .fb-like span {
+    float: left;
     height: 20px;
 }
 
@@ -207,10 +217,8 @@ a:hover {
     margin-left: 5px;
 }
 
-#header .social .facebook,
-#header .social .twitter,
-#header .social iframe {
-    float: left;
+#header .social .twitter iframe {
+    width: 141px !important;
 }
 
 #content-wrapper {
