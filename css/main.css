@@ -201,7 +201,7 @@ a:hover {
     border-radius: 5px;
     padding: 5px;
     height: 20px;
-    width: 221px;
+    /*width: 221px;*/
 }
 
 #header .social .facebook,
