@@ -193,9 +193,9 @@ a:hover {
     margin: auto;
 }
 
-#header-wrapper .social {
+#header .social {
     position: absolute;
-    right: 30px;
+    right: 0px;
     bottom: 40px;
     background: #FBE170;
     border-radius: 5px;
@@ -203,13 +203,13 @@ a:hover {
     height: 20px;
 }
 
-#header-wrapper .social .facebook {
+#header .social .facebook {
     margin-left: 5px;
 }
 
-#header-wrapper .social .facebook,
-#header-wrapper .social .twitter,
-#header-wrapper .social iframe {
+#header .social .facebook,
+#header .social .twitter,
+#header .social iframe {
     float: left;
 }
 
