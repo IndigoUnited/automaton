@@ -1,12 +1,13 @@
 'use strict';
 
-var d       = require('dejavu'),
-    utils   = require('mout'),
-    fs      = require('fs'),
-    async   = require('async'),
-    path    = require('path'),
-    inter   = require('./lib/string/cast-interpolate'),
-    Logger  = require('./lib/Logger')
+var d        = require('dejavu'),
+    utils    = require('mout'),
+    fs       = require('fs'),
+    async    = require('async'),
+    path     = require('path'),
+    promptly = require('promptly'),
+    inter    = require('./lib/string/cast-interpolate'),
+    Logger   = require('./lib/Logger')
 ;
 
 var Automaton = d.Class.declare({
@@ -167,6 +168,7 @@ var Automaton = d.Class.declare({
         // setup an unique context for the task
         context = {};
         context.log = new Logger(this._options);
+        context.prompt = promptly;
         stream = context.log.getStream();
 
         // catch any error while getting the batch

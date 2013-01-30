@@ -5,6 +5,7 @@ var Automaton = require('../index'),
     rimraf    = require('rimraf'),
     core      = require('./core'),
     logging   = require('./logging'),
+    prompting = require('./prompt'),
     tasks     = require('./tasks'),
     cli       = require('./cli'),
     automaton;
@@ -37,6 +38,7 @@ describe('Automaton', function () {
 
     core(automaton);
     logging(automaton);
+    prompting(automaton);
     tasks(automaton);
     cli(automaton);
 

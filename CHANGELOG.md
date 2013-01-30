@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3 - 2013-01-28
+
+- Lock `glob` version temporarly due to a bug
+
 ## 0.1.2 - 2013-01-20
 
 - More windows fixes, all tests now pass
