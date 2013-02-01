@@ -147,6 +147,9 @@ var task = {
         // subtasks.
         run_all: {
             'default': false
+        },
+        debug: {
+            'default': true
         }
     },
 
@@ -165,6 +168,10 @@ var task = {
         },
         {
             task: 'mkdir',
+            description: 'Creating other folder',
+            options: {
+                dirs: ['{{dir1}}/{{dir2}}/{{dir3}}']
+            },
             // This 'on' attributes allows you to
             // enable/disable a subtask just by setting it
             // to a falsy value.
@@ -173,10 +180,12 @@ var task = {
             // on the run_all option. Of course, you have
             // just setted it to something like `false`.
             on: '{{run_all}}',
-            description: 'Creating other folder',
-            options: {
-                dirs: ['{{dir1}}/{{dir2}}/{{dir3}}']
-            }
+            // This 'fatal' attribute allows to bypass tasks that fail.
+            // In this case, we even used a placeholder,
+            // allowing us to skip this subtask depending
+            // on the run_all option. Of course, you have
+            // just setted it to something like `false`.
+            fatal: '{{debug}}'
         },
         {
             // If you find yourself looking
@@ -204,8 +213,14 @@ var task = {
             },
             // The 'on' attribute can also be a function
             // for more complex cases.
-            on: function (opt) {
+            on: function (opt, ctx) {
                 return !!opt.run_all;
+            },
+            // The 'fatal' attribute can also be a function
+            // for more complex cases.
+            fatal: function (err, opt, ctx) {
+                // 'err' is an instance of Error
+                return err.code !== 'ENOENT';
             }
         }
     ]
