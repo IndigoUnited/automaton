@@ -324,7 +324,7 @@ var Automaton = d.Class.declare({
                 if (utils.lang.isFunction(def.fatal)) {
                     fatal = def.fatal(err, def.parentOptions, def.context);
                 } else if (utils.lang.isString(def.fatal)) {
-                    fatal = !!this._replacePlaceholders(def.fatal, def.options, { purge: true });
+                    fatal = this._replacePlaceholders(def.fatal, def.parentOptions, { purge: true });
                 } else {
                     fatal = def.fatal;
                 }
@@ -354,11 +354,11 @@ var Automaton = d.Class.declare({
     _isTaskEnabled: function (def) {
         if (def.hasOwnProperty('on')) {
             if (utils.lang.isString(def.on)) {
-                return !!this._replacePlaceholders(def.on, def.parentOptions, { purge: true });
+                return this._replacePlaceholders(def.on, def.parentOptions, { purge: true });
             } else if (utils.lang.isFunction(def.on)) {
-                return !!def.on(def.options, def.context);
+                return def.on(def.options, def.context);
             } else {
-                return !!def.on;
+                return def.on;
             }
         }
 

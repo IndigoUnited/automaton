@@ -1064,13 +1064,17 @@ module.exports = function (automaton) {
                             ok = true;
                             next();
                         }
+                    },
+                    {
+                        task: 'failing-task',
+                        fatal: '{{bar}}',
+                        options: {
+                            message: 'third'
+                        }
                     }
                 ]
-            }, null, function (err) {
-                if (err) {
-                    throw err;
-                }
-
+            }, { bar: true }, function (err) {
+                expect(err).to.be.ok();
                 expect(ok).to.be.ok();
                 done();
             });
