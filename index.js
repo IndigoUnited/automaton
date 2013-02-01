@@ -233,13 +233,15 @@ var Automaton = d.Class.declare({
             next(this._validateTaskOptions(def.task, def.options));
         }.$bind(this);
         filter = function (next) {
+            next = this._wrapTaskNextFunc(next, def);
+
             // replace options & report task
             this._replaceOptions(def.options, def.parentOptions, { skipUnescape : true });
             this._reportNextTask(def);
 
             // if there is an actual filter, run it and call the after filter
             if (def.task.filter) {
-                async.waterfall([
+                async.series([
                     def.task.filter.$bind(def.context, def.options, def.context),
                     afterFilter
                 ], next);
@@ -252,27 +254,32 @@ var Automaton = d.Class.declare({
 
         // batch each task
         def.task.tasks.forEach(function (subtask) {
-            var subtaskBatch;
+            var subtaskDef = this._createTaskDefinition(subtask, def),
+                subtaskBatch;
 
             // if it's a function, just add it to the batch
             if (utils.lang.isFunction(subtask.task)) {
                 batch.push(function (next) {
+                    next = this._wrapTaskNextFunc(next, subtaskDef);
+
                     // skip task if disabled
-                    if (!this._isTaskEnabled(subtask, def.options)) {
+                    if (!this._isTaskEnabled(subtaskDef)) {
                         return next();
                     }
-                    this._reportNextTask(this._createTaskDefinition(subtask, def));
+                    this._reportNextTask(subtaskDef);
                     subtask.task.call(def.context, def.options, def.context, next);
                 }.$bind(this));
             // it's not a function, then it must be another task
             } else {
-                subtaskBatch = this._batchTask(this._createTaskDefinition(subtask, def));
+                subtaskBatch = this._batchTask(subtaskDef);
                 batch.push(function (next) {
+                    next = this._wrapTaskNextFunc(next, subtaskDef);
+
                     // skip task if disabled
-                    if (!this._isTaskEnabled(subtask, def.options)) {
+                    if (!this._isTaskEnabled(subtaskDef)) {
                         return next();
                     }
-                    async.waterfall(subtaskBatch, next);
+                    async.series(subtaskBatch, next);
                 }.$bind(this));
             }
         }, this);
@@ -289,14 +296,49 @@ var Automaton = d.Class.declare({
      * @return {Object} The task definition
      */
     _createTaskDefinition: function (task, parentTaskDef) {
-        return {
-            task: task.task,
-            description: task.description,
-            options: task.options ? utils.lang.deepClone(task.options) : {},
-            parentOptions: parentTaskDef.options || {},
-            depth: parentTaskDef.depth + 1,
-            context: parentTaskDef.context
-        };
+        var def = utils.object.mixIn({}, task);
+
+        def.options = def.options ? utils.lang.deepClone(def.options) : {};
+        def.parentOptions = parentTaskDef.options || {},
+        def.depth = parentTaskDef.depth + 1,
+        def.context = parentTaskDef.context;
+
+        return def;
+    },
+
+    /**
+     * Wraps next function (callback) of a task.
+     * This is needed to make fatal to work properly.
+     *
+     * @param {Function} next The next function
+     * @param {Object}   def  The task definition
+     *
+     * @return {Function} The wrapped function
+     */
+    _wrapTaskNextFunc: function (next, def) {
+        return function (err) {
+            var fatal,
+                name;
+
+            if (err && def.hasOwnProperty('fatal')) {
+                if (utils.lang.isFunction(def.fatal)) {
+                    fatal = def.fatal(err, def.parentOptions, def.context);
+                } else if (utils.lang.isString(def.fatal)) {
+                    fatal = !!this._replacePlaceholders(def.fatal, def.options, { purge: true });
+                } else {
+                    fatal = def.fatal;
+                }
+
+                if (!fatal) {
+                    name = def.task.id || def.task.name || 'unknown';
+                    def.context.log.warnln('Task "' + name + '" silently failed.');
+
+                    return next();
+                }
+            }
+
+            next(err);
+        }.$bind(this);
     },
 
     /**
@@ -305,19 +347,18 @@ var Automaton = d.Class.declare({
      *
      * Detects if a task is missing required options.
      *
-     * @param {Object} task    The task definition
-     * @param {Object} options The task options
+     * @param {Object} def The task definition
      *
      * @return {Boolean} True if enabled, false otherwise
      */
-    _isTaskEnabled: function (task, options) {
-        if (task.hasOwnProperty('on')) {
-            if (utils.lang.isString(task.on)) {
-                return !!this._replacePlaceholders(task.on, options, { purge: true });
-            } else if (utils.lang.isFunction(task.on)) {
-                return !!task.on(options);
+    _isTaskEnabled: function (def) {
+        if (def.hasOwnProperty('on')) {
+            if (utils.lang.isString(def.on)) {
+                return !!this._replacePlaceholders(def.on, def.parentOptions, { purge: true });
+            } else if (utils.lang.isFunction(def.on)) {
+                return !!def.on(def.options, def.context);
             } else {
-                return !!task.on;
+                return !!def.on;
             }
         }
 
