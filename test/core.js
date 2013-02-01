@@ -3,7 +3,7 @@
 var expect       = require('expect.js'),
     fs           = require('fs'),
     isDir        = require('./helpers/util/is-dir'),
-    callback     = require('./helpers/tasks/callback'),
+    callbackTask = require('./helpers/tasks/callback'),
     removeColors = require('../lib/Logger').removeColors
 ;
 
@@ -355,7 +355,7 @@ module.exports = function (automaton) {
                     }
                 ]
             }, null, function (err) {
-                automaton.addTask(callback);
+                automaton.addTask(callbackTask);
 
                 if (err) {
                     throw err;
@@ -380,7 +380,6 @@ module.exports = function (automaton) {
                     }
 
                     expect(called === 1).to.equal(true);
-
                     done();
                 });
             });
@@ -396,14 +395,13 @@ module.exports = function (automaton) {
                     }
                 ]
             }, null, function (err) {
-                automaton.addTask(callback);
+                automaton.addTask(callbackTask);
 
                 if (!err) {
                     throw new Error('Callback task was not deleted');
                 }
 
                 expect(err.message).to.match(/task handler suitable/);
-
                 done();
             });
         });
@@ -774,7 +772,12 @@ module.exports = function (automaton) {
                     },
                     {
                         task: 'callback',
-                        on: function () { return false; },
+                        on: function (opts, ctx) {
+                            expect(opts).to.be.an('object');
+                            expect(ctx).to.be.an('object');
+
+                            return false;
+                        },
                         options: {
                             callback: function () {
                                 stack.push(2);
@@ -1010,34 +1013,56 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should offer a logging interface for tasks to report', function (done) {
-            var assert = function (ctx) {
-                expect(ctx.log).to.be.ok();
-                expect(ctx.log.info).to.be.a('function');
-                expect(ctx.log.infoln).to.be.a('function');
-                expect(ctx.log.warn).to.be.a('function');
-                expect(ctx.log.warnln).to.be.a('function');
-                expect(ctx.log.error).to.be.a('function');
-                expect(ctx.log.errorln).to.be.a('function');
-                expect(ctx.log.success).to.be.a('function');
-                expect(ctx.log.successln).to.be.a('function');
-            };
+        it('should bypass tasks that fail if fatal is falsy', function (done) {
+            var ok = false;
 
             automaton.run({
-                filter: function (opt, ctx, next) {
-                    assert(this);
-                    next();
-                },
                 tasks: [
                     {
-                        task: 'callback',
+                        task: 'failing-task',
+                        fatal: false,
                         options: {
-                            filterCallback: function () {
-                                assert(this);
-                            },
-                            callback: function () {
-                                assert(this);
-                            }
+                            message: 'first'
+                        }
+                    },
+                    {
+                        task: 'callback',
+                        fatal: false,
+                        options: {
+                            filter: true,
+                            message: 'second'
+                        }
+                    },
+                    {
+                        task: 'failing-task',
+                        fatal: '{{foo}}',
+                        options: {
+                            message: 'third'
+                        }
+                    },
+                    {
+                        task: 'callback',
+                        fatal: function (err, opts, ctx) {
+                            expect(err).to.be.an(Error);
+                            expect(opts).to.be.an('object');
+                            expect(ctx).to.be.an('object');
+
+                            return false;
+                        },
+                        options: {
+                            message: 'forth'
+                        }
+                    },
+                    {
+                        task: function (opts, ctx, next) {
+                            next(new Error('bleh'));
+                        },
+                        fatal: false
+                    },
+                    {
+                        task: function (opts, ctx, next) {
+                            ok = true;
+                            next();
                         }
                     }
                 ]
@@ -1046,7 +1071,68 @@ module.exports = function (automaton) {
                     throw err;
                 }
 
+                expect(ok).to.be.ok();
                 done();
+            });
+        });
+
+        describe('context', function () {
+            it('should offer a logging interface for tasks to report', function (done) {
+                var assert = function (ctx) {
+                    expect(ctx.log).to.be.ok();
+                    expect(ctx.log.info).to.be.a('function');
+                    expect(ctx.log.infoln).to.be.a('function');
+                    expect(ctx.log.warn).to.be.a('function');
+                    expect(ctx.log.warnln).to.be.a('function');
+                    expect(ctx.log.error).to.be.a('function');
+                    expect(ctx.log.errorln).to.be.a('function');
+                    expect(ctx.log.success).to.be.a('function');
+                    expect(ctx.log.successln).to.be.a('function');
+                };
+
+                automaton.run({
+                    filter: function (opt, ctx, next) {
+                        assert(this);
+                        next();
+                    },
+                    tasks: [
+                        {
+                            task: 'callback',
+                            options: {
+                                filterCallback: function () {
+                                    assert(this);
+                                },
+                                callback: function () {
+                                    assert(this);
+                                }
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    done();
+                });
+            });
+
+            it('should provide a prompt interface', function () {
+                automaton
+                    .run({
+                        tasks: [
+                            {
+                                task: function (opts, ctx, next) {
+                                    expect(ctx.prompt).to.be.an('object');
+                                    expect(ctx.prompt.prompt).to.be.a('function');
+                                    expect(ctx.prompt.choose).to.be.a('function');
+                                    expect(ctx.prompt.password).to.be.a('function');
+                                    expect(ctx.prompt.confirm).to.be.a('function');
+                                    next();
+                                }
+                            }
+                        ]
+                    });
             });
         });
     });

@@ -1,22 +1,7 @@
 'use strict';
 
-var expect = require('expect.js');
-
-module.exports = function (automaton) {
+module.exports = function () {
     describe('Prompt', function () {
-        it('should provide an object attached to the context', function () {
-            automaton
-                .run({
-                    tasks: [
-                        {
-                            task: function (opts, ctx, next) {
-                                expect(ctx.prompt).to.be.an('object');
-                                expect(ctx.prompt.prompt).to.be.a('function');
-                                next();
-                            }
-                        }
-                    ]
-                });
-        });
+        // There is no need to test it for now since promptly already have tests
     });
 };
