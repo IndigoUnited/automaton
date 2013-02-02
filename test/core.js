@@ -930,6 +930,7 @@ module.exports = function (automaton) {
                                 '{{opt1}}': '{{opt4}}',
                                 '{{opt2}}': '{{opt1}}-{{opt2}}'
                             },
+                            deep: '{{opt4.foo}}',
                             callback: function (opt) {
                                 expect(opt.foo).to.be.equal('x-y');
                                 expect(opt.bar === true).to.be.equal(true);
@@ -937,6 +938,7 @@ module.exports = function (automaton) {
                                 expect(opt.arr[0].foo === someObj.foo).to.be.equal(true);
                                 expect(opt.obj.x.foo === someObj.foo).to.be.equal(true);
                                 expect(opt.obj.y).to.be.equal('x-y');
+                                expect(opt.deep).to.be.equal('bar');
                             }
                         }
                     },
@@ -954,6 +956,7 @@ module.exports = function (automaton) {
                                             '{{opt1}}': '{{opt4}}',
                                             '{{opt2}}': '{{opt1}}-{{opt2}}'
                                         },
+                                        deep: '{{opt4.foo}}',
                                         callback: function (opt) {
                                             expect(opt.foo).to.be.equal('x-y');
                                             expect(opt.bar === true).to.be.equal(true);
@@ -961,6 +964,7 @@ module.exports = function (automaton) {
                                             expect(opt.arr[0].foo === someObj.foo).to.be.equal(true);
                                             expect(opt.obj.x.foo === someObj.foo).to.be.equal(true);
                                             expect(opt.obj.y).to.be.equal('x-y');
+                                            expect(opt.deep).to.be.equal('bar');
                                         }
                                     }
                                 }
@@ -978,7 +982,7 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should replace placeholders in task options (with not operator) ', function (done) {
+        it('should replace placeholders in task options (with dot/not operator) ', function (done) {
             automaton.run({
                 tasks: [
                     {
@@ -992,6 +996,10 @@ module.exports = function (automaton) {
                             opt6: '{{truthy}}{{foo}}',  // should not replace on this one
                             opt7: '{{!!!!truthy}}',
                             opt8: '{{!!!!truthy!!}}',
+                            opt9: '{{!obj.foo}}',
+                            opt10: '{{!!obj.foo}}',
+                            opt11: '{{!!!!obj.foo}}',
+                            opt12: '{{!!obj.foo!!}}',  // should not replace on this one
                             callback: function (opt) {
                                 expect(opt.opt1).to.be.equal(true);
                                 expect(opt.opt2).to.be.equal(false);
@@ -1001,11 +1009,15 @@ module.exports = function (automaton) {
                                 expect(opt.opt6).to.be.equal('truebar');
                                 expect(opt.opt7).to.be.equal(true);
                                 expect(opt.opt8).to.be.equal('{{!!!!truthy!!}}');
+                                expect(opt.opt9).to.be.equal(false);
+                                expect(opt.opt10).to.be.equal(true);
+                                expect(opt.opt11).to.be.equal(true);
+                                expect(opt.opt12).to.be.equal('{{!!obj.foo!!}}');
                             }
                         }
                     }
                 ]
-            }, { truthy: true, foo: 'bar' }, function (err) {
+            }, { truthy: true, foo: 'bar', obj: { foo: 'bar' } }, function (err) {
                 if (err) {
                     throw err;
                 }
