@@ -990,6 +990,8 @@ module.exports = function (automaton) {
                             opt4: '{{!foo}}',
                             opt5: '{{!!foo}}',
                             opt6: '{{truthy}}{{foo}}',  // should not replace on this one
+                            opt7: '{{!!!!truthy}}',
+                            opt8: '{{!!!!truthy!!}}',
                             callback: function (opt) {
                                 expect(opt.opt1).to.be.equal(true);
                                 expect(opt.opt2).to.be.equal(false);
@@ -997,6 +999,8 @@ module.exports = function (automaton) {
                                 expect(opt.opt4).to.be.equal(false);
                                 expect(opt.opt5).to.be.equal(true);
                                 expect(opt.opt6).to.be.equal('truebar');
+                                expect(opt.opt7).to.be.equal(true);
+                                expect(opt.opt8).to.be.equal('{{!!!!truthy!!}}');
                             }
                         }
                     }
