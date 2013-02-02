@@ -2,6 +2,7 @@
 
 var Automaton    = require('../index'),
     removeColors = require('../lib/Logger').removeColors,
+    callbackTask = require('./helpers/tasks/callback'),
     utils        = require('mout'),
     expect       = require('expect.js'),
     Stream       = require('stream')
@@ -645,6 +646,78 @@ module.exports = function (automaton) {
                         indent('foo\n', 2) +
                         indent('foo', 2) +
                         indent('foo\n', 2)
+                    );
+
+                    done();
+                })
+                .on('data', function (data) { log += data; });
+        });
+
+        it('should not log muted tasks', function (done) {
+            var log = '',
+                automaton = new Automaton({ color: false });
+
+            automaton
+                .run({
+                    tasks: [
+                        {
+                            task: function (opt, ctx, next) {
+                                ctx.log.infoln('1');
+                                next();
+                            },
+                            mute: false
+                        },
+                        {
+                            task: function (opt, ctx, next) {
+                                ctx.log.infoln('2');
+                                next();
+                            },
+                            mute: true
+                        },
+                        {
+                            task: callbackTask,
+                            options: {
+                                callback: function (opt, ctx) {
+                                    ctx.log.infoln('3');
+                                }
+                            },
+                            mute: true
+                        },
+                        {
+                            task: {
+                                tasks: [
+                                    {
+                                        task: callbackTask,
+                                        options: {
+                                            callback: function (opt, ctx) {
+                                                ctx.log.infoln('4');
+                                            }
+                                        }
+                                    },
+                                    {
+                                        task: callbackTask,
+                                        options: {
+                                            callback: function (opt, ctx) {
+                                                ctx.log.infoln('4');
+                                            }
+                                        },
+                                        mute: false
+                                    }
+                                ]
+                            },
+                            mute: true
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(log).to.equal(
+                        arrow('??', 1) +
+                        indent('1\n', 2) +
+                        arrow('Callback task', 2) +
+                        arrow('??', 2)
                     );
 
                     done();

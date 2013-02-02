@@ -15,13 +15,13 @@ module.exports = {
         }
     },
     filter: function (opt, ctx, next) {
-        opt.filterCallback.call(this, opt);
+        opt.filterCallback.call(this, opt, ctx);
         next();
     },
     tasks: [
         {
             task: function (opt, ctx, next) {
-                opt.callback.call(this, opt);
+                opt.callback.call(this, opt, ctx);
                 next();
             }
         }
