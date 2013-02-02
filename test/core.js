@@ -243,6 +243,20 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/options/);
 
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: {
+                                tasks: []
+                            },
+                            options: 1
+                        }
+                    ]
+                });
+            }).to.throwException(/options/);
+
             expect(function () { // test valid case
                 automaton.addTask({
                     id: 'foo',
@@ -273,6 +287,21 @@ module.exports = function (automaton) {
                     tasks: [
                         {
                             task: 'cp',
+                            description: function () {}
+                        }
+                    ]
+                });
+            }).to.throwException(/description/);
+
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: {
+                                tasks: []
+                            },
                             description: function () {}
                         }
                     ]
@@ -332,7 +361,6 @@ module.exports = function (automaton) {
                 expect(err).to.be.ok();
                 expect(err.message).to.match(/tasks/);
             });
-
         });
 
         it('should add tasks by id', function (done) {

@@ -544,16 +544,14 @@ var Automaton = d.Class.declare({
             this._assertIsObject(curr, 'Expected subtask at index \'' + x + '\' to be an object', true);
             if (utils.lang.isObject(curr.task)) {
                 this._validateTask(curr.task);
-            } else {
-                if (!utils.lang.isString(curr.task) && !utils.lang.isFunction(curr.task)) {
-                    this._throwError('Expected subtask at index \'' + x + '\' to be a string, a function or a task object in \'' + taskId + '\' task', true);
-                }
-                if (curr.description !== undefined && !utils.lang.isString(curr.description) && curr.description !== null) {
-                    this._throwError('Expected subtask description at index \'' + x + '\' to be a string or null in \'' + taskId + '\' task', true);
-                }
-                if (curr.options !== undefined) {
-                    this._assertIsObject(curr.options, 'Expected subtask options at index \'' + x + '\' to be an object in \'' + taskId + '\' task', true);
-                }
+            } else if (!utils.lang.isString(curr.task) && !utils.lang.isFunction(curr.task)) {
+                this._throwError('Expected subtask at index \'' + x + '\' to be a string, a function or a task object in \'' + taskId + '\' task', true);
+            }
+            if (curr.description !== undefined && !utils.lang.isString(curr.description) && curr.description !== null) {
+                this._throwError('Expected subtask description at index \'' + x + '\' to be a string or null in \'' + taskId + '\' task', true);
+            }
+            if (curr.options !== undefined) {
+                this._assertIsObject(curr.options, 'Expected subtask options at index \'' + x + '\' to be an object in \'' + taskId + '\' task', true);
             }
         }
     },
