@@ -194,7 +194,7 @@ var task = {
             // calls made inside this task as well its subtasks.
             // In this case, we used `false` but it could have been
             // a placeholder.
-            mute: '{{debug}}'
+            mute: false
         },
         {
             // If you find yourself looking
