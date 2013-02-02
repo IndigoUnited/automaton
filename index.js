@@ -238,7 +238,7 @@ var Automaton = d.Class.declare({
 
             // replace options & report task
             this._replaceOptions(def.options, def.parentOptions, { skipUnescape : true });
-            this._reportNextTask(def);
+            this._onBeforeTask(def);
 
             // if there is an actual filter, run it and call the after filter
             if (def.task.filter) {
@@ -267,7 +267,7 @@ var Automaton = d.Class.declare({
                     if (!this._isTaskEnabled(subtaskDef)) {
                         return next();
                     }
-                    this._reportNextTask(subtaskDef);
+                    this._onBeforeTask(subtaskDef);
                     subtask.task.call(def.context, def.options, def.context, next);
                 }.$bind(this));
             // it's not a function, then it must be another task
@@ -299,15 +299,62 @@ var Automaton = d.Class.declare({
     _createTaskDefinition: function (task, parentTaskDef) {
         var def = utils.object.mixIn({}, task);
         def.options = def.options ? utils.lang.deepClone(def.options) : {};
+        def.depth = 1;
+        def.muteDepth = def.mute ? 1 : 0;
 
         if (parentTaskDef) {
-            def.parentOptions = parentTaskDef.options || {};
+            def.parentOptions = parentTaskDef.options;
             def.context = parentTaskDef.context;
-            def.depth = (parentTaskDef.depth || 0) + 1;
-            def.muteDepth = (parentTaskDef.muteDepth || 0) + (def.mute ? 1 : 0);
+            def.depth += parentTaskDef.depth;
+            if (parentTaskDef.muteDepth) {
+                def.muteDepth = parentTaskDef.muteDepth + 1;
+            }
         }
 
         return def;
+    },
+
+    /**
+     * Function to run before each task.
+     * Reports the task that will run and sets up the logger.
+     *
+     * @param {Object} task The task definition
+     */
+    _onBeforeTask: function (def) {
+        var desc,
+            logger = def.context.log,
+            isPureFunction = utils.lang.isFunction(def.task);
+
+        // try out to extract the description, falling back to the name
+        desc = def.description !== undefined ? def.description : def.task.description || def.task.name;
+
+        // if desc is null, simply do not report it
+        if (desc !== null) {
+            if (!desc) {
+                // if is a pure function that has no description, then simply do not report
+                if (isPureFunction) {
+                    desc = null;
+                } else {
+                    // otherwise assume '??'
+                    desc = '??';
+                }
+            }
+        }
+
+        // set the logger depth
+        logger.setDepth(def.depth);
+
+        // log task that will run
+        if (desc != null && def.muteDepth <= 1) {
+            logger.infoln(('> ' + desc).cyan);
+        }
+
+        // mute or unmute the logger according to the mute depth
+        if (def.muteDepth) {
+            logger.mute();
+        } else {
+            logger.unmute();
+        }
     },
 
     /**
@@ -324,6 +371,7 @@ var Automaton = d.Class.declare({
             var fatal,
                 name;
 
+            // handle the fatal
             if (err && def.hasOwnProperty('fatal')) {
                 if (utils.lang.isFunction(def.fatal)) {
                     fatal = def.fatal(err, def.parentOptions, def.context);
@@ -335,11 +383,13 @@ var Automaton = d.Class.declare({
 
                 if (!fatal) {
                     name = def.task.id || def.task.name || 'unknown';
-                    def.context.log.warnln('Task "' + name + '" silently failed.');
-
-                    return next();
+                    def.context.log.debugln('Task "' + name + '" silently failed: ' + err.message);
+                    err = null;
                 }
             }
+
+            // unmute the logger
+            def.context.log.unmute();
 
             next(err);
         }.$bind(this);
@@ -414,38 +464,6 @@ var Automaton = d.Class.declare({
      */
     _replacePlaceholders: function (str, values, $options) {
         return inter(str, values, $options);
-    },
-
-    /**
-     * Report the next task that will run.
-     *
-     * @param {Object} task The task definition
-     */
-    _reportNextTask: function (def) {
-        var desc,
-            logger = def.context.log,
-            isPureFunction = utils.lang.isFunction(def.task);
-
-        logger.setDepth(def.depth);
-
-        // try out to extract the description, falling back to the name
-        desc = def.description !== undefined ? def.description : def.task.description || def.task.name;
-
-        // if desc is null, simply do not report it
-        if (desc === null) {
-            return;
-        }
-
-        if (!desc) {
-            // if is a pure function that has no description, then simply do not report
-            if (isPureFunction) {
-                return;
-            }
-            // otherwise assume '??'
-            desc = '??';
-        }
-
-        logger.infoln(('> ' + desc).cyan);
     },
 
     /**
