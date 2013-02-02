@@ -908,7 +908,7 @@ module.exports = function (automaton) {
         });
 
         // test options replacement
-        it('should replaced placeholders in task options', function (done) {
+        it('should replace placeholders in task options', function (done) {
             var someObj = { foo: 'bar' };
             var opts = {
                 opt1: 'x',
@@ -970,6 +970,38 @@ module.exports = function (automaton) {
                     }
                 ]
             }, opts, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                done();
+            });
+        });
+
+        it('should replace placeholders in task options (with not operator) ', function (done) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            opt1: '{{truthy}}',
+                            opt2: '{{!truthy}}',
+                            opt3: '{{!!truthy}}',
+                            opt4: '{{!foo}}',
+                            opt5: '{{!!foo}}',
+                            opt6: '{{truthy}}{{foo}}',  // should not replace on this one
+                            callback: function (opt) {
+                                expect(opt.opt1).to.be.equal(true);
+                                expect(opt.opt2).to.be.equal(false);
+                                expect(opt.opt3).to.be.equal(true);
+                                expect(opt.opt4).to.be.equal(false);
+                                expect(opt.opt5).to.be.equal(true);
+                                expect(opt.opt6).to.be.equal('truebar');
+                            }
+                        }
+                    }
+                ]
+            }, { truthy: true, foo: 'bar' }, function (err) {
                 if (err) {
                     throw err;
                 }
