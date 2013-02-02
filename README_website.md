@@ -183,9 +183,14 @@ var task = {
             // This 'fatal' attribute allows to bypass tasks that fail.
             // In this case, we even used a placeholder,
             // allowing us to skip this subtask depending
-            // on the run_all option. Of course, you have
+            // on the debug option. Of course, you have
             // just setted it to something like `false`.
-            fatal: '{{debug}}'
+            fatal: '{{debug}}',
+            // This 'mute' attribute allows you to completly mute log
+            // calls made inside this task as well its subtasks.
+            // In this case, we used `false` but it could have been
+            // a placeholder.
+            mute: '{{debug}}'
         },
         {
             // If you find yourself looking
@@ -221,6 +226,11 @@ var task = {
             fatal: function (err, opt, ctx) {
                 // 'err' is an instance of Error
                 return err.code !== 'ENOENT';
+            },
+            // The 'mute' attribute can also be a function
+            // for more complex cases.
+            mute: function (opt, ctx) {
+                return !opt.debug;
             }
         }
     ]
