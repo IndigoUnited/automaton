@@ -879,7 +879,7 @@ module.exports = function (automaton) {
 
         // test options replacement
         it('should replaced placeholders in task options', function (done) {
-            var someObj = {};
+            var someObj = { foo: 'bar' };
             var opts = {
                 opt1: 'x',
                 opt2: 'y',
@@ -903,12 +903,40 @@ module.exports = function (automaton) {
                             callback: function (opt) {
                                 expect(opt.foo).to.be.equal('x-y');
                                 expect(opt.bar === true).to.be.equal(true);
-                                expect(opt.baz === someObj).to.be.equal(true);
-                                expect(opt.arr[0] === someObj).to.be.equal(true);
-                                expect(opt.obj.x === someObj).to.be.equal(true);
+                                expect(opt.baz.foo === someObj.foo).to.be.equal(true);
+                                expect(opt.arr[0].foo === someObj.foo).to.be.equal(true);
+                                expect(opt.obj.x.foo === someObj.foo).to.be.equal(true);
                                 expect(opt.obj.y).to.be.equal('x-y');
                             }
                         }
+                    },
+                    {
+                        task: {
+                            tasks: [
+                                {
+                                    task: 'callback',
+                                    options: {
+                                        foo: '{{opt1}}-{{opt2}}',
+                                        bar: '{{opt3}}',
+                                        baz: '{{opt4}}',
+                                        arr: ['{{opt4}}', 'foo'],
+                                        obj: {
+                                            '{{opt1}}': '{{opt4}}',
+                                            '{{opt2}}': '{{opt1}}-{{opt2}}'
+                                        },
+                                        callback: function (opt) {
+                                            expect(opt.foo).to.be.equal('x-y');
+                                            expect(opt.bar === true).to.be.equal(true);
+                                            expect(opt.baz.foo === someObj.foo).to.be.equal(true);
+                                            expect(opt.arr[0].foo === someObj.foo).to.be.equal(true);
+                                            expect(opt.obj.x.foo === someObj.foo).to.be.equal(true);
+                                            expect(opt.obj.y).to.be.equal('x-y');
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        options: opts
                     }
                 ]
             }, opts, function (err) {

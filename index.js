@@ -174,12 +174,13 @@ var Automaton = d.Class.declare({
         // catch any error while getting the batch
         // and report it with node style callback
         try {
-            batch  = this._batchTask({
+            batch  = this._batchTask(this._createTaskDefinition({
                 task: task,
                 options: $options || {},
+                context: context,
                 depth: 1,
-                context: context
-            });
+                muteDepth: 0
+            }));
         } catch (e) {
             setTimeout(function () {
                 handle(e);
@@ -297,11 +298,14 @@ var Automaton = d.Class.declare({
      */
     _createTaskDefinition: function (task, parentTaskDef) {
         var def = utils.object.mixIn({}, task);
-
         def.options = def.options ? utils.lang.deepClone(def.options) : {};
-        def.parentOptions = parentTaskDef.options || {},
-        def.depth = parentTaskDef.depth + 1,
-        def.context = parentTaskDef.context;
+
+        if (parentTaskDef) {
+            def.parentOptions = parentTaskDef.options || {};
+            def.context = parentTaskDef.context;
+            def.depth = (parentTaskDef.depth || 0) + 1;
+            def.muteDepth = (parentTaskDef.muteDepth || 0) + (def.mute ? 1 : 0);
+        }
 
         return def;
     },
