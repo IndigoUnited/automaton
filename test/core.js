@@ -775,6 +775,8 @@ module.exports = function (automaton) {
                         on: function (opts, ctx) {
                             expect(opts).to.be.an('object');
                             expect(ctx).to.be.an('object');
+                            expect(ctx.log).to.be.an('object');
+                            expect(ctx).to.equal(this);
 
                             return false;
                         },
@@ -1074,6 +1076,8 @@ module.exports = function (automaton) {
                             expect(err).to.be.an(Error);
                             expect(opts).to.be.an('object');
                             expect(ctx).to.be.an('object');
+                            expect(ctx.log).to.be.an('object');
+                            expect(ctx).to.equal(this);
 
                             return false;
                         },

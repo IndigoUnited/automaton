@@ -176,10 +176,8 @@ var Automaton = d.Class.declare({
         try {
             batch  = this._batchTask(this._createTaskDefinition({
                 task: task,
-                options: $options || {},
-                context: context,
-                depth: 1,
-                muteDepth: 0
+                options: $options,
+                context: context
             }));
         } catch (e) {
             setTimeout(function () {
@@ -234,7 +232,7 @@ var Automaton = d.Class.declare({
             next(this._validateTaskOptions(def.task, def.options));
         }.$bind(this);
         filter = function (next) {
-            next = this._wrapTaskNextFunc(next, def);
+            next = this._wrapTaskNextFunc(next, def, true);
 
             // replace options & report task
             this._replaceOptions(def.options, def.parentOptions, { skipUnescape : true });
@@ -300,15 +298,11 @@ var Automaton = d.Class.declare({
         var def = utils.object.mixIn({}, task);
         def.options = def.options ? utils.lang.deepClone(def.options) : {};
         def.depth = 1;
-        def.muteDepth = def.mute ? 1 : 0;
 
         if (parentTaskDef) {
             def.parentOptions = parentTaskDef.options;
             def.context = parentTaskDef.context;
             def.depth += parentTaskDef.depth;
-            if (parentTaskDef.muteDepth) {
-                def.muteDepth = parentTaskDef.muteDepth + 1;
-            }
         }
 
         return def;
@@ -323,7 +317,7 @@ var Automaton = d.Class.declare({
     _onBeforeTask: function (def) {
         var desc,
             logger = def.context.log,
-            isPureFunction = utils.lang.isFunction(def.task);
+            inline = utils.lang.isFunction(def.task);
 
         // try out to extract the description, falling back to the name
         desc = def.description !== undefined ? def.description : def.task.description || def.task.name;
@@ -331,8 +325,8 @@ var Automaton = d.Class.declare({
         // if desc is null, simply do not report it
         if (desc !== null) {
             if (!desc) {
-                // if is a pure function that has no description, then simply do not report
-                if (isPureFunction) {
+                // if is an inline function that has no description, then simply do not report
+                if (inline) {
                     desc = null;
                 } else {
                     // otherwise assume '??'
@@ -345,28 +339,30 @@ var Automaton = d.Class.declare({
         logger.setDepth(def.depth);
 
         // log task that will run
-        if (desc != null && def.muteDepth <= 1) {
+        if (desc != null) {
             logger.infoln(('> ' + desc).cyan);
         }
 
-        // mute or unmute the logger according to the mute depth
-        if (def.muteDepth) {
+        // mute the logger if task is marked as muted and logger is unmuted
+        if (!logger.isMuted() && this._isTaskMuted(def)) {
             logger.mute();
-        } else {
-            logger.unmute();
+            def.mutedLogger = true;
         }
     },
 
     /**
      * Wraps next function (callback) of a task.
-     * This is needed to make fatal to work properly.
+     * This is needed to make fatal to work properly
+     * and to unmute the logger.
      *
-     * @param {Function} next The next function
-     * @param {Object}   def  The task definition
+     * @param {Function} next     The next function
+     * @param {Object}   def      The task definition
+     * @param {Boolean}  isFilter True if wrapping the filter, false otherwise
+     *
      *
      * @return {Function} The wrapped function
      */
-    _wrapTaskNextFunc: function (next, def) {
+    _wrapTaskNextFunc: function (next, def, isFilter) {
         return function (err) {
             var fatal,
                 name;
@@ -374,7 +370,7 @@ var Automaton = d.Class.declare({
             // handle the fatal
             if (err && def.hasOwnProperty('fatal')) {
                 if (utils.lang.isFunction(def.fatal)) {
-                    fatal = def.fatal(err, def.parentOptions, def.context);
+                    fatal = def.fatal.call(def.context, err, def.parentOptions, def.context);
                 } else if (utils.lang.isString(def.fatal)) {
                     fatal = this._replacePlaceholders(def.fatal, def.parentOptions, { purge: true });
                 } else {
@@ -388,8 +384,11 @@ var Automaton = d.Class.declare({
                 }
             }
 
-            // unmute the logger
-            def.context.log.unmute();
+            // unmute the logger if this task muted the logger
+            if (!isFilter && def.mutedLogger) {
+                def.context.log.unmute();
+                delete def.mutedLogger;
+            }
 
             next(err);
         }.$bind(this);
@@ -399,8 +398,6 @@ var Automaton = d.Class.declare({
      * Check if a task is enabled.
      * Disabled tasks should be skipped.
      *
-     * Detects if a task is missing required options.
-     *
      * @param {Object} def The task definition
      *
      * @return {Boolean} True if enabled, false otherwise
@@ -408,15 +405,37 @@ var Automaton = d.Class.declare({
     _isTaskEnabled: function (def) {
         if (def.hasOwnProperty('on')) {
             if (utils.lang.isString(def.on)) {
-                return this._replacePlaceholders(def.on, def.parentOptions, { purge: true });
+                return !!this._replacePlaceholders(def.on, def.parentOptions, { purge: true });
             } else if (utils.lang.isFunction(def.on)) {
-                return def.on(def.options, def.context);
+                return !!def.on.call(def.context, def.options, def.context);
             } else {
-                return def.on;
+                return !!def.on;
             }
         }
 
         return true;
+    },
+
+    /**
+     * Check if a task is muted.
+     * Muted tasks do not log messages.
+
+     * @param {Object} def The task definition
+     *
+     * @return {Boolean} True if muted, false otherwise
+     */
+    _isTaskMuted: function (def) {
+        if (def.hasOwnProperty('mute')) {
+            if (utils.lang.isString(def.mute)) {
+                return !!this._replacePlaceholders(def.mute, def.parentOptions, { purge: true });
+            } else if (utils.lang.isFunction(def.mute)) {
+                return !!def.mute.call(def.context, def.options, def.context);
+            } else {
+                return !!def.mute;
+            }
+        }
+
+        return false;
     },
 
     /**

@@ -654,12 +654,12 @@ module.exports = function (automaton) {
         });
 
         it('should not log muted tasks', function (done) {
-            var log = '',
-                automaton = new Automaton({ color: false });
+            var log = '';
 
             automaton
                 .run({
                     tasks: [
+                        // shold log
                         {
                             task: function (opt, ctx, next) {
                                 ctx.log.infoln('1');
@@ -667,6 +667,7 @@ module.exports = function (automaton) {
                             },
                             mute: false
                         },
+                        // should NOT log
                         {
                             task: function (opt, ctx, next) {
                                 ctx.log.infoln('2');
@@ -674,6 +675,7 @@ module.exports = function (automaton) {
                             },
                             mute: true
                         },
+                        // should NOT log
                         {
                             task: callbackTask,
                             options: {
@@ -683,6 +685,7 @@ module.exports = function (automaton) {
                             },
                             mute: true
                         },
+                        // should NOT log
                         {
                             task: {
                                 tasks: [
@@ -698,7 +701,7 @@ module.exports = function (automaton) {
                                         task: callbackTask,
                                         options: {
                                             callback: function (opt, ctx) {
-                                                ctx.log.infoln('4');
+                                                ctx.log.infoln('5');
                                             }
                                         },
                                         mute: false
@@ -706,18 +709,62 @@ module.exports = function (automaton) {
                                 ]
                             },
                             mute: true
+                        },
+                        // should log
+                        {
+                            task: callbackTask,
+                            options: {
+                                callback: function (opt, ctx) {
+                                    ctx.log.infoln('6');
+                                }
+                            }
+                        },
+                        // should NOT log
+                        {
+                            task: function (opt, ctx, next) {
+                                ctx.log.infoln('7');
+                                next();
+                            },
+                            mute: '{{foo}}'
+                        },
+                        // should NOT log
+                        {
+                            task: function (opt, ctx, next) {
+                                ctx.log.infoln('8');
+                                next();
+                            },
+                            mute: function (opt, ctx) {
+                                expect(opt).to.be.an('object');
+                                expect(ctx).to.be.an('object');
+                                expect(ctx.log).to.be.an('object');
+                                expect(ctx).to.equal(this);
+
+                                return true;
+                            }
+                        },
+                        // should log
+                        {
+                            task: function (opt, ctx, next) {
+                                ctx.log.infoln('9');
+                                next();
+                            },
+                            mute: '{{non-existent}}'
                         }
                     ]
-                }, null, function (err) {
+                }, { foo: true }, function (err) {
                     if (err) {
                         throw err;
                     }
 
+                    log = removeColors(log);
                     expect(log).to.equal(
                         arrow('??', 1) +
                         indent('1\n', 2) +
                         arrow('Callback task', 2) +
-                        arrow('??', 2)
+                        arrow('??', 2) +
+                        arrow('Callback task', 2) +
+                        indent('6\n', 3) +
+                        indent('9\n', 2)
                     );
 
                     done();
