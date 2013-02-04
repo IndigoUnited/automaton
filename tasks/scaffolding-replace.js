@@ -69,12 +69,14 @@ var task = {
                             // For each file in the glob result,
                             // perform the interpolation
                             async.forEach(files, function (file, next) {
+                                ctx.log.debugln('Reading file: ' + file);
                                 fs.readFile(file, function (err, contents) {
                                     if (err) {
                                         return next(err);
                                     }
 
                                     contents = interp(contents.toString(), data);
+                                    ctx.log.debugln('Writing file: ' + file);
                                     fs.writeFile(file, contents, next);
                                 });
                             }, next);

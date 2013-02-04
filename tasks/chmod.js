@@ -49,6 +49,7 @@ var task = {
                         }
 
                         async.forEach(files, function (file, next) {
+                            ctx.log.debugln('Changing mode for file: ' + file);
                             fs.chmod(file, opt.mode, next);
                         }, next);
                     });
