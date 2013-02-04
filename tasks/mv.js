@@ -51,9 +51,9 @@ var task = {
                         // Process the matches for each dst
                         async.forEach(dsts, function (dst, next) {
                             if (directMatch) {
-                                processDirectMatch(files, dirs, dst, next);
+                                processDirectMatch(files, dirs, dst, ctx, next);
                             } else {
-                                processPatternMatch(pattern, files, dirs, dst, next);
+                                processPatternMatch(pattern, files, dirs, dst, ctx, next);
                             }
                         }, next);
                     });
@@ -69,9 +69,10 @@ var task = {
  * @param {Array}    files The files
  * @param {Array}    dirs  The directories
  * @param {String}   dst   The destination
+ * @param {Object}   ctx   The context
  * @param {Function} next  The callback to call with the files and folders (follows node conventions)
  */
-function processDirectMatch(files, dirs, dst, next) {
+function processDirectMatch(files, dirs, dst, ctx, next) {
     var src = files[0] || dirs[0];
     var srcType = files[0] === src ? 'file' : 'dir';
     var dstType;
@@ -114,7 +115,7 @@ function processDirectMatch(files, dirs, dst, next) {
                         return err;
                     }
 
-                    move(src, dst, next);
+                    move(src, dst, ctx, next);
                 });
             // File to folder
             } else if (srcType === 'file' && dstType === 'dir') {
@@ -127,15 +128,15 @@ function processDirectMatch(files, dirs, dst, next) {
                         }
 
                         dst = path.join(dst, path.basename(src));
-                        move(src, dst, next);
+                        move(src, dst, ctx, next);
                     });
                 } else {
                     dst = path.join(dst, path.basename(src));
-                    move(src, dst, next);
+                    move(src, dst, ctx, next);
                 }
             // File to file is simple
             } else {
-                move(src, dst, next);
+                move(src, dst, ctx, next);
             }
         });
     });
@@ -148,9 +149,10 @@ function processDirectMatch(files, dirs, dst, next) {
  * @param {Array}    files   The files
  * @param {Array}    dirs    The directories
  * @param {String}   dst     The destination
+ * @param {Object}   ctx     The context
  * @param {Function} next    The callback to call with the files and folders (follows node conventions)
  */
-function processPatternMatch(pattern, files, dirs, dst, next) {
+function processPatternMatch(pattern, files, dirs, dst, ctx, next) {
     files.push.apply(files, dirs);
 
     async.forEachLimit(files, 30, function (file, next) {
@@ -161,7 +163,7 @@ function processPatternMatch(pattern, files, dirs, dst, next) {
                 return next(err);
             }
 
-            move(file, currDst, next);
+            move(file, currDst, ctx, next);
         });
     }, next);
 }
@@ -171,9 +173,12 @@ function processPatternMatch(pattern, files, dirs, dst, next) {
  *
  * @param {String}   src  The source
  * @param {String}   dst  The destination
+ * @param {Object}   ctx  The context
+ * @param {Object}   ctx  The context
  * @param {Function} next The function to call when done (follows node conventions)
  */
-function move(src, dst, next) {
+function move(src, dst, ctx, next) {
+    ctx.log.debugln('Moving ' + src + ' to ' + dst);
     fs.rename(src, dst, next);
 }
 

@@ -4,6 +4,7 @@ var rimraf = require('rimraf');
 var utils  = require('mout');
 var async  = require('async');
 var glob   = require('glob');
+var path   = require('path');
 
 var task = {
     id          : 'rm',
@@ -33,6 +34,8 @@ var task = {
                         }
 
                         async.forEach(matches, function (match, next) {
+                            match = path.normalize(match);
+                            ctx.log.debugln('Removing ' + match);
                             rimraf(match, next);
                         }, next);
                     });
