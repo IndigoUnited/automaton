@@ -458,15 +458,15 @@ module.exports = function (automaton) {
                 folder      = 'folder/',
                 file        = 'file.js',
                 toCopy      = {},
-                mode_dir,
-                mode_file;
+                modeDir,
+                modeFile;
 
             // create dirs
             fs.mkdirSync(dir);
             fs.mkdirSync(target + folder);
 
             // get default dir mode
-            mode_dir = fs.statSync(target + folder).mode;
+            modeDir = fs.statSync(target + folder).mode;
 
             // change it to something else
             fs.chmodSync(target + folder, '0777');
@@ -475,7 +475,7 @@ module.exports = function (automaton) {
             fs.writeFileSync(target + file, 'dummy');
 
             // get file mode
-            mode_file = fs.statSync(target + file).mode;
+            modeFile = fs.statSync(target + file).mode;
 
             // change it to something else
             fs.chmodSync(target + file, '0777');
@@ -491,8 +491,8 @@ module.exports = function (automaton) {
                     throw err;
                 }
 
-                expect(fs.statSync(toCopy[target + file] + file).mode).to.equal(mode_file);
-                expect(fs.statSync(toCopy[target + folder]).mode).to.equal(mode_dir);
+                expect(fs.statSync(toCopy[target + file] + file).mode).to.equal(modeFile);
+                expect(fs.statSync(toCopy[target + folder]).mode).to.equal(modeDir);
                 done();
             });
         });
