@@ -102,7 +102,7 @@ if (argv.version || argv.v) {
 
 // Check if there's an update
 notifier = updateNotifier({
-    packagePath: __dirname + '/../package'
+    packagePath: '../package'
 });
 
 if (notifier.update) {
