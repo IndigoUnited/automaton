@@ -38,7 +38,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "~0.1.22",
-    "dejavu": "~0.2.0",
+    "dejavu": "~0.3.1",
     "mout": "~0.3.0",
     "colors": "~0.6.0-1",
     "mkdirp": "~0.3.4",
@@ -46,7 +46,7 @@
     "rimraf": "~2.0.2",
     "optimist": "~0.3.5",
     "glob": "3.1.15",
-    "update-notifier": "~0.1.1",
+    "update-notifier": "~0.1.2",
     "promptly": "~0.1.0"
   },
   "devDependencies": {

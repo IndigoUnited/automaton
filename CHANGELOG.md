@@ -8,7 +8,7 @@
 - Add dot operator to placeholders
 - Add negate operator to placeholders
 - More windows fixes
-- Add missing tests for mv
+- Add missing tests for `mv` task
 
 ## 0.1.3 - 2013-01-28
 
