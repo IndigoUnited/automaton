@@ -248,8 +248,6 @@ function expand(pattern, options, next) {
 
     options = options || {};
 
-    // TODO: throw an error on commas
-
     // Check if ** pattern was used
     if (!options.glob || !options.glob.noglobstar) {
         hasGlobStar = pattern.indexOf('**') !== -1;

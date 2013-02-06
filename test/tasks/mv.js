@@ -1,19 +1,17 @@
 'use strict';
 
-var expect      = require('expect.js'),
-    isFile      = require('../helpers/util/is-file'),
-    isDir       = require('../helpers/util/is-dir'),
-    fs          = require('fs')
+var expect = require('expect.js'),
+    isFile = require('../helpers/util/is-file'),
+    isDir  = require('../helpers/util/is-dir'),
+    fs     = require('fs')
 ;
 
 module.exports = function (automaton) {
     describe('mv', function () {
-
         var target      = __dirname + '/../tmp/mv/',
             assetsDir   = target + 'assets/';
 
         beforeEach(function () {
-
             // create target dir
             fs.mkdirSync(target, '0777');
 
@@ -21,11 +19,9 @@ module.exports = function (automaton) {
             fs.mkdirSync(assetsDir, '0777');
 
             // copy assets
-            fs.createReadStream(__dirname + '/../helpers/assets/file1.json').pipe(fs.createWriteStream(assetsDir + 'file1.json'));
-            fs.createReadStream(__dirname + '/../helpers/assets/file2').pipe(fs.createWriteStream(assetsDir + 'file2'));
-            fs.createReadStream(__dirname + '/../helpers/assets/.file').pipe(fs.createWriteStream(assetsDir + '.file'));
-
-
+            fs.writeFileSync(assetsDir + 'file1.json', fs.readFileSync(__dirname + '/../helpers/assets/file1.json'));
+            fs.writeFileSync(assetsDir + 'file2', fs.readFileSync(__dirname + '/../helpers/assets/file2'));
+            fs.writeFileSync(assetsDir + '.file', fs.readFileSync(__dirname + '/../helpers/assets/.file'));
         });
 
         it('should move file to file', function (done) {
@@ -87,8 +83,8 @@ module.exports = function (automaton) {
         });
 
         it('should move folder - destination folder already exist', function (done) {
-            var files       = {},
-                testTarget  = target + 'test/';
+            var files      = {},
+                testTarget = target + 'test/';
 
             // create dir
             fs.mkdirSync(testTarget, '0777');
@@ -140,15 +136,14 @@ module.exports = function (automaton) {
         });
 
         it('should move folder - destination folder does not exist (should return error)', function (done) {
-            var files       = {},
-                testTarget  = target + 'not/not/';
+            var files      = {},
+                testTarget = target + 'not/not/';
 
             files[assetsDir] = testTarget;
 
             automaton.run('mv', {
                 files: files
             }, function (err) {
-
                 expect(err).to.be.ok();
                 expect(err.message).to.match(/ENOENT/);
                 done();
@@ -156,10 +151,10 @@ module.exports = function (automaton) {
         });
 
         it('should move files', function (done) {
-            var files          = {},
-                file1          = 'file1.json',
-                file2          = 'file2',
-                anotherTarget  = __dirname + '/../tmp/mv/another_target/';
+            var files         = {},
+                file1         = 'file1.json',
+                file2         = 'file2',
+                anotherTarget = __dirname + '/../tmp/mv/another_target/';
 
             files[assetsDir + file1] = target;
             files[assetsDir + file2] = anotherTarget;
@@ -193,9 +188,9 @@ module.exports = function (automaton) {
             fs.mkdirSync(anotherAssetsDir, '0777');
 
             // copy assets
-            fs.createReadStream(__dirname + '/../helpers/assets/file1.json').pipe(fs.createWriteStream(anotherAssetsDir + file1));
-            fs.createReadStream(__dirname + '/../helpers/assets/file2').pipe(fs.createWriteStream(anotherAssetsDir + file2));
-            fs.createReadStream(__dirname + '/../helpers/assets/.file').pipe(fs.createWriteStream(anotherAssetsDir + file3));
+            fs.writeFileSync(anotherAssetsDir + file1, fs.readFileSync(__dirname + '/../helpers/assets/file1.json'));
+            fs.writeFileSync(anotherAssetsDir + file2, fs.readFileSync(__dirname + '/../helpers/assets/file2'));
+            fs.writeFileSync(anotherAssetsDir + file3, fs.readFileSync(__dirname + '/../helpers/assets/.file'));
 
             files[assetsDir]        = target + 'one_target/';
             files[anotherAssetsDir] = anotherTarget;
@@ -278,8 +273,8 @@ module.exports = function (automaton) {
         });
 
         it('should move files with single star pattern - source/*', function (done) {
-            var files       = {},
-                testTarget  = target + 'test/';
+            var files      = {},
+                testTarget = target + 'test/';
 
             files[assetsDir + '*'] = testTarget;
 
@@ -315,9 +310,9 @@ module.exports = function (automaton) {
             fs.mkdirSync(anotherAssetsDir, '0777');
 
             // copy assets
-            fs.createReadStream(__dirname + '/../helpers/assets/file1.json').pipe(fs.createWriteStream(anotherAssetsDir + file1));
-            fs.createReadStream(__dirname + '/../helpers/assets/file2').pipe(fs.createWriteStream(anotherAssetsDir + file2));
-            fs.createReadStream(__dirname + '/../helpers/assets/.file').pipe(fs.createWriteStream(anotherAssetsDir + file3));
+            fs.writeFileSync(anotherAssetsDir + file1, fs.readFileSync(__dirname + '/../helpers/assets/file1.json'));
+            fs.writeFileSync(anotherAssetsDir + file2, fs.readFileSync(__dirname + '/../helpers/assets/file2'));
+            fs.writeFileSync(anotherAssetsDir + file3, fs.readFileSync(__dirname + '/../helpers/assets/.file'));
 
             files[assetsDir + '**/*'] = testTarget;
 
@@ -413,9 +408,9 @@ module.exports = function (automaton) {
         });
 
         it('should work with sources as symlinks', function (done) {
-            var files       = {},
-                symlink     = target + 'file1_symlink',
-                testTarget  = target + 'test/';
+            var files      = {},
+                symlink    = target + 'file1_symlink',
+                testTarget = target + 'test/';
 
             // create symlink to assets dir
             fs.symlinkSync(assetsDir + 'file1.json', symlink, 'file');
@@ -437,9 +432,9 @@ module.exports = function (automaton) {
         });
 
         it('should work with sources containing symlinks deeply inside them', function (done) {
-            var files       = {},
-                symlink     = target + '../symlink',
-                testTarget  = target + 'test/';
+            var files      = {},
+                symlink    = target + '../symlink',
+                testTarget = target + 'test/';
 
             // create symlink to assets dir
             fs.symlinkSync(assetsDir, symlink, 'dir');
@@ -482,9 +477,9 @@ module.exports = function (automaton) {
             fs.mkdirSync(anotherAssetsDir, '0777');
 
             // copy assets
-            fs.createReadStream(__dirname + '/../helpers/assets/' + file1).pipe(fs.createWriteStream(anotherAssetsDir + file1));
-            fs.createReadStream(__dirname + '/../helpers/assets/' + file2).pipe(fs.createWriteStream(anotherAssetsDir + file2));
-            fs.createReadStream(__dirname + '/../helpers/assets/' + file3).pipe(fs.createWriteStream(anotherAssetsDir + file3));
+            fs.writeFileSync(anotherAssetsDir + file1, fs.readFileSync(__dirname + '/../helpers/assets/file1.json'));
+            fs.writeFileSync(anotherAssetsDir + file2, fs.readFileSync(__dirname + '/../helpers/assets/file2'));
+            fs.writeFileSync(anotherAssetsDir + file3, fs.readFileSync(__dirname + '/../helpers/assets/.file'));
 
             files[symlink + '/**/*'] = testTarget;
 
@@ -519,12 +514,12 @@ module.exports = function (automaton) {
         });
 
         it('should work with destinations as symlinks', function (done) {
-            var files       = {},
-                file1       = 'file1.json',
-                file2       = 'file2',
-                file3       = '.file',
-                symlink     = target + '../symlink',
-                testTarget  = target + 'test/';
+            var files      = {},
+                file1      = 'file1.json',
+                file2      = 'file2',
+                file3      = '.file',
+                symlink    = target + '../symlink',
+                testTarget = target + 'test/';
 
             // create test target dir
             fs.mkdirSync(testTarget, '0777');
@@ -558,9 +553,9 @@ module.exports = function (automaton) {
         });
 
         it('should move file to folder with default permissions', function (done) {
-            var files       = {},
-                file        = 'file1.json',
-                testTarget  = target + 'test/',
+            var files      = {},
+                file       = 'file1.json',
+                testTarget = target + 'test/',
                 modeDir,
                 modeFile;
 
@@ -595,12 +590,12 @@ module.exports = function (automaton) {
         });
 
         it('should move empty folders', function (done) {
-            var files       = {},
-                file1       = 'file1.json',
-                file2       = 'file2',
-                file3       = '.file',
-                testTarget  = target + 'test/',
-                emptyDir    = assetsDir + 'empty/';
+            var files      = {},
+                file1      = 'file1.json',
+                file2      = 'file2',
+                file3      = '.file',
+                testTarget = target + 'test/',
+                emptyDir   = assetsDir + 'empty/';
 
             // create test target dir
             fs.mkdirSync(emptyDir, '0777');
