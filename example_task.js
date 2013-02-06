@@ -1,3 +1,5 @@
+'use strict';
+
 var task = {
     // This id is not mandatory but,
     // if you want to use this task in other tasks,
@@ -7,6 +9,9 @@ var task = {
     // A user friendly name,
     // just for reference, not mandatory
     name: 'Example task',
+
+    // A description of the task, not mandatory
+    description: 'Does things',
 
     // also not mandatory
     author: 'Indigo United',
