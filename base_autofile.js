@@ -1,3 +1,5 @@
+/*jshint es5:true*/
+
 'use strict';
 
 var task = {
@@ -8,7 +10,7 @@ var task = {
     options: {
         opt1: {
             description: 'Opt1 description',
-            'default': 'foo'                 // if mandatory, remove the default
+            default: 'foo'                   // if mandatory, remove the default
         }
     },
 

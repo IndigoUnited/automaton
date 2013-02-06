@@ -13,7 +13,7 @@ var task = {
         },
         cwd: {
             description: 'Current working directory of the child process.',
-            'default': null
+            default: null
         }
     },
     tasks      :

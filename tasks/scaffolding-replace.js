@@ -21,11 +21,11 @@ var task = {
         },
         type: {
             description: 'The type of data. Accepts "string" and "file"',
-            'default': 'string'
+            default: 'string'
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
-            'default': null
+            default: null
         }
     },
     tasks      :

@@ -5,13 +5,13 @@ module.exports = {
     description: 'Failing task',
     options: {
         message: {
-            'default': 'bleh'
+            default: 'bleh'
         },
         filter: {
-            'default': false
+            default: false
         },
         immediate: {
-            'default': false
+            default: false
         }
     },
     filter: function (opt, ctx, next) {

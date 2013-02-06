@@ -21,11 +21,11 @@ var task = {
         },
         trim: {
             description: 'Trim leading or trailing spaces',
-            'default': true
+            default: true
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
-            'default': null
+            default: null
         }
     },
     tasks       :

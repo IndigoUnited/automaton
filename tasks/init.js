@@ -12,11 +12,11 @@ var task = {
     options: {
         name: {
             description: 'The task name.',
-            'default': 'autofile'
+            default: 'autofile'
         },
         dst: {
             description: 'Directory in which the task will be created.',
-            'default': process.cwd()
+            default: process.cwd()
         }
     },
     filter     : function (opt, ctx, next) {

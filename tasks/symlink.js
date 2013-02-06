@@ -16,7 +16,7 @@ var task = {
         },
         type: {
             description: 'Can be either "dir", "file", or "junction" (default is "file"). Check http://nodejs.org/api/fs.html#fs_fs_symlink_srcpath_dstpath_type_callback for more info.',
-            'default': 'file'
+            default: 'file'
         }
     },
     tasks      :

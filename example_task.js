@@ -1,3 +1,7 @@
+/*jshint es5:true*/
+
+'use strict';
+
 var task = {
     // This id is not mandatory but,
     // if you want to use this task in other tasks,
@@ -43,12 +47,12 @@ var task = {
             // This option will not be required,
             // since it has a default value.
             // Check the second subtask.
-            'default': 'automaton'
+            default: 'automaton'
         },
         // This option is used below, for skipping
         // subtasks.
         run_all: {
-            'default': false
+            default: false
         }
     },
 

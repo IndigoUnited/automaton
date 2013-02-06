@@ -18,7 +18,7 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
-            'default': null
+            default: null
         }
     },
     tasks:

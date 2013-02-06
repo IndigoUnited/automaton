@@ -5,13 +5,13 @@ module.exports = {
     description: 'Callback task',
     options: {
         filterCallback: {
-            'default': function () {}
+            default: function () {}
         },
         callback: {
-            'default': function () {}
+            default: function () {}
         },
         someOption: {
-            'default': 'default'
+            default: 'default'
         }
     },
     filter: function (opt, ctx, next) {
