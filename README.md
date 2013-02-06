@@ -39,7 +39,7 @@ Scaffolding tasks help you perform some typical tasks, like appending, replacing
 - **scaffolding-append:** Append something to a placeholder in a file
 - **scaffolding-replace:** Replace the placeholder with something
 - **scaffolding-close:** Close the placeholder (effectively removing the placeholder)
-- **scafolding-file-rename:** Rename files by replacing placeholders found in their names
+- **scaffolding-file-rename:** Rename files by replacing placeholders found in their names
 
 ### Miscellaneous
 

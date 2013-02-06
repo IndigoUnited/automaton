@@ -21,11 +21,11 @@ var task = {
         },
         type: {
             description: 'The type of data. Accepts "string" and "file"',
-            'default': 'string'
+            default: 'string'
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
-            'default': null
+            default: null
         }
     },
     tasks      :
@@ -69,12 +69,14 @@ var task = {
                             // For each file in the glob result,
                             // perform the interpolation
                             async.forEach(files, function (file, next) {
+                                ctx.log.debugln('Reading file: ' + file);
                                 fs.readFile(file, function (err, contents) {
                                     if (err) {
                                         return next(err);
                                     }
 
                                     contents = interp(contents.toString(), data);
+                                    ctx.log.debugln('Writing file: ' + file);
                                     fs.writeFile(file, contents, next);
                                 });
                             }, next);

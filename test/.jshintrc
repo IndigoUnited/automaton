@@ -56,7 +56,7 @@
     "sub": false,
     "supernew": false,
     "validthis": false,
-
+    "es5": true,
     "nomen": false,
     "onevar": false,
     "white": true

@@ -17,7 +17,7 @@ var task = {
         },
         mode: {
             description: 'The directory permissions.',
-            'default': '0777'
+            default: '0777'
         }
     },
     filter     : function (opt, ctx, next) {

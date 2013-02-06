@@ -19,7 +19,7 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
-            'default': null
+            default: null
         }
     },
     tasks:
@@ -247,8 +247,6 @@ function expand(pattern, options, next) {
     var lastMatch = '';
 
     options = options || {};
-
-    // TODO: throw an error on commas
 
     // Check if ** pattern was used
     if (!options.glob || !options.glob.noglobstar) {

@@ -873,7 +873,7 @@ module.exports = function (automaton) {
             automaton.run({
                 options: {
                     foo: {
-                        'default': 'bar'
+                        default: 'bar'
                     }
                 },
                 filter: function (opt, ctx, next) {
@@ -889,7 +889,7 @@ module.exports = function (automaton) {
                 automaton.run({
                     options: {
                         foo: {
-                            'default': 'bar'
+                            default: 'bar'
                         }
                     },
                     filter: function (opt, ctx, next) {

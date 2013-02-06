@@ -22,7 +22,7 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
-            'default': null
+            default: null
         }
     },
     tasks:
@@ -56,6 +56,7 @@ var task = {
 
                         // Foreach file found, rename it (has to be in series)
                         async.forEachSeries(filesToRename, function (obj, next) {
+                            ctx.log.debugln('Renaming from ' + obj.before + ' to ' + obj.after);
                             fs.rename(obj.before, obj.after, next);
                         }, next);
                     });

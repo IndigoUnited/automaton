@@ -16,11 +16,11 @@ var task = {
         },
         mode: {
             description: 'The mode to apply.',
-            'default': '0777'
+            default: '0777'
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
-            'default': null
+            default: null
         }
     },
     filter: function (opt, ctx, next) {
@@ -49,6 +49,7 @@ var task = {
                         }
 
                         async.forEach(files, function (file, next) {
+                            ctx.log.debugln('Changing mode for file: ' + file);
                             fs.chmod(file, opt.mode, next);
                         }, next);
                     });

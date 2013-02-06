@@ -18,7 +18,7 @@ var task = {
         },
         glob: {
             description: 'The options to pass to glob (check https://npmjs.org/package/glob for details).',
-            'default': null
+            default: null
         }
     },
     tasks:
@@ -77,6 +77,7 @@ function processDirectMatch(files, dirs, dst, ctx, next) {
     var srcType = files[0] === src ? 'file' : 'dir';
     var dstType;
     var error;
+    var tmp;
 
     // Check if dirname of the dst exists
     fs.stat(path.dirname(dst), function (err) {
@@ -107,16 +108,21 @@ function processDirectMatch(files, dirs, dst, ctx, next) {
                 // or ends with a /, the user is trying to move the folder
                 // inside it
                 if (stat || /[\/\\]$/.test(dst)) {
+                    tmp = !stat ? dst : null;
                     dst = path.join(dst, path.basename(src));
                 }
 
-                mkdirp(dst, function (err) {
-                    if (err) {
-                        return err;
-                    }
+                if (tmp) {
+                    mkdirp(tmp, function (err) {
+                        if (err) {
+                            return err;
+                        }
 
+                        move(src, dst, ctx, next);
+                    });
+                } else {
                     move(src, dst, ctx, next);
-                });
+                }
             // File to folder
             } else if (srcType === 'file' && dstType === 'dir') {
                 // If moving file to dir, ensure that the dir is created
@@ -196,8 +202,6 @@ function expand(pattern, options, next) {
     var lastMatch = '';
 
     options = options || {};
-
-    // TODO: throw an error on commas
 
     // If the user specified a /**/* pattern, optimize it
     if (!options.glob || !options.glob.noglobstar) {

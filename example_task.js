@@ -1,3 +1,5 @@
+/*jshint es5:true*/
+
 'use strict';
 
 var task = {
@@ -9,9 +11,6 @@ var task = {
     // A user friendly name,
     // just for reference, not mandatory
     name: 'Example task',
-
-    // A description of the task, not mandatory
-    description: 'Does things',
 
     // also not mandatory
     author: 'Indigo United',
@@ -48,12 +47,12 @@ var task = {
             // This option will not be required,
             // since it has a default value.
             // Check the second subtask.
-            'default': 'automaton'
+            default: 'automaton'
         },
         // This option is used below, for skipping
         // subtasks.
         run_all: {
-            'default': false
+            default: false
         }
     },
 
