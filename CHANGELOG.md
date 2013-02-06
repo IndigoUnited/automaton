@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.4 - 2013-02-06
+
+- Add `fatal`
+- Add `mute`
+- Add `ctx.prompt`
+- Add dot operator to placeholders
+- Add negate operator to placeholders
+- More windows fixes
+- Add missing tests for mv
+
 ## 0.1.3 - 2013-01-28
 
 - Lock `glob` version temporarly due to a bug
