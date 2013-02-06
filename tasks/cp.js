@@ -194,6 +194,7 @@ function processPatternMatch(pattern, files, dirs, dst, ctx, next) {
  */
 function copyFile(src, dst, ctx, next) {
     ctx.log.debugln('Copying file ' + src + ' to ' + dst);
+
     var stream = fs.createReadStream(src)
         .pipe(fs.createWriteStream(dst))
         .on('close', next)
@@ -213,6 +214,7 @@ function copyFile(src, dst, ctx, next) {
  */
 function copyDir(src, dst, ctx, next) {
     ctx.log.debugln('Copying directory ' + src + ' to ' + dst);
+
     var stream = fstream.Reader({
             path: src,
             follow: true
