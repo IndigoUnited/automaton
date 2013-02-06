@@ -59,10 +59,10 @@ module.exports = function (automaton) {
         });
 
         it('should copy folder to folder', function (done) {
-            var files  = {},
-                src    = 'src/',
-                dst    = 'dst/',
-                file   = 'file.js';
+            var files = {},
+                src   = 'src/',
+                dst   = 'dst/',
+                file  = 'file.js';
 
             // create dir
             fs.mkdirSync(target + src);
@@ -88,11 +88,11 @@ module.exports = function (automaton) {
         it('should copy folder to folder - destination folder does not exist', function (done) {
             // test folder to folder/
             // test folder to folder where folder does not exist
-            var files  = {},
-                src    = 'src/',
-                dst    = 'dst/',
-                dst2   = 'dst2',
-                file   = 'file.js';
+            var files = {},
+                src   = 'src/',
+                dst   = 'dst/',
+                dst2  = 'dst2',
+                file  = 'file.js';
 
             // create dir
             fs.mkdirSync(target + src);
@@ -213,8 +213,8 @@ module.exports = function (automaton) {
         });
 
         it('should give error if source file does not exist', function (done) {
-            var files  = {},
-                dst    = 'dst/';
+            var files = {},
+                dst   = 'dst/';
 
             // create dir
             fs.mkdirSync(target + dst);
@@ -232,8 +232,8 @@ module.exports = function (automaton) {
         });
 
         it('should give error if source folder does not exist', function (done) {
-            var files  = {},
-                dst    = 'dst/';
+            var files = {},
+                dst   = 'dst/';
 
             // create dir
             fs.mkdirSync(target + dst);
@@ -251,8 +251,8 @@ module.exports = function (automaton) {
         });
 
         it('should give error if sources do not exist - simple', function (done) {
-            var files  = {},
-                dst    = 'dst/';
+            var files = {},
+                dst   = 'dst/';
 
             // create dir
             fs.mkdirSync(target + dst);
@@ -271,8 +271,8 @@ module.exports = function (automaton) {
         });
 
         it('should give error if sources do not exist - source/*', function (done) {
-            var files  = {},
-                dst    = 'dst/';
+            var files = {},
+                dst   = 'dst/';
 
             // create dir
             fs.mkdirSync(target + dst);
@@ -290,8 +290,8 @@ module.exports = function (automaton) {
         });
 
         it('should give error if sources do not exist - source/**/*', function (done) {
-            var files  = {},
-                dst    = 'dst/';
+            var files = {},
+                dst   = 'dst/';
 
             // create dir
             fs.mkdirSync(target + dst);
@@ -454,10 +454,10 @@ module.exports = function (automaton) {
         });
 
         it('should copy with default permissions', function (done) {
-            var dir         = target + 'permissions/',
-                folder      = 'folder/',
-                file        = 'file.js',
-                toCopy      = {},
+            var dir       = target + 'permissions/',
+                folder    = 'folder/',
+                file      = 'file.js',
+                toCopy    = {},
                 modeDir,
                 modeFile;
 
@@ -498,12 +498,12 @@ module.exports = function (automaton) {
         });
 
         it('should copy empty folders', function (done) {
-            var files         = {},
-                destination   = 'empty_folders/',
-                folder1       = 'not_empty_folder/',
-                folder2       = 'folder2/',
-                folder3       = 'folder3/',
-                file          = 'file.js';
+            var files       = {},
+                destination = 'empty_folders/',
+                folder1     = 'not_empty_folder/',
+                folder2     = 'folder2/',
+                folder3     = 'folder3/',
+                file        = 'file.js';
 
             files[target + folder1] = target + destination;
 
@@ -559,6 +559,7 @@ module.exports = function (automaton) {
                 if (err) {
                     throw err;
                 }
+
                 expect(isFile(target + '.file')).to.be(true);
                 done();
             });
