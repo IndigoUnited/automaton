@@ -359,7 +359,6 @@ var Automaton = d.Class.declare({
      * @param {Object}   def      The task definition
      * @param {Boolean}  isFilter True if wrapping the filter, false otherwise
      *
-     *
      * @return {Function} The wrapped function
      */
     _wrapTaskNextFunc: function (next, def, isFilter) {
