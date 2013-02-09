@@ -1,13 +1,14 @@
 'use strict';
 
-var d        = require('dejavu'),
-    utils    = require('mout'),
-    fs       = require('fs'),
-    async    = require('async'),
-    path     = require('path'),
-    promptly = require('promptly'),
-    inter    = require('./lib/string/cast-interpolate'),
-    Logger   = require('./lib/Logger')
+var d           = require('dejavu'),
+    utils       = require('mout'),
+    fs          = require('fs'),
+    async       = require('async'),
+    path        = require('path'),
+    promptly    = require('promptly'),
+    inter       = require('./lib/string/cast-interpolate'),
+    Logger      = require('./lib/Logger'),
+    GruntRunner = require('./lib/Grunt/Runner')
 ;
 
 var Automaton = d.Class.declare({
@@ -141,6 +142,9 @@ var Automaton = d.Class.declare({
 
         // function to handle the completion of the task
         handle = function (err) {
+            // kill the grunt worker
+            context.gruntRunner.kill();
+
             if (err) {
                 // if error is not actually an error, attempt to fix it
                 if (!(err instanceof Error)) {
@@ -168,6 +172,7 @@ var Automaton = d.Class.declare({
         // setup an unique context for the task
         context = {};
         context.log = new Logger(this._options);
+        context.gruntRunner = new GruntRunner(context);
         context.prompt = promptly;
         stream = context.log.getStream();
 
@@ -208,10 +213,16 @@ var Automaton = d.Class.declare({
             afterFilter
         ;
 
-        // if task is an id, grab its real definition
+        // if task is an id
         if (utils.lang.isString(def.task)) {
-            this._assertTaskLoaded(def.task, true);
-            def.task = this._tasks[def.task];
+            // is it a grunt task?
+            if (def.grunt) {
+                return this._batchGruntTask(def);
+            // grab its real definition
+            } else {
+                this._assertTaskLoaded(def.task, true);
+                def.task = this._tasks[def.task];
+            }
         // otherwise, trigger validation if is the root task
         } else if (def.depth === 1) {
             this._validateTask(def.task);
@@ -287,6 +298,28 @@ var Automaton = d.Class.declare({
     },
 
     /**
+     * Create a batch for a grunt task.
+     *
+     * @param {Object} task The task definition
+     *
+     * @return {Array} The batch
+     */
+    _batchGruntTask: function (def) {
+        return [function (next) {
+            next = this._wrapTaskNextFunc(next, def, true);
+
+            // replace options & report task
+            this._replaceOptions(def.options, def.parentOptions);
+            this._onBeforeTask(def);
+
+            def.grunt = !utils.lang.isObject(def.grunt) ? {} : def.grunt;
+            def.context.gruntRunner
+                .run(def.task, def.options, def.grunt, next)
+                .on('data', def.context.log.info.$bind(def.context.log));
+        }.$bind(this)];
+    },
+
+    /**
      * Creates a task definition for a task.
      *
      * @param {Object} task          The task
@@ -317,7 +350,7 @@ var Automaton = d.Class.declare({
     _onBeforeTask: function (def) {
         var desc,
             logger = def.context.log,
-            inline = utils.lang.isFunction(def.task);
+            inline = utils.lang.isFunction(def.task) || def.grunt;
 
         // try out to extract the description, falling back to the name
         desc = def.description !== undefined ? def.description : def.task.description || def.task.name;
