@@ -414,6 +414,38 @@ module.exports = function (automaton) {
                 .on('data', function (data) { log += data; });
         });
 
+        it('should indent after a nonln log that ends with a new line', function (done) {
+            var log = '';
+
+            automaton
+                .run({
+                    tasks: [
+                        {
+                            task: function (opt, ctx, next) {
+                                ctx.log.info('bar\n');
+                                ctx.log.info('test');
+
+                                next();
+                            }
+                        }
+                    ]
+                }, null, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    log = removeColors(log);
+                    expect(log).to.equal(
+                        arrow('??', 1) +
+                        indent('bar\n', 2) +
+                        indent('test', 2)
+                    );
+
+                    done();
+                })
+                .on('data', function (data) { log += data; });
+        });
+
         it('should indent new lines in the middle of a message', function (done) {
             var log = '';
 
