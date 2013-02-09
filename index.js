@@ -8,7 +8,7 @@ var d           = require('dejavu'),
     promptly    = require('promptly'),
     inter       = require('./lib/string/cast-interpolate'),
     Logger      = require('./lib/Logger'),
-    GruntRunner = require('./lib/Grunt/Runner')
+    GruntRunner = require('./lib/grunt/Runner')
 ;
 
 var Automaton = d.Class.declare({
