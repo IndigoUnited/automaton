@@ -212,7 +212,7 @@ var task = {
                 // any console.* methods, as this gives additional
                 // control. More information on ctx in the
                 // "Inline Functions" section.
-                ctx.log.infoln('I can do whatever I want', opt);
+                ctx.log.writeln('I can do whatever I want', opt);
 
                 // When the task is done,
                 // you just call next(),
@@ -256,6 +256,7 @@ The second argument, the context, is used to provide you with a tool belt that w
 
 The `Logger` provides the following methods:
 
+- Normal logging: `write()`, `writeln()`
 - Information logging: `info()`, `infoln()`
 - Warnings logging: `warn()`, `warnln()`
 - Error logging: `error()`, `errorln()`
@@ -276,7 +277,7 @@ var task = {
     tasks: [
         {
             task: function (opt, ctx, next) {
-                ctx.log.infoln(
+                ctx.log.writeln(
                     'hello,',
                     'here\'s the process',
                     inspect(process)
