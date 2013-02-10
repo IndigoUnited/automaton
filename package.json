@@ -4,7 +4,7 @@
   "description": "Task automation tool",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha -R spec"
   },
   "bugs": {
     "url": "http://github.com/IndigoUnited/automaton/issues"
@@ -52,7 +52,8 @@
   "devDependencies": {
     "expect.js": "~0.2.0",
     "mocha": "~1.7.3",
-    "inherits": "~1.0.0"
+    "grunt": "~0.3.17",
+    "grunt-contrib-copy": "~0.3.2"
   },
   "preferGlobal": true,
   "bin": {
