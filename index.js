@@ -315,7 +315,7 @@ var Automaton = d.Class.declare({
             def.grunt = !utils.lang.isObject(def.grunt) ? {} : def.grunt;
             def.context.gruntRunner
                 .run(def.task, def.options, def.grunt, next)
-                .on('data', def.context.log.info.$bind(def.context.log));
+                .on('data', def.context.log.write.$bind(def.context.log));
         }.$bind(this)];
     },
 
@@ -373,7 +373,7 @@ var Automaton = d.Class.declare({
 
         // log task that will run
         if (desc != null) {
-            logger.infoln(('> ' + desc).cyan);
+            logger.infoln('> ' + desc);
         }
 
         // mute the logger if task is marked as muted and logger is unmuted
