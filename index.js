@@ -321,8 +321,12 @@ var Automaton = d.Class.declare({
 
             def.grunt = !utils.lang.isObject(def.grunt) ? {} : def.grunt;
             def.context.gruntRunner
-                .run(def.task, def.options, def.grunt, next)
-                .on('data', def.context.log.write.$bind(def.context.log));
+                .run(def.task, def.options, def.grunt)
+                .on('data', def.context.log.write.$bind(def.context.log))
+                .on('error', function (error) {
+                    def.context.log.errorln(error.message);
+                })
+                .on('end', next);
         }.$bind(this)];
     },
 
