@@ -39,9 +39,8 @@ describe('Automaton', function () {
 
     core(automaton);
     logging(automaton);
-    grunt(automaton);
     prompting(automaton);
     tasks(automaton);
     cli(automaton);
-
+    grunt(automaton);
 });
