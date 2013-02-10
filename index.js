@@ -95,10 +95,12 @@ var Automaton = d.Class.declare({
 
     /**
      * Load tasks in a given folder.
+     * If the folder contain tasks that are not valid, it results in an error being pushed to
+     * an array. That array is returned by the function.
      *
      * @param {String} folder The folder to search for tasks
      *
-     * @return {Automaton} Chainable!
+     * @return {Array} An array of errors
      */
     loadTasks: function (folder) {
         this._assertIsString(folder, 'Expected folder to be a string', true);
@@ -107,7 +109,8 @@ var Automaton = d.Class.declare({
 
         var filenames = fs.readdirSync(folder),
             file,
-            i
+            i,
+            errors = []
         ;
 
         for (i = filenames.length - 1; i >= 0; --i) {
@@ -118,10 +121,14 @@ var Automaton = d.Class.declare({
                 continue;
             }
 
-            this.addTask(require(folder + file));
+            try {
+                this.addTask(require(folder + file));
+            } catch (e) {
+                errors.push(new Error('Unable to add task "' + folder + file + '": ' + e.message));
+            }
         }
 
-        return this;
+        return errors;
     },
 
     /**

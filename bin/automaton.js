@@ -79,15 +79,14 @@ try {
 
 // if task directory includes were defined, load the tasks
 var taskDir = (utils.lang.isString(argv['task-dir']) ? argv['task-dir'] : null) || (utils.lang.isString(argv.d) ? argv.d : null);
+var loadTaskErrors;
 if (taskDir) {
     // if task dir exists, load tasks
     if (fs.existsSync(taskDir) && fs.statSync(taskDir).isDirectory()) {
-        try {
-            automaton.loadTasks(taskDir);
-        } catch (e) {
-            console.error(e.message.automaton_error);
-            process.exit(1);
-        }
+        loadTaskErrors = automaton.loadTasks(taskDir);
+        loadTaskErrors.forEach(function (err) {
+            console.error(err.message.automaton_error);
+        });
     }
 }
 
