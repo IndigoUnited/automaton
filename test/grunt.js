@@ -128,21 +128,39 @@ module.exports = function (automaton) {
 
             runner.run('copy', {
                 files: opts
-            }, null).on('error', function () {
+            }, null).on('end', function () {
                 throw new Error('Should have killed!');
             });
 
             runner.kill();
-            setTimeout(done, 4000);
+            setTimeout(function () {
+                opts = {};
+                opts[target] = __dirname + '/helpers/assets/file1.json';
+
+                runner.run('copy', {
+                    files: opts
+                }, null).on('end', function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    expect(isDir(target)).to.be(true);
+                    expect(isFile(target + 'file1.json')).to.be(true);
+
+                    done();
+                });
+            }, 4000);
         });
     });
 
     describe('Grunt integration', function () {
         it('should respect task order', function (done) {
             var opts = {},
+                opts2 = {},
                 stack = [];
 
             opts[target] = __dirname + '/helpers/assets/file2';
+            opts2[target] = __dirname + '/helpers/assets/file1.json';
 
             automaton.run({
                 tasks: [
@@ -162,6 +180,13 @@ module.exports = function (automaton) {
                         }
                     },
                     {
+                        task: 'copy',
+                        grunt: true,
+                        options: {
+                            files: opts2
+                        }
+                    },
+                    {
                         task: 'callback',
                         options: {
                             callback: function () {
@@ -178,6 +203,7 @@ module.exports = function (automaton) {
                 expect(stack).to.eql([1, 2]);
                 expect(isDir(target)).to.be(true);
                 expect(isFile(target + 'file2')).to.be(true);
+                expect(isFile(target + 'file1.json')).to.be(true);
 
                 done();
             });
