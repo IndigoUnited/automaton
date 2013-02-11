@@ -96,7 +96,7 @@ module.exports = function (automaton) {
                 mode: '0755'
             }, function (err) {
 
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.match(/ENOENT/);
                 done();
             });

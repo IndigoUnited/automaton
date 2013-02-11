@@ -225,7 +225,7 @@ module.exports = function (automaton) {
                 files: files
             }, function (err) {
 
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.match(/ENOENT/);
                 done();
             });
@@ -244,7 +244,7 @@ module.exports = function (automaton) {
                 files: files
             }, function (err) {
 
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.match(/ENOENT/);
                 done();
             });
@@ -264,7 +264,7 @@ module.exports = function (automaton) {
                 files: files
             }, function (err) {
 
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.match(/ENOENT/);
                 done();
             });
@@ -283,7 +283,7 @@ module.exports = function (automaton) {
                 files: files
             }, function (err) {
 
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.match(/ENOENT/);
                 done();
             });
@@ -302,7 +302,7 @@ module.exports = function (automaton) {
                 files: files
             }, function (err) {
 
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.match(/ENOENT/);
                 done();
             });

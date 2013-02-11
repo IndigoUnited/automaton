@@ -358,7 +358,7 @@ module.exports = function (automaton) {
                     }
                 ]
             }, null, function (err) {
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.match(/tasks/);
             });
         });
@@ -596,7 +596,7 @@ module.exports = function (automaton) {
 
         it('should pass an error (without colors) to the callback if there was an one', function (done) {
             var assert = function (err) {
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.equal('wtf');
                 expect(removeColors(err.message) === err.message).to.equal(true);
             };
@@ -861,7 +861,7 @@ module.exports = function (automaton) {
                     }
                 ]
             }, null, function (err) {
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(err.message).to.match(/missing/i);
 
                 done();
@@ -1182,7 +1182,7 @@ module.exports = function (automaton) {
                     }
                 ]
             }, { bar: true }, function (err) {
-                expect(err).to.be.ok();
+                expect(err).to.be.an(Error);
                 expect(ok).to.be.ok();
                 done();
             });
