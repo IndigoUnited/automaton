@@ -120,6 +120,42 @@ module.exports = function (automaton) {
             });
         });
 
+        it('should emit "end" with error if task failed', function (done) {
+            runner.run('copy', {
+                files: {
+                    'wtv': 'filethatwillneverexist'
+                }
+            }, null).on('end', function (err) {
+                expect(err).to.be.an(Error);
+                expect(err.message).to.contain('grunt');
+
+                done();
+            });
+        });
+
+        it('should pass the grunt config (and not inherit from others)', function (done) {
+            runner.run('copy', {
+                files: {
+                    'wtv': 'filethatwillneverexist'
+                }
+            }, { force: true }).on('end', function (err) {
+                if (err) {
+                    throw err;
+                }
+            });
+
+            runner.run('copy', {
+                files: {
+                    'wtv': 'filethatwillneverexist'
+                }
+            }, null).on('end', function (err) {
+                expect(err).to.be.an(Error);
+                expect(err.message).to.contain('grunt');
+
+                done();
+            });
+        });
+
         it('should kill the worker', function (done) {
             this.timeout(5000);
 
@@ -268,6 +304,38 @@ module.exports = function (automaton) {
                 if (err) {
                     throw err;
                 }
+
+                done();
+            });
+        });
+
+        it('should not inherit previous grunt config', function (done) {
+            var opts = {};
+
+            opts[target] = __dirname + '/helpers/assets/filethatwillneverexist';
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'copy',
+                        grunt: {
+                            force: true
+                        },
+                        options: {
+                            files: opts
+                        }
+                    },
+                    {
+                        task: 'copy',
+                        grunt: true,
+                        options: {
+                            files: opts
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                expect(err).to.be.an(Error);
+                expect(err.message).to.contain('grunt');
 
                 done();
             });
