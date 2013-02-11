@@ -805,8 +805,9 @@ module.exports = function (automaton) {
                             expect(ctx).to.be.an('object');
                             expect(ctx.log).to.be.an('object');
                             expect(ctx).to.equal(this);
+                            expect(opts.foo).to.equal(false);
 
-                            return false;
+                            return opts.foo;
                         },
                         options: {
                             callback: function () {
@@ -842,7 +843,7 @@ module.exports = function (automaton) {
                         }
                     }
                 ]
-            }, null, function (err) {
+            }, { foo: false }, function (err) {
                 if (err) {
                     throw err;
                 }
@@ -1119,7 +1120,7 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should bypass tasks that fail if fatal is falsy', function (done) {
+        it('should bypass tasks that fail if "fatal" attribute is falsy', function (done) {
             var ok = false;
 
             automaton.run({
@@ -1132,7 +1133,7 @@ module.exports = function (automaton) {
                         }
                     },
                     {
-                        task: 'callback',
+                        task: 'failing-task',
                         fatal: false,
                         options: {
                             filter: true,
@@ -1147,15 +1148,16 @@ module.exports = function (automaton) {
                         }
                     },
                     {
-                        task: 'callback',
+                        task: 'failing-task',
                         fatal: function (err, opts, ctx) {
                             expect(err).to.be.an(Error);
                             expect(opts).to.be.an('object');
                             expect(ctx).to.be.an('object');
                             expect(ctx.log).to.be.an('object');
                             expect(ctx).to.equal(this);
+                            expect(opts.foo).to.equal(false);
 
-                            return false;
+                            return opts.foo;
                         },
                         options: {
                             message: 'forth'
@@ -1181,7 +1183,7 @@ module.exports = function (automaton) {
                         }
                     }
                 ]
-            }, { bar: true }, function (err) {
+            }, { foo: false, bar: true }, function (err) {
                 expect(err).to.be.an(Error);
                 expect(ok).to.be.ok();
                 done();

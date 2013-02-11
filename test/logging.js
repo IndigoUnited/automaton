@@ -779,7 +779,7 @@ module.exports = function (automaton) {
                                 expect(ctx.log).to.be.an('object');
                                 expect(ctx).to.equal(this);
 
-                                return true;
+                                return opt.foo;
                             }
                         },
                         // should log
@@ -791,7 +791,7 @@ module.exports = function (automaton) {
                             mute: '{{non-existent}}'
                         }
                     ]
-                }, { foo: true }, function (err) {
+                }, { foo: true, bar: false }, function (err) {
                     if (err) {
                         throw err;
                     }

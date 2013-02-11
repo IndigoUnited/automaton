@@ -455,7 +455,7 @@ var Automaton = d.Class.declare({
             if (utils.lang.isString(def.on)) {
                 return !!this._replacePlaceholders(def.on, def.parentOptions, { purge: true });
             } else if (utils.lang.isFunction(def.on)) {
-                return !!def.on.call(def.context, def.options, def.context);
+                return !!def.on.call(def.context, def.parentOptions, def.context);
             } else {
                 return !!def.on;
             }
@@ -477,7 +477,7 @@ var Automaton = d.Class.declare({
             if (utils.lang.isString(def.mute)) {
                 return !!this._replacePlaceholders(def.mute, def.parentOptions, { purge: true });
             } else if (utils.lang.isFunction(def.mute)) {
-                return !!def.mute.call(def.context, def.options, def.context);
+                return !!def.mute.call(def.context, def.parentOptions, def.context);
             } else {
                 return !!def.mute;
             }
