@@ -22,7 +22,7 @@ module.exports = function (automaton) {
             fs.mkdirSync(target, '0777');
         });
 
-        it('should run grunt tasks', function (done) {
+        it('should run grunt tasks (multi task)', function (done) {
             var opts = {},
                 stack = [];
 
@@ -54,6 +54,35 @@ module.exports = function (automaton) {
                 expect(isFile(target + 'file1.json')).to.be(true);
                 expect(stack).to.eql([1, 2]);
 
+                done();
+            });
+        });
+
+        it('should run grunt task (not multi task)', function (done) {
+            runner.run('dummy-single', {
+                file: target + 'dummy'
+            }, {
+                tasks: [__dirname + '/helpers/tasks']
+            }).on('end', function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isDir(target)).to.be(true);
+                expect(isFile(target + 'dummy')).to.be(true);
+            });
+
+            runner.run('dummy-single', {
+                file: target + 'dummy2'
+            }, {
+                tasks: [__dirname + '/helpers/tasks']
+            }).on('end', function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isDir(target)).to.be(true);
+                expect(isFile(target + 'dummy2')).to.be(true);
                 done();
             });
         });
