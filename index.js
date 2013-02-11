@@ -30,10 +30,15 @@ var Automaton = d.Class.declare({
      * @param {Object} [$options] The options
      */
     initialize: function ($options) {
+        var errors;
+
         this._options = $options;
 
         // load core tasks
-        this.loadTasks(__dirname + '/tasks');
+        errors = this.loadTasks(__dirname + '/tasks');
+        if (errors.length) {
+            this._throwError(errors[0], true);
+        }
     },
 
     /**
