@@ -42,6 +42,7 @@ module.exports = function (automaton) {
                         ctx.log.warnln('Level 1 task warn');
                         ctx.log.successln('Level 1 task success');
                         ctx.log.errorln('Level 1 task error');
+                        ctx.log.writeln('Level 1 task write');
                         next();
                     },
                     description: 'Level 1 task',
@@ -60,6 +61,7 @@ module.exports = function (automaton) {
                                             ctx.log.warnln('Level 3 task warn');
                                             ctx.log.successln('Level 3 task success');
                                             ctx.log.errorln('Level 3 task error');
+                                            ctx.log.writeln('Level 3 task write');
                                             next();
                                         },
                                         description: 'Level 3 task'
@@ -81,11 +83,13 @@ module.exports = function (automaton) {
                         indent('Level 1 task warn\n', 1) +
                         indent('Level 1 task success\n', 1) +
                         indent('Level 1 task error\n', 1) +
+                        indent('Level 1 task write\n', 1) +
                         arrow('Level 3 task', 3) +
                         indent('Level 3 task info\n', 3) +
                         indent('Level 3 task warn\n', 3) +
                         indent('Level 3 task success\n', 3) +
-                        indent('Level 3 task error\n', 3)
+                        indent('Level 3 task error\n', 3) +
+                        indent('Level 3 task write\n', 3)
                     );
 
                     done();
@@ -200,6 +204,8 @@ module.exports = function (automaton) {
                                 ctx.log.errorln('foo', 'bar');
                                 ctx.log.success('foo', 'bar');
                                 ctx.log.successln('foo', 'bar');
+                                ctx.log.write('foo', 'bar');
+                                ctx.log.writeln('foo', 'bar');
                                 ctx.log.debug('foo', 'bar');
                                 ctx.log.debugln('foo', 'bar');
 
@@ -215,6 +221,8 @@ module.exports = function (automaton) {
                     log = removeColors(log);
                     expect(log).to.equal(
                         arrow('??', 1) +
+                        indent('foo bar', 2) +
+                        indent('foo bar\n', 2) +
                         indent('foo bar', 2) +
                         indent('foo bar\n', 2) +
                         indent('foo bar', 2) +
