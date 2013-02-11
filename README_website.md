@@ -16,8 +16,6 @@ A little detail that makes Automaton a powerful tool, is that every `autofile` y
 
 `automaton` comes bundled with a few tasks to ease your own tasks.
 
-`ROADMAP` Note that we're working on having support for `gruntjs` tasks, so you can use them just like native `automaton` tasks.
-
 ### Filesystem
 
 - **chmod:** Change mode of files
@@ -280,6 +278,55 @@ var task = {
                 );
 
                 next();
+            }
+        }
+    ]
+};
+
+module.exports = task;
+```
+
+### Grunt tasks
+
+You are able to run `grunt` tasks in `automaton`. It's actually very simple:
+
+```js
+var task = {
+    id: 'my-task',
+    tasks: [
+        {
+            task: 'mincss',
+            grunt: true,
+            options: {
+                files: {
+                    'path/to/output.css': 'path/to/input.css'
+                }
+            }
+        }
+    ]
+};
+
+module.exports = task;
+```
+
+By default, `automaton` autoload tasks located in `tasks/` and npm tasks (that start with grunt-).
+If your task lives in a different folder, you can specify it in the `grunt` config. Other config options like
+`force` and `verbose` can also be specified:
+
+```js
+var task = {
+    id: 'my-task',
+    tasks: [
+        {
+            task: 'some-grunt-task',
+            grunt: {
+                tasks: ['lib/tasks/'],
+                force: true,
+                verbose: true
+                // other grunt config goes here
+            },
+            options: {
+                some: 'option'
             }
         }
     ]
