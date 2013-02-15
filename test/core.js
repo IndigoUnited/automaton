@@ -1179,14 +1179,46 @@ module.exports = function (automaton) {
                         task: 'failing-task',
                         fatal: '{{bar}}',
                         options: {
-                            message: 'third'
+                            message: 'fifth'
                         }
                     }
                 ]
             }, { foo: false, bar: true }, function (err) {
                 expect(err).to.be.an(Error);
+                expect(err.message).to.equal('fifth');
                 expect(ok).to.be.ok();
+
                 done();
+            });
+
+        });
+        it('should stop the task if an error occurs in the setup even if "fatal" is false', function (next) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: {
+                            setup: function (opts, ctx, next) {
+                                console.log('erroring out');
+                                next(new Error('bleh'));
+                            },
+                            tasks: [
+                                {
+                                    task: function () {
+                                        console.log('bleh');
+                                        throw new Error('Should have not run this');
+                                    }
+                                }
+                            ]
+                        },
+                        fatal: false
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                next();
             });
         });
 

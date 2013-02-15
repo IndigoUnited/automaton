@@ -266,7 +266,6 @@ var Automaton = d.Class.declare({
 
             // run setup
             if (def.task.setup) {
-                next = this._wrapTaskNextFunc(next, def, true);
                 def.task.setup.call(def.context, def.options, def.context, next);
             } else {
                 next();
