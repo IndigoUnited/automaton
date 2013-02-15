@@ -47,7 +47,8 @@
     "optimist": "~0.3.5",
     "glob": "3.1.15",
     "update-notifier": "~0.1.2",
-    "promptly": "~0.1.0"
+    "promptly": "~0.1.0",
+    "automaton-find-task": "~0.0.1"
   },
   "devDependencies": {
     "expect.js": "~0.2.0",
