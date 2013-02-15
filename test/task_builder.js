@@ -55,6 +55,8 @@ module.exports = function () {
             var task = taskBuilder.option('option1', null, false).toObject();
 
             expect(task).to.be.eql({ tasks: [], options: { option1: { default: false } } });
+            taskBuilder.option('option1', null, null).toObject();
+            expect(task).to.be.eql({ tasks: [], options: { option1: { default: null } } });
         });
 
         it('should create a task with an option that have a description and a default', function () {
@@ -72,8 +74,8 @@ module.exports = function () {
         });
 
         it('should create a task with a filter', function () {
-            var filterFunc = function (opts, ctx, next) { next(); };
-            var task = taskBuilder.filter(filterFunc).toObject();
+            var filterFunc = function (opts, ctx, next) { next(); },
+                task = taskBuilder.filter(filterFunc).toObject();
 
             expect(task).to.be.eql({ tasks: [], filter: filterFunc });
         });
@@ -100,6 +102,7 @@ module.exports = function () {
                                     .filter(filterFunc)
                                     .do('subtask1', { options: {}, mute: true, fatal: false })
                                     .toObject(),
+
                 expectedTask = {
                     id: 'task1',
                     name: 'task_name',

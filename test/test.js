@@ -9,7 +9,7 @@ var Automaton   = require('../index'),
     prompting   = require('./prompt'),
     tasks       = require('./tasks'),
     cli         = require('./cli'),
-    taskbuilder = require('./taskbuilder'),
+    taskBuilder = require('./task_builder'),
     automaton;
 
 function cleanUpTmp(done) {
@@ -44,5 +44,5 @@ describe('Automaton', function () {
     tasks(automaton);
     cli(automaton);
     grunt(automaton);
-    taskbuilder(automaton);
+    taskBuilder(automaton);
 });
