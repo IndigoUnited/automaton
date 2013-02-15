@@ -7,6 +7,9 @@ module.exports = {
         setupCallback: {
             default: function () {}
         },
+        teardownCallback: {
+            default: function () {}
+        },
         callback: {
             default: function () {}
         },
@@ -16,6 +19,10 @@ module.exports = {
     },
     setup: function (opt, ctx, next) {
         opt.setupCallback.call(this, opt, ctx);
+        next();
+    },
+    teardown: function (opt, ctx, next) {
+        opt.teardownCallback.call(this, opt, ctx);
         next();
     },
     tasks: [

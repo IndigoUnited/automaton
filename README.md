@@ -114,7 +114,7 @@ var task = {
     // Setup is not mandatory,
     // but can be used to perform some operation
     // before running the subtasks (e.g.: change options)
-    setup: function (options, next) {
+    setup: function (options, ctx, next) {
         // You can change existing options.
         options.dir2 = options.dir2 + '_indigo';
 
@@ -124,6 +124,14 @@ var task = {
         // which will be used by one of the subtasks.
         options.dir3 = 'united';
 
+        next();
+    },
+
+    // Teardowm is not mandatory,
+    // but can be used to perform some operation
+    // after running the subtasks
+    teardown: function (options, ctx, next) {
+        // do something afterwards (e.g.: cleanup something)
         next();
     },
 

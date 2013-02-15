@@ -10,6 +10,9 @@ module.exports = {
         setup: {
             default: false
         },
+        teardown: {
+            default: false
+        },
         immediate: {
             default: false
         }
@@ -23,10 +26,19 @@ module.exports = {
 
         next(err);
     },
+    teardown: function (opt, ctx, next) {
+        var err = opt.setup ? new Error(opt.message) : null;
+
+        if (err && opt.immediate) {
+            throw err;
+        }
+
+        next(err);
+    },
     tasks: [
         {
             task: function (opt, ctx, next) {
-                var err = !opt.setup ? new Error(opt.message) : null;
+                var err = !opt.setup && !opt.teardown ? new Error(opt.message) : null;
 
                 if (err && opt.immediate) {
                     throw err;

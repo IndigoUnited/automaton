@@ -32,6 +32,14 @@ var task = {
         next();
     },
 
+    // Teardown is not mandatory,
+    // but can be used to perform some operation
+    // after running the subtasks
+    teardown: function (options, ctx, next) {
+        // Call next when done with the teardown
+        next();
+    },
+
     // This is also optional,
     // but useful if you want the automaton
     // to automatically check for required options,

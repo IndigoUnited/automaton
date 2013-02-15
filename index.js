@@ -304,6 +304,11 @@ var Automaton = d.Class.declare({
             }
         }, this);
 
+        // batch teardown
+        if (def.task.teardown) {
+            batch.push(def.task.teardown.$bind(def.context, def.options, def.context));
+        }
+
         return batch;
     },
 
@@ -567,6 +572,9 @@ var Automaton = d.Class.declare({
         }
         if (task.setup !== undefined) {
             this._assertIsFunction(task.setup, 'Expected setup to be a function in \'' + taskId + '\' task', true);
+        }
+        if (task.teardown !== undefined) {
+            this._assertIsFunction(task.teardown, 'Expected teardown to be a function in \'' + taskId + '\' task', true);
         }
         if (task.options !== undefined) {
             this._assertIsObject(task.options, 'Expected options to be an object in \'' + taskId + '\' task', true);

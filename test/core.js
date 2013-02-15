@@ -194,6 +194,23 @@ module.exports = function (automaton) {
                 });
             }).to.not.throwException();
 
+            // test teardown
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    teardown: 1,
+                    tasks: []
+                });
+            }).to.throwException(/teardown/);
+
+            expect(function () {  // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    teardown: function () {},
+                    tasks: []
+                });
+            }).to.not.throwException();
+
             // test tasks
             expect(function () {
                 automaton.addTask({
@@ -1039,6 +1056,9 @@ module.exports = function (automaton) {
                             },
                             callback: function (opt) {
                                 expect(opt.someOption).to.equal('{{foo}}');
+                            },
+                            teardownCallback: function (opt) {
+                                expect(opt.someOption).to.equal('{{foo}}');
                             }
                         }
                     }
@@ -1079,6 +1099,39 @@ module.exports = function (automaton) {
 
                 if (!setup || wrong) {
                     throw new Error('Setup not called or called after task');
+                }
+
+                done();
+            });
+        });
+
+        it('should execute teardown before their respective tasks', function (done) {
+            var callback = false,
+                wrong = false;
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: 'callback',
+                        options: {
+                            teardownCallback: function () {
+                                if (!callback) {
+                                    wrong = true;
+                                }
+                            },
+                            callback: function () {
+                                callback = true;
+                            }
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                if (!callback || wrong) {
+                    throw new Error('Teardown not called');
                 }
 
                 done();
@@ -1164,6 +1217,14 @@ module.exports = function (automaton) {
                         }
                     },
                     {
+                        task: 'failing-task',
+                        fatal: false,
+                        options: {
+                            message: 'fifth',
+                            teardown: true
+                        }
+                    },
+                    {
                         task: function (opts, ctx, next) {
                             next(new Error('bleh'));
                         },
@@ -1179,33 +1240,35 @@ module.exports = function (automaton) {
                         task: 'failing-task',
                         fatal: '{{bar}}',
                         options: {
-                            message: 'fifth'
+                            message: 'sixth'
                         }
                     }
                 ]
             }, { foo: false, bar: true }, function (err) {
                 expect(err).to.be.an(Error);
-                expect(err.message).to.equal('fifth');
+                expect(err.message).to.equal('sixth');
                 expect(ok).to.be.ok();
 
                 done();
             });
 
         });
+
         it('should stop the task if an error occurs in the setup even if "fatal" is false', function (next) {
+            var run = false;
+
             automaton.run({
                 tasks: [
                     {
                         task: {
                             setup: function (opts, ctx, next) {
-                                console.log('erroring out');
                                 next(new Error('bleh'));
                             },
                             tasks: [
                                 {
-                                    task: function () {
-                                        console.log('bleh');
-                                        throw new Error('Should have not run this');
+                                    task: function (opts, ctx, next) {
+                                        run = true;
+                                        next();
                                     }
                                 }
                             ]
@@ -1218,6 +1281,7 @@ module.exports = function (automaton) {
                     throw err;
                 }
 
+                expect(run).to.equal(false);
                 next();
             });
         });
@@ -1245,11 +1309,17 @@ module.exports = function (automaton) {
                         {
                             task: 'callback',
                             options: {
-                                setupCallback: function () {
+                                setupCallback: function (opt, ctx) {
                                     assert(this);
+                                    assert(ctx);
                                 },
-                                callback: function () {
+                                teardownCallback: function (opt, ctx) {
                                     assert(this);
+                                    assert(ctx);
+                                },
+                                callback: function (opt, ctx) {
+                                    assert(this);
+                                    assert(ctx);
                                 }
                             }
                         }
