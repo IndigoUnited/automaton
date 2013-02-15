@@ -7,15 +7,15 @@ module.exports = {
         message: {
             default: 'bleh'
         },
-        filter: {
+        setup: {
             default: false
         },
         immediate: {
             default: false
         }
     },
-    filter: function (opt, ctx, next) {
-        var err = opt.filter ? new Error(opt.message) : null;
+    setup: function (opt, ctx, next) {
+        var err = opt.setup ? new Error(opt.message) : null;
 
         if (err && opt.immediate) {
             throw err;
@@ -26,7 +26,7 @@ module.exports = {
     tasks: [
         {
             task: function (opt, ctx, next) {
-                var err = !opt.filter ? new Error(opt.message) : null;
+                var err = !opt.setup ? new Error(opt.message) : null;
 
                 if (err && opt.immediate) {
                     throw err;

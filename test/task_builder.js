@@ -73,11 +73,11 @@ module.exports = function () {
             expect(task).to.be.eql({ tasks: [], options: { option1: { description: 'another description for option1', default: true } } });
         });
 
-        it('should create a task with a filter', function () {
-            var filterFunc = function (opts, ctx, next) { next(); },
-                task = taskBuilder.filter(filterFunc).toObject();
+        it('should create a task with setup', function () {
+            var setupFunc = function (opts, ctx, next) { next(); },
+                task = taskBuilder.setup(setupFunc).toObject();
 
-            expect(task).to.be.eql({ tasks: [], filter: filterFunc });
+            expect(task).to.be.eql({ tasks: [], setup: setupFunc });
         });
 
         it('should create a task with a subtask', function () {
@@ -93,13 +93,13 @@ module.exports = function () {
         });
 
         it('should create a complete task', function () {
-            var filterFunc = function (opts, ctx, next) { next(); },
+            var setupFunc = function (opts, ctx, next) { next(); },
                 task = taskBuilder.id('task1')
                                     .name('task_name')
                                     .description('task description')
                                     .author('task author')
                                     .option('option1', 'option description', false)
-                                    .filter(filterFunc)
+                                    .setup(setupFunc)
                                     .do('subtask1', { options: {}, mute: true, fatal: false })
                                     .toObject(),
 
@@ -114,7 +114,7 @@ module.exports = function () {
                             default: false
                         }
                     },
-                    filter: filterFunc,
+                    setup: setupFunc,
                     tasks: [
                         {
                             task: 'subtask1',

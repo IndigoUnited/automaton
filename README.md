@@ -111,10 +111,10 @@ var task = {
     // but can be used to give a base description for the task.
     description: 'My example task',
 
-    // Filter is not mandatory,
+    // Setup is not mandatory,
     // but can be used to perform some operation
-    // on the options before running the subtasks.
-    filter: function (options, next) {
+    // before running the subtasks (e.g.: change options)
+    setup: function (options, next) {
         // You can change existing options.
         options.dir2 = options.dir2 + '_indigo';
 

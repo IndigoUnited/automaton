@@ -177,19 +177,19 @@ module.exports = function (automaton) {
                 });
             }).to.not.throwException();
 
-            // test filter
+            // test setup
             expect(function () {
                 automaton.addTask({
                     id: 'foo',
-                    filter: 1,
+                    setup: 1,
                     tasks: []
                 });
-            }).to.throwException(/filter/);
+            }).to.throwException(/setup/);
 
             expect(function () {  // test valid case
                 automaton.addTask({
                     id: 'foo',
-                    filter: function () {},
+                    setup: function () {},
                     tasks: []
                 });
             }).to.not.throwException();
@@ -665,7 +665,7 @@ module.exports = function (automaton) {
             var stack = [];
 
             automaton.run({
-                filter: function (opt, ctx, next) {
+                setup: function (opt, ctx, next) {
                     opt.truthy2 = true;
                     next();
                 },
@@ -877,7 +877,7 @@ module.exports = function (automaton) {
                         default: 'bar'
                     }
                 },
-                filter: function (opt, ctx, next) {
+                setup: function (opt, ctx, next) {
                     expect(opt.foo).to.equal('bar');
                     next();
                 },
@@ -893,7 +893,7 @@ module.exports = function (automaton) {
                             default: 'bar'
                         }
                     },
-                    filter: function (opt, ctx, next) {
+                    setup: function (opt, ctx, next) {
                         expect(opt.foo).to.equal('baz');
                         next();
                     },
@@ -1034,7 +1034,7 @@ module.exports = function (automaton) {
                         task: 'callback',
                         options: {
                             someOption: '\\{\\{foo\\}\\}',
-                            filterCallback: function (opt) {
+                            setupCallback: function (opt) {
                                 expect(opt.someOption).to.equal('\\{\\{foo\\}\\}');
                             },
                             callback: function (opt) {
@@ -1052,8 +1052,8 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should execute filters before their respective tasks', function (done) {
-            var filtered = false,
+        it('should execute setup before their respective tasks', function (done) {
+            var setup = false,
                 wrong = false;
 
             automaton.run({
@@ -1061,11 +1061,11 @@ module.exports = function (automaton) {
                     {
                         task: 'callback',
                         options: {
-                            filterCallback: function () {
-                                filtered = true;
+                            setupCallback: function () {
+                                setup = true;
                             },
                             callback: function () {
-                                if (!filtered) {
+                                if (!setup) {
                                     wrong = true;
                                 }
                             }
@@ -1077,17 +1077,17 @@ module.exports = function (automaton) {
                     throw err;
                 }
 
-                if (!filtered || wrong) {
-                    throw new Error('Filtered not called or called after task');
+                if (!setup || wrong) {
+                    throw new Error('Setup not called or called after task');
                 }
 
                 done();
             });
         });
 
-        it('should let filters modify options and infer new ones', function (done) {
+        it('should let setup modify options and infer new ones', function (done) {
             automaton.run({
-                filter: function (opt, ctx, next) {
+                setup: function (opt, ctx, next) {
                     opt.very = 'awesome';
                     opt.ultra = 'awesome';
                     next();
@@ -1098,7 +1098,7 @@ module.exports = function (automaton) {
                         options: {
                             ultra: '{{ultra}}',
                             very: '{{very}}',
-                            filterCallback: function (opt) {
+                            setupCallback: function (opt) {
                                 opt.foo = 'bar';
                                 opt.someOption = 'baz';
                             },
@@ -1136,7 +1136,7 @@ module.exports = function (automaton) {
                         task: 'failing-task',
                         fatal: false,
                         options: {
-                            filter: true,
+                            setup: true,
                             message: 'second'
                         }
                     },
@@ -1205,7 +1205,7 @@ module.exports = function (automaton) {
                 };
 
                 automaton.run({
-                    filter: function (opt, ctx, next) {
+                    setup: function (opt, ctx, next) {
                         assert(this);
                         next();
                     },
@@ -1213,7 +1213,7 @@ module.exports = function (automaton) {
                         {
                             task: 'callback',
                             options: {
-                                filterCallback: function () {
+                                setupCallback: function () {
                                     assert(this);
                                 },
                                 callback: function () {

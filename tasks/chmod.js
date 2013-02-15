@@ -23,7 +23,7 @@ var task = {
             default: null
         }
     },
-    filter: function (opt, ctx, next) {
+    setup       : function (opt, ctx, next) {
         if (!utils.lang.isNumber(opt.mode)) {
             opt.mode = parseInt(opt.mode, 8);
         }

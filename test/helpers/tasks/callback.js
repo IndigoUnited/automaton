@@ -4,7 +4,7 @@ module.exports = {
     id: 'callback',
     description: 'Callback task',
     options: {
-        filterCallback: {
+        setupCallback: {
             default: function () {}
         },
         callback: {
@@ -14,8 +14,8 @@ module.exports = {
             default: 'default'
         }
     },
-    filter: function (opt, ctx, next) {
-        opt.filterCallback.call(this, opt, ctx);
+    setup: function (opt, ctx, next) {
+        opt.setupCallback.call(this, opt, ctx);
         next();
     },
     tasks: [

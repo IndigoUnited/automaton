@@ -15,10 +15,10 @@ var task = {
     // also not mandatory
     author: 'Indigo United',
 
-    // Filter is not mandatory,
+    // Setup is not mandatory,
     // but can be used to perform some operation
-    // on the options before running the subtasks
-    filter: function (options, ctx, next) {
+    // before running the subtasks (e.g.: change options)
+    setup: function (options, ctx, next) {
         // You can change existing options
         options.dir2 = options.dir2 + '_indigo';
 
@@ -28,7 +28,7 @@ var task = {
         // which will be used by one of the subtasks
         options.dir3 = 'united';
 
-        // Call next when done with the filter
+        // Call next when done with the setup
         next();
     },
 
@@ -81,7 +81,7 @@ var task = {
             on: '{{run_all}}',
             description: 'create the third folder, ' +
                          'which was defined ' +
-                         'by one of the filters',
+                         'by the setup',
             options: {
                 dir: '{{dir1}}/{{dir2}}/{{dir3}}'
             }

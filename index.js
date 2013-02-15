@@ -220,9 +220,7 @@ var Automaton = d.Class.declare({
      */
     _batchTask: function (def) {
         var batch = [],
-            option,
-            filter,
-            afterFilter
+            option
         ;
 
         // if task is an id
@@ -247,32 +245,33 @@ var Automaton = d.Class.declare({
             }
         }
 
-        // batch the filter
-        afterFilter = function (next) {
-            // we need to replace options again because parent filter might have
-            // added options that are placeholders
-            this._replaceOptions(def.options, def.parentOptions);
-            next(this._validateTaskOptions(def.task, def.options));
-        }.$bind(this);
-        filter = function (next) {
-            next = this._wrapTaskNextFunc(next, def, true);
+        // batch pre-setup
+        batch.push(function (next) {
+            var prevNext = next;
 
             // replace options & report task
             this._replaceOptions(def.options, def.parentOptions, { skipUnescape : true });
             this._onBeforeTask(def);
 
-            // if there is an actual filter, run it and call the after filter
-            if (def.task.filter) {
-                async.series([
-                    def.task.filter.$bind(def.context, def.options, def.context),
-                    afterFilter
-                ], next);
-            // otherwise simply call the after filter
+            // after running the setup, we need to replace options again because parent setup might have
+            // added options that are placeholders
+            next = function (err) {
+                if (err) {
+                    return prevNext(err);
+                }
+
+                this._replaceOptions(def.options, def.parentOptions);
+                prevNext(this._validateTaskOptions(def.task, def.options));
+            }.$bind(this);
+
+            // run setup
+            if (def.task.setup) {
+                next = this._wrapTaskNextFunc(next, def, true);
+                def.task.setup.call(def.context, def.options, def.context, next);
             } else {
-                afterFilter(next);
+                next();
             }
-        }.$bind(this);
-        batch.push(filter);
+        }.$bind(this));
 
         // batch each task
         def.task.tasks.forEach(function (subtask) {
@@ -404,13 +403,13 @@ var Automaton = d.Class.declare({
      * This is needed to make fatal to work properly
      * and to unmute the logger.
      *
-     * @param {Function} next     The next function
-     * @param {Object}   def      The task definition
-     * @param {Boolean}  isFilter True if wrapping the filter, false otherwise
+     * @param {Function} next    The next function
+     * @param {Object}   def     The task definition
+     * @param {Boolean}  isSetup True if wrapping the setup, false otherwise
      *
      * @return {Function} The wrapped function
      */
-    _wrapTaskNextFunc: function (next, def, isFilter) {
+    _wrapTaskNextFunc: function (next, def, isSetup) {
         return function (err) {
             var fatal,
                 name;
@@ -433,7 +432,7 @@ var Automaton = d.Class.declare({
             }
 
             // unmute the logger if this task muted the logger
-            if (!isFilter && def.mutedLogger) {
+            if (!isSetup && def.mutedLogger) {
                 def.context.log.unmute();
                 delete def.mutedLogger;
             }
@@ -567,8 +566,8 @@ var Automaton = d.Class.declare({
             }
             this._assertIsNotEmpty(task.description, 'Expected description to not be empty \'' + taskId + '\' task');
         }
-        if (task.filter !== undefined) {
-            this._assertIsFunction(task.filter, 'Expected filter to be a function in \'' + taskId + '\' task', true);
+        if (task.setup !== undefined) {
+            this._assertIsFunction(task.setup, 'Expected setup to be a function in \'' + taskId + '\' task', true);
         }
         if (task.options !== undefined) {
             this._assertIsObject(task.options, 'Expected options to be an object in \'' + taskId + '\' task', true);

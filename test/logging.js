@@ -37,7 +37,7 @@ module.exports = function (automaton) {
 
             automaton
                 .run({
-                    filter: function (opt, ctx, next) {
+                    setup: function (opt, ctx, next) {
                         ctx.log.infoln('Level 1 task info');
                         ctx.log.warnln('Level 1 task warn');
                         ctx.log.successln('Level 1 task success');
@@ -103,7 +103,7 @@ module.exports = function (automaton) {
 
             automaton
                 .run({
-                    filter: function (opt, ctx, next) {
+                    setup: function (opt, ctx, next) {
                         ctx.log.infoln('Level 1 task info');
                         ctx.log.warnln('Level 1 task warn');
                         ctx.log.successln('Level 1 task success');
@@ -576,7 +576,7 @@ module.exports = function (automaton) {
 
             automaton
                 .run({
-                    filter: function (opt, ctx, next) {
+                    setup: function (opt, ctx, next) {
                         ctx.log.infoln('Level 1 task info');
                         ctx.log.warnln('Level 1 task warn');
                         ctx.log.successln('Level 1 task success');
