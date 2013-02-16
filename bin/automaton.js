@@ -23,6 +23,10 @@ var commands = [
         {
             cmd: 'init [autofile]',
             desc: 'Create a blank autofile. Defaults to "autofile.js".'
+        },
+        {
+            cmd: 'find [some task]',
+            desc: 'Find tasks on NPM registry. Option --grunt also includes grunt tasks in result. Force the cache to update with --clear-cache.'
         }
     ],
     automatonOptions = [
@@ -148,6 +152,11 @@ else if (argv._.length) {
     case 'init':
         var taskId = argv._[1] || 'autofile';
         initTask(taskId);
+        break;
+
+    case 'find':
+        argv.query = argv._[1];
+        runTask(require('automaton-find-task'), argv);
         break;
 
     default:
