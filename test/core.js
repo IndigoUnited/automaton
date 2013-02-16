@@ -378,6 +378,26 @@ module.exports = function (automaton) {
                     ]
                 });
             }).to.throwException(/tasks/);
+
+            expect(function () {
+                automaton.run({
+                    tasks: [
+                        {
+                            task: {
+                                tasks: [
+                                    {
+                                        task: {
+                                            tasks: 1
+                                        },
+                                        description: 'deep'
+                                    }
+                                ]
+                            },
+                            description: 'copy something'
+                        }
+                    ]
+                });
+            }).to.throwException(/tasks/);
         });
 
         it('should add tasks by id', function (done) {

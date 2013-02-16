@@ -9,25 +9,28 @@ module.exports = function () {
 
         it('should error if task file does not exist', function (done) {
             cp.exec('node bin/automaton something-that-will-never-exist', function (err, stdout, stderr) {
+                expect(err).to.be.an(Error);
+                expect(err.code).to.equal(1);
+
                 if (process.platform !== 'win32') {  // Windows messes with stdout dunno why
                     expect(stderr).to.match(/could not find/i);
                 }
-            }).on('exit', function (code) {
-                expect(code).to.equal(1);
+
                 done();
             });
         });
 
-        it('should exit with an appropriate code if a task fails', function (done) {
+        it('should exit with an appropriate code on fail/success', function (done) {
             cp.exec('node bin/automaton test/helpers/tasks/dummy-mandatory', function (err, stdout) {
+                expect(err).to.be.an(Error);
+                expect(err.code).to.equal(1);
+
                 if (process.platform !== 'win32') {  // windows messes with stdout dunno why
                     expect(stdout).to.match(/mandatory/);
                 }
-            }).on('exit', function (code) {
-                expect(code).to.equal(1);
 
                 cp.exec('node bin/automaton test/helpers/tasks/dummy-mandatory --mandatory=foo')
-                  .on('exit', function (code) {
+                .on('exit', function (code) {
                     expect(code).to.equal(0);
                     done();
                 });
@@ -36,11 +39,13 @@ module.exports = function () {
 
         it('should error when showing help of a malformed/non-task file', function (done) {
             cp.exec('node bin/automaton index.js', function (err, stdout, stderr) {
+                expect(err).to.be.an(Error);
+                expect(err.code).to.equal(1);
+
                 if (process.platform !== 'win32') {  // Windows messes with stdout dunno why
-                    expect(stderr).to.match(/task to be an object/i);
+                    expect(stderr).to.match(/unable to get task/i);
                 }
-            }).on('exit', function (code) {
-                expect(code).to.equal(1);
+
                 done();
             });
         });
