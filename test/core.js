@@ -2,6 +2,7 @@
 
 var expect       = require('expect.js'),
     fs           = require('fs'),
+    async        = require('async'),
     isDir        = require('./helpers/util/is-dir'),
     callbackTask = require('./helpers/tasks/callback'),
     removeColors = require('../lib/Logger').removeColors
@@ -628,31 +629,83 @@ module.exports = function (automaton) {
                 expect(removeColors(err.message) === err.message).to.equal(true);
             };
 
-            automaton.run({
-                tasks: [
-                    {
-                        task: function (opt, ctx, next) {
-                            next(new Error('wtf'));
-                        }
-                    }
-                ]
-            }, null, function (err) {
-                assert(err);
-
-                automaton.run({
-                    tasks: [
-                        {
-                            task: function (opt, ctx, next) {
-                                next('wtf');
+            async.series({
+                first: function (next) {
+                    automaton.run({
+                        tasks: [
+                            {
+                                task: function (opt, ctx, next) {
+                                    next(new Error('wtf'));
+                                }
                             }
-                        }
-                    ]
-                }, null, function (err) {
-                    assert(err);
-
-                    done();
-                });
-            });
+                        ]
+                    }, null, function (err) {
+                        assert(err);
+                        next();
+                    });
+                },
+                second: function (next) {
+                    automaton.run({
+                        tasks: [
+                            {
+                                task: function (opt, ctx, next) {
+                                    next('wtf');
+                                }
+                            }
+                        ]
+                    }, null, function (err) {
+                        assert(err);
+                        next();
+                    });
+                },
+                third: function (next) {
+                    automaton.run({
+                        tasks: [
+                            {
+                                task: 'failing-task',
+                                options: {
+                                    setup: true,
+                                    message: 'wtf'
+                                }
+                            }
+                        ]
+                    }, null, function (err) {
+                        assert(err);
+                        next();
+                    });
+                },
+                forth: function (next) {
+                    automaton.run({
+                        tasks: [
+                            {
+                                task: 'failing-task',
+                                options: {
+                                    teardown: true,
+                                    message: 'wtf'
+                                }
+                            }
+                        ]
+                    }, null, function (err) {
+                        assert(err);
+                        next();
+                    });
+                },
+                fifth: function (next) {
+                    automaton.run({
+                        tasks: [
+                            {
+                                task: 'failing-task',
+                                options: {
+                                    message: 'wtf'
+                                }
+                            }
+                        ]
+                    }, null, function (err) {
+                        assert(err);
+                        next();
+                    });
+                }
+            }, done);
         });
 
         // test if options are shared
@@ -1157,7 +1210,7 @@ module.exports = function (automaton) {
                         task: {
                             teardown: function (opt, ctx, next) {
                                 teardown = true;
-                                next();
+                                next(new Error('wtf'));
                             },
                             tasks: [
                                 {
