@@ -80,6 +80,13 @@ module.exports = function () {
             expect(task).to.be.eql({ tasks: [], setup: setupFunc });
         });
 
+        it('should create a task with teardown', function () {
+            var teardownFunc = function (opts, ctx, next) { next(); },
+                task = taskBuilder.teardown(teardownFunc).toObject();
+
+            expect(task).to.be.eql({ tasks: [], teardown: teardownFunc });
+        });
+
         it('should create a task with a subtask', function () {
             var task = taskBuilder.do('subtask1').toObject();
 
@@ -94,12 +101,14 @@ module.exports = function () {
 
         it('should create a complete task', function () {
             var setupFunc = function (opts, ctx, next) { next(); },
+                teardownFunc = function (opts, ctx, next) { next(); },
                 task = taskBuilder.id('task1')
                                     .name('task_name')
                                     .description('task description')
                                     .author('task author')
                                     .option('option1', 'option description', false)
                                     .setup(setupFunc)
+                                    .teardown(teardownFunc)
                                     .do('subtask1', { options: {}, mute: true, fatal: false })
                                     .toObject(),
 
@@ -115,6 +124,7 @@ module.exports = function () {
                         }
                     },
                     setup: setupFunc,
+                    teardown: teardownFunc,
                     tasks: [
                         {
                             task: 'subtask1',

@@ -33,5 +33,16 @@ module.exports = function () {
                 });
             });
         });
+
+        it('should error when showing help of a malformed/non-task file', function (done) {
+            cp.exec('node bin/automaton index.js', function (err, stdout, stderr) {
+                if (process.platform !== 'win32') {  // Windows messes with stdout dunno why
+                    expect(stderr).to.match(/task to be an object/i);
+                }
+            }).on('exit', function (code) {
+                expect(code).to.equal(1);
+                done();
+            });
+        });
     });
 };

@@ -8,6 +8,7 @@ var utils          = require('mout'),
     argv           = require('optimist').argv,
     pkg            = require('../package.json'),
     updateNotifier = require('update-notifier'),
+    validate       = require('../lib/validate_task'),
     Automaton      = require('../index'),
     notifier
 ;
@@ -121,6 +122,10 @@ if (argv.help || argv.h) {
         // with that name, check if there is a task suitable
         if (!(task = getTaskFromFile(taskId))) {
             task = automaton.getTask(taskId);
+            if (!task) {
+                console.error(('Could not find any task or autofile "' + taskId + '"').automaton_error);
+                process.exit(1);
+            }
         }
 
         // try to show usage
@@ -128,7 +133,8 @@ if (argv.help || argv.h) {
             showTaskUsage(task);
         // unknown task requested
         } catch (err) {
-            console.error(('Could not find any task or autofile "' + taskId + '"').automaton_error);
+            console.error(err.message.automaton_error);
+            process.exit();
         }
     // no task was specified, show overall usage
     } else {
@@ -151,9 +157,8 @@ else if (argv._.length) {
         // if there is no autofile in the current directory
         // with that name, check if there is a task suitable
         if (!(task = getTaskFromFile(taskId))) {
-            try {
-                task = automaton.getTask(taskId);
-            } catch (err) {
+            task = automaton.getTask(taskId);
+            if (!task) {
                 console.error(('Could not find any task or autofile "' + taskId + '"').automaton_error);
                 process.exit(1);
             }
@@ -266,6 +271,8 @@ function showTaskUsage(task) {
         k
     ;
 
+    validate(task);
+
     if (task.description) {
         console.log('\n  ' + task.description.green);
     }
@@ -328,10 +335,6 @@ function getTaskFromFile(file) {
 }
 
 function runTask(task, taskOpts) {
-    if (utils.lang.isString(task)) {
-        task = automaton.getTask(task);
-    }
-
     automaton
         .run(task, taskOpts, function (err) {
             if (err) {

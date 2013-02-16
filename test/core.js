@@ -365,19 +365,18 @@ module.exports = function (automaton) {
             }).to.throwException(/tasks/);
 
             // test that run also triggers validation for not loaded/added tasks
-            automaton.run({
-                tasks: [
-                    {
-                        task: {
-                            tasks: 1
-                        },
-                        description: 'copy something'
-                    }
-                ]
-            }, null, function (err) {
-                expect(err).to.be.an(Error);
-                expect(err.message).to.match(/tasks/);
-            });
+            expect(function () {
+                automaton.run({
+                    tasks: [
+                        {
+                            task: {
+                                tasks: 1
+                            },
+                            description: 'copy something'
+                        }
+                    ]
+                });
+            }).to.throwException(/tasks/);
         });
 
         it('should add tasks by id', function (done) {
@@ -430,25 +429,20 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should remove tasks by id', function (done) {
+        it('should remove tasks by id', function () {
             automaton.removeTask('callback');
 
-            automaton.run({
-                tasks: [
-                    {
-                        task: 'callback'
-                    }
-                ]
-            }, null, function (err) {
-                automaton.addTask(callbackTask);
+            expect(function () {
+                automaton.run({
+                    tasks: [
+                        {
+                            task: 'callback'
+                        }
+                    ]
+                });
+            }).to.throwException(/task handler suitable/);
 
-                if (!err) {
-                    throw new Error('Callback task was not deleted');
-                }
-
-                expect(err.message).to.match(/task handler suitable/);
-                done();
-            });
+            automaton.addTask(callbackTask);
         });
 
         it('should load tasks in folder', function () {
@@ -460,6 +454,37 @@ module.exports = function (automaton) {
         });
 
         // test run
+        it('should error out when attempting to run a not loaded task', function () {
+            expect(function () {
+                automaton.run('taskthatwillneverexist');
+            }).to.throwException(/task handler suitable/);
+
+            expect(function () {
+                automaton.run({
+                    tasks: [
+                        {
+                            task: 'taskthatwillneverexist'
+                        }
+                    ]
+                });
+            }).to.throwException(/task handler suitable/);
+        });
+
+        it('should be able to run task by id', function (done) {
+            var dirname = __dirname + '/tmp/dir';
+
+            automaton.run('mkdir', {
+                dirs: dirname
+            }, function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                expect(isDir(dirname)).to.be(true);
+                done();
+            });
+        });
+
         it('should run a single subtask', function (done) {
             var called = false;
 
@@ -524,12 +549,18 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should be able to run task by id', function (done) {
+        it('should run inline subtasks', function (done) {
             var dirname = __dirname + '/tmp/dir';
 
-            automaton.run('mkdir', {
-                dirs: dirname
-            }, function (err) {
+            automaton.run({
+                tasks: [
+                    {
+                        task: function (opt, ctx, next) {
+                            fs.mkdir(dirname, parseInt('0777', 8), next);
+                        }
+                    }
+                ]
+            }, null, function (err) {
                 if (err) {
                     throw err;
                 }
@@ -573,27 +604,6 @@ module.exports = function (automaton) {
                 }
 
                 expect(stack).to.eql([1, 2]);
-                done();
-            });
-        });
-
-        it('should run inline subtasks', function (done) {
-            var dirname = __dirname + '/tmp/dir';
-
-            automaton.run({
-                tasks: [
-                    {
-                        task: function (opt, ctx, next) {
-                            fs.mkdir(dirname, parseInt('0777', 8), next);
-                        }
-                    }
-                ]
-            }, null, function (err) {
-                if (err) {
-                    throw err;
-                }
-
-                expect(isDir(dirname)).to.be(true);
                 done();
             });
         });
@@ -1105,7 +1115,7 @@ module.exports = function (automaton) {
             });
         });
 
-        it('should execute teardown before their respective tasks', function (done) {
+        it('should execute teardown after their respective tasks', function (done) {
             var callback = false,
                 wrong = false;
 
@@ -1133,6 +1143,36 @@ module.exports = function (automaton) {
                 if (!callback || wrong) {
                     throw new Error('Teardown not called');
                 }
+
+                done();
+            });
+        });
+
+        it('should execute teardown even if the task failed', function (done) {
+            var teardown = false;
+
+            automaton.run({
+                tasks: [
+                    {
+                        task: {
+                            teardown: function (opt, ctx, next) {
+                                teardown = true;
+                                next();
+                            },
+                            tasks: [
+                                {
+                                    task: function (opt, ctx, next) {
+                                        next(new Error('bleh'));
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }, null, function (err) {
+                expect(err).to.be.an(Error);
+                expect(err.message).to.equal('bleh');
+                expect(teardown).to.equal(true);
 
                 done();
             });

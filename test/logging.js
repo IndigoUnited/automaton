@@ -25,11 +25,6 @@ module.exports = function (automaton) {
                 });
 
             expect(ret).to.be.a(Stream);
-
-            ret = automaton
-                .run({}); // attempt to run an invalid task on purpose
-
-            expect(ret).to.be.a(Stream);
         });
 
         it('should report tasks with padding correspondent to the depth', function (done) {
@@ -97,6 +92,33 @@ module.exports = function (automaton) {
                 .on('data', function (data) { log += data; });
         });
 
+        it('should log indented errors', function (done) {
+            var log = '';
+
+            automaton.run({
+                description: 'Root',
+                tasks: [
+                    {
+                        task: function (opt, ctx, next) {
+                            next(new Error('bleh'));
+                        },
+                        description: 'Level 1'
+                    }
+                ]
+            }, null, function (err) {
+                expect(err).to.be.an(Error);
+
+                log = removeColors(log);
+                expect(log).to.equal(
+                    arrow('Root', 1) +
+                    arrow('Level 1', 2) +
+                    indent('bleh\n', 2)
+                );
+
+                done();
+            })
+            .on('data', function (data) { log += data; });
+        });
 
         it('should not report task descriptions if they are null', function (done) {
             var log = '';
