@@ -42,6 +42,7 @@ var task = {
     [
         {
             task: 'cp',
+            description: null,
             options: {
                 files: {
                     '{{__dirname}}/../base_autofile.js': '{{filename}}'
@@ -50,6 +51,7 @@ var task = {
         },
         {
             task: 'scaffolding-replace',
+            description: null,
             options: {
                 files: '{{filename}}',
                 data: {
