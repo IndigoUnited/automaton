@@ -10,6 +10,7 @@ var d           = require('dejavu'),
     inter       = require('./lib/string/cast-interpolate'),
     validate    = require('./lib/validate_task'),
     Logger      = require('./lib/Logger'),
+    TaskBuilder = require('./lib/TaskBuilder'),
     GruntRunner = require('./lib/grunt/Runner')
 ;
 
@@ -48,11 +49,12 @@ var Automaton = d.Class.declare({
      * If the task already exists, it will be replaced.
      * The task will be validaded only when its run.
      *
-     * @param {Object} task The task definition
+     * @param {Object|Function} task The task definition
      *
      * @return {Automaton} Chainable!
      */
     addTask: function (task) {
+        task = this._getTaskObject(task);
         validate(task);
 
         assert(task.id, 'Can only add tasks with an id');
@@ -201,6 +203,29 @@ var Automaton = d.Class.declare({
     },
 
     /**
+     * Get the task object in case the task is a function that will build the object.
+     *
+     * @param {Object|Function} task The task object or the builder
+     *
+     * @return {Object} The task
+     */
+    _getTaskObject: function (task) {
+        var builder;
+
+        if (utils.lang.isFunction(task)) {
+            builder = new TaskBuilder();
+            try {
+                task(builder);
+            } catch (e) {
+                throw new Error('Unable to get task from builder: ' + e.message);
+            }
+            task = builder.toObject();
+        }
+
+        return task;
+    },
+
+    /**
      * Create a batch for a task.
      * The batch is a sequence of functions that form the task.
      *
@@ -220,9 +245,15 @@ var Automaton = d.Class.declare({
             // grab its real definition
             this._assertTaskLoaded(def.task);
             def.task = this.getTask(def.task);
-        // otherwise, trigger validation if is the root task
-        } else if (def.depth === 1) {
-            validate(def.task);
+        } else {
+            // if task is a function then needs a builder
+            if (utils.lang.isFunction(def.task)) {
+                def.task = this._getTaskObject(def.task);
+            }
+            // trigger validation if is the root task
+            if (def.depth === 1) {
+                validate(def.task);
+            }
         }
 
         // fill in the options with default values where the option was not provided
@@ -271,12 +302,12 @@ var Automaton = d.Class.declare({
         def.task.tasks.forEach(function (subtask) {
             var subtaskDef = this._createTaskDefinition(subtask, def);
 
-            // if it's a function
-            if (utils.lang.isFunction(subtaskDef.task)) {
-                batch.push(this._batchFunctionTask(subtaskDef));
             // if it's a grunt task
-            } else if (subtaskDef.grunt) {
+            if (subtaskDef.grunt) {
                 batch.push(this._batchGruntTask(subtaskDef));
+            // if it's a inline function
+            } else if (utils.lang.isFunction(subtaskDef.task) && subtaskDef.task.length !== 1) {
+                batch.push(this._batchFunctionTask(subtaskDef));
             // then it must be another task
             } else {
                 batch.push(this._batchTask(subtaskDef));
@@ -298,7 +329,7 @@ var Automaton = d.Class.declare({
             }
         }.$bind(this);
 
-        // return a final function with everything set it
+        // return a final function which calls everything in order
         return function (next) {
             // run pre-task
             preTaskFunc(function (err, disabled) {
@@ -307,14 +338,14 @@ var Automaton = d.Class.declare({
                     return next();
                 }
 
-                // if there was an error, run pos-task afterwards
+                // if there was an error in the pre-task, run pos-task immediately
                 if (err) {
                     return posTaskFunc(err, next);
                 }
 
                 // run each subtask
                 async.series(batch, function (err) {
-                    // finally run the pos-task
+                    // finally run the pos-task, even if there was an error
                     posTaskFunc(err, next);
                 });
             });
