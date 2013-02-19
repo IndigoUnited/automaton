@@ -21,6 +21,15 @@ module.exports = function (automaton) {
 
             beforeEach(function () {
                 fs.mkdirSync(target, '0777');
+                if (fs.existsSync(__dirname + '/../node_modules/grunt/_package.json')) {
+                    fs.renameSync(__dirname + '/../node_modules/grunt/_package.json', __dirname + '/../node_modules/grunt/package.json');
+                }
+            });
+
+            after(function () {
+                if (fs.existsSync(process.cwd() + '/tasks/grunt-dummy.js')) {
+                    fs.unlinkSync(process.cwd() + '/tasks/grunt-dummy.js');
+                }
             });
 
             it('should run grunt tasks (multi task)', function (done) {
@@ -132,7 +141,7 @@ module.exports = function (automaton) {
                 var runner = new Runner(),
                     error;
 
-                fs.renameSync(__dirname + '/../node_modules/grunt', __dirname + '/../node_modules/grunt_');
+                fs.renameSync(__dirname + '/../node_modules/grunt/package.json', __dirname + '/../node_modules/grunt/_package.json');
 
                 // when grunt is not found, an error is emitted
                 runner.run('bleh', {}, null)
@@ -140,7 +149,7 @@ module.exports = function (automaton) {
                     error = err.message;
                 })
                 .on('end', function (err) {
-                    fs.renameSync(__dirname + '/../node_modules/grunt_', __dirname + '/../node_modules/grunt');
+                    fs.renameSync(__dirname + '/../node_modules/grunt/_package.json', __dirname + '/../node_modules/grunt/package.json');
 
                     expect(err).to.be.an(Error);
                     expect(error).to.be.a('string');
@@ -220,6 +229,18 @@ module.exports = function (automaton) {
         });
 
         describe('Integration', function () {
+            after(function () {
+                if (fs.existsSync(process.cwd() + '/tasks/grunt-dummy.js')) {
+                    fs.unlinkSync(process.cwd() + '/tasks/grunt-dummy.js');
+                }
+            });
+
+            beforeEach(function () {
+                if (fs.existsSync(__dirname + '/../node_modules/grunt/_package.json')) {
+                    fs.renameSync(__dirname + '/../node_modules/grunt/_package.json', __dirname + '/../node_modules/grunt/package.json');
+                }
+            });
+
             it('should respect task order', function (done) {
                 var opts = {},
                     opts2 = {},
@@ -572,7 +593,7 @@ module.exports = function (automaton) {
             it('should error when grunt is not loaded', function (done) {
                 var log = '';
 
-                fs.renameSync(__dirname + '/../node_modules/grunt', __dirname + '/../node_modules/grunt_');
+                fs.renameSync(__dirname + '/../node_modules/grunt/package.json', __dirname + '/../node_modules/grunt/_package.json');
 
                 automaton.run({
                     tasks: [
@@ -582,7 +603,7 @@ module.exports = function (automaton) {
                         }
                     ]
                 }, null, function (err) {
-                    fs.renameSync(__dirname + '/../node_modules/grunt_', __dirname + '/../node_modules/grunt');
+                    fs.renameSync(__dirname + '/../node_modules/grunt/_package.json', __dirname + '/../node_modules/grunt/package.json');
 
                     expect(err).to.be.an(Error);
                     expect(log).to.contain('find grunt');
