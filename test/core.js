@@ -350,6 +350,44 @@ module.exports = function (automaton) {
                 });
             }).to.not.throwException();
 
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: {
+                                tasks: []
+                            },
+                            grunt: 1
+                        }
+                    ]
+                });
+            }).to.throwException(/grunt/);
+
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            grunt: true
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
+            expect(function () {
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            grunt: {}
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
             // test deep tasks validation
             expect(function () {
                 automaton.addTask({
