@@ -36,11 +36,11 @@ module.exports = function (automaton) {
                 var opts = {},
                     stack = [];
 
-                opts[target] = __dirname + '/helpers/assets/file2';
+                opts[target + 'file2'] = __dirname + '/helpers/assets/file2';
 
                 runner.run('copy', {
                     files: opts
-                }, null).on('end', function (err) {
+                }).on('end', function (err) {
                     if (err) {
                         throw err;
                     }
@@ -51,10 +51,10 @@ module.exports = function (automaton) {
                 });
 
                 opts = {};
-                opts[target] = __dirname + '/helpers/assets/file1.json';
+                opts[target + 'file1.json'] = __dirname + '/helpers/assets/file1.json';
                 runner.run('copy', {
                     files: opts
-                }, null).on('end', function (err) {
+                }).on('end', function (err) {
                     if (err) {
                         throw err;
                     }
@@ -107,7 +107,7 @@ module.exports = function (automaton) {
 
                 emitter = runner.run('copy', {
                     files: opts
-                }, null).on('end', function (err) {
+                }).on('end', function (err) {
                     if (err) {
                         throw err;
                     }
@@ -120,12 +120,7 @@ module.exports = function (automaton) {
                     .on('start', function () { stack.push('start'); })
                     .on('data', function () { stack.push('data'); });
 
-                opts = {};
-                opts[target] = __dirname + '/helpers/assets/filethatwillneverexist';
-
-                emitter = runner.run('not_loaded_task', {
-                    files: opts
-                }, null).on('end', function (err) {
+                emitter = runner.run('not_loaded_task').on('end', function (err) {
                     expect(err).to.be.an(Error);
                     expect(stack2[0]).to.equal('start');
 
@@ -144,7 +139,7 @@ module.exports = function (automaton) {
                 fs.renameSync(__dirname + '/../node_modules/grunt/package.json', __dirname + '/../node_modules/grunt/_package.json');
 
                 // when grunt is not found, an error is emitted
-                runner.run('bleh', {}, null)
+                runner.run('bleh')
                 .on('error', function (err) {
                     error = err.message;
                 })
@@ -160,11 +155,9 @@ module.exports = function (automaton) {
             });
 
             it('should emit "end" with error if task failed', function (done) {
-                runner.run('copy', {
-                    files: {
-                        'wtv': 'filethatwillneverexist'
-                    }
-                }, null).on('end', function (err) {
+                runner.run('jshint', {
+                    src: [__dirname + '/helpers/assets/invalid.js']
+                }).on('end', function (err) {
                     expect(err).to.be.an(Error);
                     expect(err.message).to.contain('grunt');
 
@@ -173,21 +166,17 @@ module.exports = function (automaton) {
             });
 
             it('should pass the grunt config (and not inherit from others)', function (done) {
-                runner.run('copy', {
-                    files: {
-                        'wtv': 'filethatwillneverexist'
-                    }
+                runner.run('jshint', {
+                    src: [__dirname + '/helpers/assets/invalid.js']
                 }, { force: true }).on('end', function (err) {
                     if (err) {
                         throw err;
                     }
                 });
 
-                runner.run('copy', {
-                    files: {
-                        'wtv': 'filethatwillneverexist'
-                    }
-                }, null).on('end', function (err) {
+                runner.run('jshint', {
+                    src: [__dirname + '/helpers/assets/invalid.js']
+                }).on('end', function (err) {
                     expect(err).to.be.an(Error);
                     expect(err.message).to.contain('grunt');
 
@@ -203,18 +192,18 @@ module.exports = function (automaton) {
 
                 runner.run('copy', {
                     files: opts
-                }, null).on('end', function () {
+                }).on('end', function () {
                     throw new Error('Should have killed!');
                 });
 
                 runner.kill();
                 setTimeout(function () {
                     opts = {};
-                    opts[target] = __dirname + '/helpers/assets/file1.json';
+                    opts[target + 'file1.json'] = __dirname + '/helpers/assets/file1.json';
 
                     runner.run('copy', {
                         files: opts
-                    }, null).on('end', function (err) {
+                    }).on('end', function (err) {
                         if (err) {
                             throw err;
                         }
@@ -246,8 +235,8 @@ module.exports = function (automaton) {
                     opts2 = {},
                     stack = [];
 
-                opts[target] = __dirname + '/helpers/assets/file2';
-                opts2[target] = __dirname + '/helpers/assets/file1.json';
+                opts[target + 'file2'] = __dirname + '/helpers/assets/file2';
+                opts2[target + 'file1.json'] = __dirname + '/helpers/assets/file1.json';
 
                 automaton.run({
                     tasks: [
@@ -300,7 +289,7 @@ module.exports = function (automaton) {
                 var opts = {},
                     log = '';
 
-                opts[target] = __dirname + '/helpers/assets/file2';
+                opts[target + 'file2'] = __dirname + '/helpers/assets/file2';
 
                 automaton.run({
                     tasks: [
@@ -333,19 +322,15 @@ module.exports = function (automaton) {
             });
 
             it('should pass grunt config', function (done) {
-                var opts = {};
-
-                opts[target] = __dirname + '/helpers/assets/filethatwillneverexist';
-
                 automaton.run({
                     tasks: [
                         {
-                            task: 'copy',
+                            task: 'jshint',
                             grunt: {
                                 force: true
                             },
                             options: {
-                                files: opts
+                                src: [__dirname + '/helpers/assets/invalid.js']
                             }
                         }
                     ]
@@ -361,27 +346,23 @@ module.exports = function (automaton) {
             });
 
             it('should not inherit previous grunt config', function (done) {
-                var opts = {};
-
-                opts[target] = __dirname + '/helpers/assets/filethatwillneverexist';
+                var opts = {
+                    src: [__dirname + '/helpers/assets/invalid.js']
+                };
 
                 automaton.run({
                     tasks: [
                         {
-                            task: 'copy',
+                            task: 'jshint',
                             grunt: {
                                 force: true
                             },
-                            options: {
-                                files: opts
-                            }
+                            options: opts
                         },
                         {
-                            task: 'copy',
+                            task: 'jshint',
                             grunt: true,
-                            options: {
-                                files: opts
-                            }
+                            options: opts
                         }
                     ]
                 }, null, function (err) {
@@ -395,7 +376,7 @@ module.exports = function (automaton) {
             it('should integrate well with options replacement', function (done) {
                 var opts = {};
 
-                opts[target] = __dirname + '/helpers/assets/{{file}}';
+                opts[target + 'file2'] = __dirname + '/helpers/assets/{{file}}';
 
                 automaton.run({
                     tasks: [
@@ -420,19 +401,17 @@ module.exports = function (automaton) {
             });
 
             it('should integrate well with fatal', function (done) {
-                var opts = {};
-
-                opts[target] = __dirname + '/helpers/assets/filethatwillneverexist';
+                var opts = {
+                    src: [__dirname + '/helpers/assets/invalid.js']
+                };
 
                 automaton.run({
                     tasks: [
                         {
-                            task: 'copy',
+                            task: 'jshint',
                             grunt: true,
                             fatal: false,
-                            options: {
-                                files: opts
-                            }
+                            options: opts
                         }
                     ]
                 }, null, function (err) {
@@ -446,11 +425,9 @@ module.exports = function (automaton) {
                     automaton.run({
                         tasks: [
                             {
-                                task: 'copy',
+                                task: 'jshint',
                                 grunt: true,
-                                options: {
-                                    files: opts
-                                }
+                                options: opts
                             }
                         ]
                     }, null, function (err) {
@@ -495,7 +472,7 @@ module.exports = function (automaton) {
             it('should integrate well with on', function (done) {
                 var opts = {};
 
-                opts[target] = __dirname + '/helpers/assets/file2}';
+                opts[target + 'file2'] = __dirname + '/helpers/assets/file2';
 
                 automaton.run({
                     tasks: [
