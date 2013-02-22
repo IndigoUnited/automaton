@@ -116,7 +116,8 @@ if (notifier.update) {
 
 // if help was requested, just show the usage
 if (argv.help || argv.h) {
-    var taskId = (argv.help === true ? false : argv.help) || (argv.h === true ? false : argv.h),
+    var help = argv.h || argv.help,
+        taskId = argv._[0] || (help === true ? false :  help),
         task
     ;
 
