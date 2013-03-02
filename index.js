@@ -7,7 +7,8 @@ var d           = require('dejavu'),
     async       = require('async'),
     path        = require('path'),
     promptly    = require('promptly'),
-    inter       = require('./lib/string/cast-interpolate'),
+    inter       = require('./lib/string/interpolate'),
+    castInter   = require('./lib/string/cast-interpolate'),
     validate    = require('./lib/validate_task'),
     Logger      = require('./lib/Logger'),
     TaskBuilder = require('./lib/TaskBuilder'),
@@ -187,6 +188,10 @@ var Automaton = d.Class.declare({
         context.log = new Logger(this._options);
         context.gruntRunner = new GruntRunner(context);
         context.prompt = promptly;
+        context.string = {};
+        context.string.interpolate = inter;
+        context.string.castInterpolate = castInter;
+
         stream = context.log.getStream();
 
         // catch any error while getting the batch
@@ -581,7 +586,7 @@ var Automaton = d.Class.declare({
      *
      * @param {Mixed}  target     The target which will get its values replaced
      * @param {Object} values     The values
-     * @param {Object} [$options] The interpolation options
+     * @param {Object} [$options] The castInterpolation options
      *
      * @return {Mixed} The passed target
      */
@@ -613,12 +618,12 @@ var Automaton = d.Class.declare({
      *
      * @param {String} str        The string
      * @param {Object} values     The values
-     * @param {Object} [$options] The interpolation options
+     * @param {Object} [$options] The castInterpolation options
      *
      * @return {String} The replaced string
      */
     _replacePlaceholders: function (str, values, $options) {
-        return inter(str, values, $options);
+        return castInter(str, values, $options);
     },
 
     /**

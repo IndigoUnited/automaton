@@ -6,6 +6,7 @@ var expect = require('expect.js'),
 ;
 
 module.exports = function (automaton) {
+
     describe('mkdir', function () {
         var mode755_dir;
 
@@ -22,7 +23,6 @@ module.exports = function (automaton) {
         });
 
         it('should create directory - single depth folder', function (done) {
-
             var dir = __dirname + '/../tmp/mkdir/single_dir';
 
             automaton.run('mkdir', {
