@@ -5,7 +5,7 @@ var d           = require('dejavu'),
     fs          = require('fs'),
     assert      = require('assert'),
     async       = require('async'),
-    path        = require('path'),
+    glob        = require('glob'),
     promptly    = require('promptly'),
     inter       = require('./lib/string/interpolate'),
     castInter   = require('./lib/string/cast-interpolate'),
@@ -34,15 +34,17 @@ var Automaton = d.Class.declare({
      * @param {Object} [$options] The options
      */
     initialize: function ($options) {
-        var errors;
-
         this._options = $options;
 
         // load core tasks
-        errors = this.loadTasks(__dirname + '/tasks');
-        if (errors.length) {
-            throw new Error(errors[0]);
-        }
+        var dirs = glob.sync(__dirname + '/node_modules/autofile-*');
+
+        dirs.forEach(function (dir) {
+            var errors = this.loadTasks(dir, 'autofile.js');
+            if (errors.length) {
+                throw new Error(errors[0]);
+            }
+        }, this);
     },
 
     /**
@@ -105,35 +107,27 @@ var Automaton = d.Class.declare({
      * If the folder contain tasks that are not valid, it results in an error being pushed to
      * an array. That array is returned by the function.
      *
-     * @param {String} folder The folder to search for tasks
+     * @param {String} folder  The folder to search for tasks
+     * @param {String} pattern The pattern to use when searching for files, defaults to '*.js'
      *
      * @return {Array} An array of errors
      */
-    loadTasks: function (folder) {
+    loadTasks: function (folder, pattern) {
         assert(utils.lang.isString(folder), 'Expected folder to be a string');
 
+        pattern = pattern || '*.js';
         folder = fs.realpathSync(folder) + '/';
 
-        var filenames = fs.readdirSync(folder),
-            file,
-            i,
-            errors = []
-        ;
+        var filenames = glob.sync(folder + '/' + pattern),
+            errors = [];
 
-        for (i = filenames.length - 1; i >= 0; --i) {
-            file = filenames[i];
-
-            // skip files that do not have a .js extension
-            if (path.extname(file) !== '.js') {
-                continue;
-            }
-
+        filenames.forEach(function (file) {
             try {
-                this.addTask(require(folder + file));
+                this.addTask(require(file));
             } catch (e) {
-                errors.push(new Error('Unable to add task "' + folder + file + '": ' + e.message));
+                errors.push(new Error('Unable to add task "' + file + '": ' + e.message));
             }
-        }
+        }, this);
 
         return errors;
     },

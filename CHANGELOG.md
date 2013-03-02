@@ -10,7 +10,7 @@
 - Minor bug fixes and improvements
 - Add a task builder to create tasks programatically
 - Split built-in tasks into their own repository
-- Add `context.string` with the lib/string functions
+- Add `context.string` with the `lib/string` functions
 
 ## 0.1.4 - 2013-02-06
 

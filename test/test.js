@@ -7,7 +7,6 @@ var Automaton   = require('../index'),
     grunt       = require('./grunt'),
     logging     = require('./logging'),
     prompting   = require('./prompt'),
-    tasks       = require('./tasks'),
     cli         = require('./cli'),
     taskBuilder = require('./task_builder'),
     automaton;
@@ -41,7 +40,6 @@ describe('Automaton', function () {
     core(automaton);
     logging(automaton);
     prompting(automaton);
-    tasks(automaton);
     cli(automaton);
     grunt(automaton);
     taskBuilder(automaton);

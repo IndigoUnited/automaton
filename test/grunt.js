@@ -26,12 +26,6 @@ module.exports = function (automaton) {
                 }
             });
 
-            after(function () {
-                if (fs.existsSync(process.cwd() + '/tasks/grunt-dummy.js')) {
-                    fs.unlinkSync(process.cwd() + '/tasks/grunt-dummy.js');
-                }
-            });
-
             it('should run grunt tasks (multi task)', function (done) {
                 var opts = {},
                     stack = [];
@@ -218,10 +212,14 @@ module.exports = function (automaton) {
         });
 
         describe('Integration', function () {
+            before(function () {
+                fs.mkdirSync(process.cwd() + '/tasks');
+            });
             after(function () {
                 if (fs.existsSync(process.cwd() + '/tasks/grunt-dummy.js')) {
                     fs.unlinkSync(process.cwd() + '/tasks/grunt-dummy.js');
                 }
+                fs.rmdirSync(process.cwd() + '/tasks');
             });
 
             beforeEach(function () {
