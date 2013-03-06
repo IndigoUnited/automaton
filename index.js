@@ -57,12 +57,13 @@ var Automaton = d.Class.declare({
      * @return {Automaton} Chainable!
      */
     addTask: function (task) {
-        task = this._getTaskObject(task);
+console.log('coiso', this.$name, task.id);
+        task = this.$static.getTaskDefinition(task);
         validate(task);
 
         assert(task.id, 'Can only add tasks with an id');
         this._tasks[task.id] = task;
-
+console.log('exiting');
         return this;
     },
 
@@ -202,29 +203,6 @@ var Automaton = d.Class.declare({
     },
 
     /**
-     * Get the task object in case the task is a function that will build the object.
-     *
-     * @param {Object|Function} task The task object or the builder
-     *
-     * @return {Object} The task
-     */
-    _getTaskObject: function (task) {
-        var builder;
-
-        if (utils.lang.isFunction(task)) {
-            builder = new TaskBuilder();
-            try {
-                task(builder);
-            } catch (e) {
-                throw new Error('Unable to get task from builder: ' + e.message);
-            }
-            task = builder.toObject();
-        }
-
-        return task;
-    },
-
-    /**
      * Create a batch for a task.
      * The batch is a sequence of functions that form the task.
      *
@@ -247,7 +225,8 @@ var Automaton = d.Class.declare({
         } else {
             // if task is a function then needs a builder
             if (utils.lang.isFunction(def.task)) {
-                def.task = this._getTaskObject(def.task);
+console.log('cenas');
+                def.task = this.$static.getTaskDefinition(def.task);
             }
             // trigger validation if is the root task
             if (def.depth === 1) {
@@ -658,7 +637,30 @@ var Automaton = d.Class.declare({
          */
         create: function ($options) {
             return new Automaton($options);
-        }
+        },
+
+        /**
+         * Get the task object in case the task is a function that will build the object.
+         *
+         * @param {Object|Function} task The task object or the builder
+         *
+         * @return {Object} The task
+         */
+        getTaskDefinition: function (task) {
+            var builder;
+
+            if (utils.lang.isFunction(task)) {
+                builder = new TaskBuilder();
+                try {
+                    task(builder);
+                } catch (e) {
+                    throw new Error('Unable to get task from builder: ' + e.message);
+                }
+                task = builder.toObject();
+            }
+
+            return task;
+        },
     }
 });
 

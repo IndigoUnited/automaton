@@ -341,7 +341,7 @@ function getTaskFromFile(file) {
         return false;
     }
 
-    return require(autofile);
+    return Automaton.getTaskDefinition(require(autofile));
 }
 
 function runTask(task, taskOpts) {
