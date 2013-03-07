@@ -97,7 +97,7 @@ module.exports = function (automaton) {
                     stack2 = [],
                     emitter;
 
-                opts[target] = __dirname + '/helpers/assets/file2';
+                opts[target + 'file2'] = __dirname + '/helpers/assets/file2';
 
                 emitter = runner.run('copy', {
                     files: opts
@@ -439,7 +439,7 @@ module.exports = function (automaton) {
                 var opts = {},
                     log = '';
 
-                opts[target] = __dirname + '/helpers/assets/file2';
+                opts[target + 'file2'] = __dirname + '/helpers/assets/file2';
 
                 automaton.run({
                     tasks: [
