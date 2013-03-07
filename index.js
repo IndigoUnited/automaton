@@ -57,13 +57,12 @@ var Automaton = d.Class.declare({
      * @return {Automaton} Chainable!
      */
     addTask: function (task) {
-console.log('coiso', this.$name, task.id);
         task = this.$static.getTaskDefinition(task);
         validate(task);
 
         assert(task.id, 'Can only add tasks with an id');
         this._tasks[task.id] = task;
-console.log('exiting');
+
         return this;
     },
 
@@ -225,7 +224,6 @@ console.log('exiting');
         } else {
             // if task is a function then needs a builder
             if (utils.lang.isFunction(def.task)) {
-console.log('cenas');
                 def.task = this.$static.getTaskDefinition(def.task);
             }
             // trigger validation if is the root task
