@@ -174,7 +174,11 @@ var task = {
         },
         {
             task: 'mkdir',
-            description: 'Creating other folder',
+            // Description messages can be generated according to the options
+            // by using a string with placeholders or a function.
+            description: function (opt) {
+                return 'Creating ' + opt.dir1 + '/' + opt.dir2 + '/' + opt.dir3
+            },
             options: {
                 dirs: ['{{dir1}}/{{dir2}}/{{dir3}}']
             },

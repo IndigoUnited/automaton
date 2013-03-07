@@ -299,6 +299,18 @@ module.exports = function (automaton) {
                 });
             }).to.throwException(/description/);
 
+            expect(function () { // test valid case
+                automaton.addTask({
+                    id: 'foo',
+                    tasks: [
+                        {
+                            task: 'cp',
+                            description: 'copy something'
+                        }
+                    ]
+                });
+            }).to.not.throwException();
+
             expect(function () {
                 automaton.addTask({
                     id: 'foo',
@@ -309,8 +321,7 @@ module.exports = function (automaton) {
                         }
                     ]
                 });
-            }).to.throwException(/description/);
-
+            }).to.not.throwException();
 
             expect(function () {
                 automaton.addTask({
@@ -321,18 +332,6 @@ module.exports = function (automaton) {
                                 tasks: []
                             },
                             description: function () {}
-                        }
-                    ]
-                });
-            }).to.throwException(/description/);
-
-            expect(function () { // test valid case
-                automaton.addTask({
-                    id: 'foo',
-                    tasks: [
-                        {
-                            task: 'cp',
-                            description: 'copy something'
                         }
                     ]
                 });

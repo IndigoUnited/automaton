@@ -120,6 +120,54 @@ module.exports = function (automaton) {
             .on('data', function (data) { log += data; });
         });
 
+        it('should report running tasks, replacing placeholders in the descripton', function (done) {
+            var log = '';
+
+            automaton
+                .run({
+                    description: 'foo {{foo}}{{wtf}}',
+                    tasks: []
+                }, { foo: 'bar' }, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    log = removeColors(log);
+                    expect(log).to.equal(
+                        arrow('foo bar', 1)
+                    );
+
+                    log = '';
+
+                    automaton
+                        .run({
+                            description: 'wat',
+                            tasks: [
+                                {
+                                    task: function (opt, ctx, next) { next(); },
+                                    description: function (opt) {
+                                        return 'foo ' + opt.foo;
+                                    },
+                                }
+                            ]
+                        }, { foo: 'bar' }, function (err) {
+                            if (err) {
+                                throw err;
+                            }
+
+                            log = removeColors(log);
+                            expect(log).to.equal(
+                                arrow('wat', 1) +
+                                arrow('foo bar', 2)
+                            );
+
+                            done();
+                        })
+                        .on('data', function (data) { log += data; });
+                })
+                .on('data', function (data) { log += data; });
+        });
+
         it('should not report task descriptions if they are null', function (done) {
             var log = '';
 

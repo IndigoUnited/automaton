@@ -11,6 +11,7 @@
 - Add a task builder to create tasks programatically
 - Split built-in tasks into their own repository
 - Add `context.string` with the `lib/string` functions
+- Subtasks descriptions can now contain placeholders or be a function
 
 ## 0.1.4 - 2013-02-06
 

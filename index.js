@@ -408,6 +408,8 @@ var Automaton = d.Class.declare({
             def.parentOptions = parentTaskDef.options;
             def.context = parentTaskDef.context;
             def.depth += parentTaskDef.depth;
+        } else {
+            def.parentOptions = def.options;
         }
 
         return def;
@@ -426,8 +428,10 @@ var Automaton = d.Class.declare({
 
         // try out to extract the description, falling back to the name
         desc = def.description !== undefined ? def.description : def.task.description || def.task.name;
+        if (utils.lang.isFunction(desc)) {
+            desc = desc(def.parentOptions) + '';
+        }
 
-        // if desc is null, simply do not report it
         if (desc !== null) {
             if (!desc) {
                 // if is an inline function that has no description, then simply do not report
@@ -444,7 +448,9 @@ var Automaton = d.Class.declare({
         logger.setDepth(def.depth);
 
         // log task that will run
+        // if desc is null, simply do not report it
         if (desc != null) {
+            desc = this._replacePlaceholders(desc, def.parentOptions, { purge: true });
             logger.infoln('> ' + desc);
         }
 
@@ -557,7 +563,7 @@ var Automaton = d.Class.declare({
      *
      * @param {Mixed}  target     The target which will get its values replaced
      * @param {Object} values     The values
-     * @param {Object} [$options] The castInterpolation options
+     * @param {Object} [$options] The interpolation options
      *
      * @return {Mixed} The passed target
      */
@@ -589,7 +595,7 @@ var Automaton = d.Class.declare({
      *
      * @param {String} str        The string
      * @param {Object} values     The values
-     * @param {Object} [$options] The castInterpolation options
+     * @param {Object} [$options] The interpolate options
      *
      * @return {String} The replaced string
      */
