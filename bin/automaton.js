@@ -10,6 +10,7 @@ var utils          = require('mout'),
     updateNotifier = require('update-notifier'),
     validate       = require('../lib/validate_task'),
     Automaton      = require('../index'),
+    Tabular        = require('tabular'),
     notifier
 ;
 
@@ -194,91 +195,65 @@ else if (argv._.length) {
 
 
 function showUsage() {
-    var i,
-        totalCommands = commands.length,
-        totalOptions = automatonOptions.length,
-        cmd,
-        opt,
-        firstColumnWidth;
-
     console.log('\n  Usage: ' + argv.$0.cyan, '[command]', '[options]'.grey);
 
-    // TODO: move to showCommands()
+    showCommands();
+    showTasks();
+    showOptions();
+
+    console.log('');
+}
+
+function showCommands() {
+    var tab = getTab();
+    var i, totalCommands = commands.length, cmd;
+
     console.log('\n  Commands:\n');
-    firstColumnWidth = commands.reduce(function (prev, curr) {
-        if (curr.cmd.length > prev) {
-            return curr.cmd.length;
-        }
 
-        return prev;
-    }, 0) + 6;
-
-    for (i = 0; i < totalCommands; ++i) {
+    for (i = 0; i < totalCommands; i++) {
         cmd = commands[i];
-        console.log(utils.string.rpad('    ' + cmd.cmd, firstColumnWidth).grey + cmd.desc);
+        tab.push([cmd.cmd.grey, cmd.desc]);
     }
 
-    showTasks();
+    console.log(tab.get());
+}
 
-    // TODO: move to showOptions()
+function showOptions() {
+    var tab = getTab();
+    var i, totalOptions = automatonOptions.length, opt;
+
     console.log('\n  Options:\n');
-    firstColumnWidth = automatonOptions.reduce(function (prev, curr) {
-        if (curr.opt.length > prev) {
-            return curr.opt.length;
-        }
-
-        return prev;
-    }, 0);
-
-    firstColumnWidth += 6;
 
     for (i = 0; i < totalOptions; ++i) {
         opt = automatonOptions[i];
-        console.log(utils.string.rpad('    ' + opt.opt, firstColumnWidth).grey + opt.desc);
+        tab.push([opt.opt.grey, opt.desc]);
     }
 
-    console.log('');
+    console.log(tab.get());
 }
 
 function showTasks() {
     var i,
         tasks = automaton.getTasks(),
-        firstColumnWidth,
-        list = [];
-
-    // discover left column width
-    firstColumnWidth = utils.object.reduce(tasks, function (prev, curr) {
-        if (curr.id && curr.id.length > prev) {
-            return curr.id.length;
-        }
-
-        return prev;
-    }, 0);
-
-    firstColumnWidth += 6;
+        tab = getTab();
 
     console.log('\n  Tasks:\n');
 
     // create list of tasks
     for (i in tasks) {
         if (tasks[i].id) {
-            list.push(utils.string.rpad('    ' + tasks[i].id, firstColumnWidth).grey + tasks[i].description);
+            tab.push([tasks[i].id.grey, tasks[i].description]);
         }
     }
 
-    // sort list
-    list = utils.array.sort(list);
-    for (i in list) {
-        console.log(list[i]);
-    }
+    console.log(tab.sort().get());
 }
 
 function showTaskUsage(task) {
     var optionName,
         option,
         leftCol,
-        usage = [],
-        k
+        tab = getTab()
     ;
 
     validate(task);
@@ -290,27 +265,14 @@ function showTaskUsage(task) {
     console.log('\n  Usage: ' + argv.$0.cyan, task.id, '[--option1 value1 --option2 value2]'.grey);
     console.log('\n  Options:\n');
 
-    var firstColumnWidth = 0;
-
     if (task.options) {
         for (optionName in task.options) {
             option = task.options[optionName];
             leftCol = optionName + (option['default'] !== undefined ? ' (' + option['default'] + ')' : '');
-            usage.push({
-                opt:  leftCol,
-                desc: option.description
-            });
-
-            if (leftCol.length > firstColumnWidth) {
-                firstColumnWidth = leftCol.length;
-            }
+            tab.push([leftCol.grey, option.description]);
         }
 
-        firstColumnWidth += 6;
-
-        for (k in usage) {
-            console.log(utils.string.rpad('    ' + usage[k].opt, firstColumnWidth).grey + (usage[k].desc ? usage[k].desc : ''));
-        }
+        console.log(tab.sort().get());
     }
 
     console.log('');
@@ -356,4 +318,11 @@ function runTask(task, taskOpts) {
             }
         })
         .pipe(process.stdout);
+}
+
+function getTab() {
+    return new Tabular({
+        padding: 2,
+        marginLeft: 4
+    });
 }

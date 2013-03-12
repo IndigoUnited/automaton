@@ -56,7 +56,8 @@
     "autofile-scaffolding-close": "~0.0.0",
     "autofile-scaffolding-file-rename": "~0.0.0",
     "autofile-scaffolding-replace": "~0.0.0",
-    "autofile-symlink": "~0.0.0"
+    "autofile-symlink": "~0.0.0",
+    "tabular": "~0.0.2"
   },
   "devDependencies": {
     "rimraf": "~2.0.2",
