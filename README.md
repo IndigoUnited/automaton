@@ -3,6 +3,10 @@ Automaton
 
 Task automation tool built in JavaScript.
 
+***IMPORTANT***
+This README is for the upcoming 0.2.0 release.   
+For the README of the latest published version on `npm` please see http://indigounited.com/automaton/.
+
 [![Build Status](https://secure.travis-ci.org/IndigoUnited/automaton.png)](http://travis-ci.org/IndigoUnited/automaton)
 
 ![Automaton](http://indigounited.github.com/automaton/img/stamp.png)
