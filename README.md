@@ -73,7 +73,7 @@ module.exports = function (task) {
         }
     })
     .do('cp', {
-        description: Copy some file',
+        description: 'Copy some file',
         options: {
             files: {
                 'some_file': 'some_dir/dest_file'
@@ -206,8 +206,6 @@ The *ln* variants of each method output a new line (`\n`) in the end. Note that 
 Here's an example usage:
 
 ```js
-'use strict';
-
 var inspect = require('util').inspect;
 
 module.exports = function (task) {
