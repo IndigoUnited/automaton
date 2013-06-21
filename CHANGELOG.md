@@ -7,12 +7,13 @@
 - Change `filter` to `setup`
 - Add `teardown`
 - Add `process.nextTick` in strategic places to kill long stack traces
-- Minor bug fixes and improvements
-- Add a task builder to create tasks programmatically
+- Add a task builder to create tasks programmatically, new and better task syntax
 - Split built-in tasks into their own repository
 - Add `context.string` with the `lib/string` functions
 - Subtasks descriptions can now contain placeholders or be a function
 - Remove `ctx.prompt`, use [promptly](https://github.com/IndigoUnited/node-promptly) directly
+- Minor bug fixes and improvements
+
 ## 0.1.4 - 2013-02-06
 
 - Add `fatal`
