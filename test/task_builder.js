@@ -1,3 +1,5 @@
+/*global describe, it, beforeEach, afterEach*/
+
 'use strict';
 
 var TaskBuilder  = require('../lib/TaskBuilder');

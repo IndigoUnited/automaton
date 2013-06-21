@@ -1,3 +1,5 @@
+/*global describe, before, beforeEach, after*/
+
 'use strict';
 
 var Automaton   = require('../');

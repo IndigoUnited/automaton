@@ -1,3 +1,5 @@
+/*global describe, it, before, beforeEach, after*/
+
 'use strict';
 
 var expect       = require('expect.js');
@@ -182,12 +184,12 @@ module.exports = function (automaton) {
 
                     runner.run('copy', {
                         files: opts
-
-                    }).on('end', function (err) {
-                        if (err) {
-                            throw err;
-                        }
-
+                    })
+                    .on('error', function (err) {
+                        clearTimeout(timeout);
+                        throw err;
+                    })
+                    .on('end', function () {
                         expect(isDir(target)).to.be(true);
                         expect(isFile(target + 'file1.json')).to.be(true);
 

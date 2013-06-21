@@ -1,3 +1,5 @@
+/*global describe, it*/
+
 'use strict';
 
 var cp     = require('child_process');

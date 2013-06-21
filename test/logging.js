@@ -1,3 +1,5 @@
+/*global describe, it*/
+
 'use strict';
 
 var Automaton    = require('../');
