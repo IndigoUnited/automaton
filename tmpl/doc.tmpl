@@ -1,276 +1,223 @@
-<h2>Automaton</h2>
-<p>Task automation tool built in JavaScript.
-
-</p>
+<h1>Automaton</h1>
+<p>Task automation tool built in JavaScript.</p>
 <h2>Why?</h2>
-<p>You often find yourself needing to do some repetitive operation, and this is usually the time to quickly bake some ad-hoc script. Still, from project to project you find yourself needing to reuse some task you had already previously created.
-
-</p>
-<p>Automaton eases this process, allowing you to quickly set up an <code>autofile</code>, which describes what you want to do, by means of an ordered list of tasks that need to run for the task as a whole to be complete.
-
-</p>
-<p>A little detail that makes Automaton a powerful tool, is that every <code>autofile</code> you create can itself be used by another <code>autofile</code>, turning the first one into a single task (imagine boxes within boxes). If you are curious, you can take a look at the source code, and check for yourself that even the tasks that Automaton provides built-in are simple <code>autofiles</code>.
-
-
-</p>
+<p>You often find yourself needing to do some repetitive operation, and this is usually the time to quickly bake some ad-hoc script. Still, from project to project you find yourself needing to reuse some task you had already previously created.</p>
+<p>Automaton eases this process, allowing you to quickly set up an <code>autofile</code>, which describes what you want to do, by means of an ordered list of tasks that need to run for the task as a whole to be complete.</p>
+<p>A little detail that makes Automaton a powerful tool, is that every <code>autofile</code> you create can itself be used by another <code>autofile</code>, turning the first one into a single task (imagine boxes within boxes). If you are curious, you can take a look at the source code, and check for yourself that even the tasks that Automaton provides built-in are simple <code>autofiles</code>.</p>
 <h2>Built-in tasks</h2>
-<p><code>automaton</code> comes bundled with a few tasks to ease your own tasks.
-
-</p>
-<p><code>ROADMAP</code> Note that we&#39;re working on having support for <code>gruntjs</code> tasks, so you can use them just like native <code>automaton</code> tasks.
-
-</p>
+<p><code>automaton</code> comes bundled with a few tasks to ease your own tasks.</p>
 <h3>Filesystem</h3>
 <ul>
-<li><strong>chmod:</strong> Change mode of files</li>
-<li><strong>cp:</strong> Copy files and directories</li>
-<li><strong>mv:</strong> Move files and directories</li>
-<li><strong>mkdir:</strong> Make directories recursively</li>
-<li><strong>rm:</strong> Remove several files or directories</li>
-<li><strong>symlink:</strong> Create symlink</li>
+<li><a href="https://github.com/IU-Automaton/autofile-chmod">chmod</a>: Change mode of files</li>
+<li><a href="https://github.com/IU-Automaton/autofile-cp">cp</a>: Copy files and directories</li>
+<li><a href="https://github.com/IU-Automaton/autofile-mv">mv</a>: Move files and directories</li>
+<li><a href="https://github.com/IU-Automaton/autofile-mkdir">mkdir</a>: Make directories recursively</li>
+<li><a href="https://github.com/IU-Automaton/autofile-rm">rm</a>: Remove several files or directories</li>
+<li><a href="https://github.com/IU-Automaton/autofile-symlink">symlink</a>: Create symlink</li>
 </ul>
 <h3>Scaffolding</h3>
-<p>Scaffolding tasks help you perform some typical tasks, like appending, replacing, and others, to placeholders in a template file. Any text file can be a template. These tasks will look for a <code>{{placeholder_name}}</code> inside the file, and perform the operation on it.
-
-</p>
+<p>Scaffolding tasks help you perform some typical tasks, like appending, replacing, and others, to placeholders in a template file. Any text file can be a template. These tasks will look for a <code>{{placeholder_name}}</code> inside the file, and perform the operation on it.</p>
 <ul>
-<li><strong>scaffolding-append:</strong> Append something to a placeholder in a file</li>
-<li><strong>scaffolding-replace:</strong> Replace the placeholder with something</li>
-<li><strong>scaffolding-close:</strong> Close the placeholder (effectively removing the placeholder)</li>
-<li><strong>scafolding-file-rename:</strong> Rename files by replacing placeholders found in their names</li>
+<li><a href="https://github.com/IU-Automaton/autofile-scaffolding-append">scaffolding-append</a>: Append something to a placeholder in a file</li>
+<li><a href="https://github.com/IU-Automaton/autofile-scaffolding-replace">scaffolding-replace</a>: Replace the placeholder with something</li>
+<li><a href="https://github.com/IU-Automaton/autofile-scaffolding-close">scaffolding-close</a>: Close the placeholder (effectively removing the placeholder)</li>
+<li><a href="https://github.com/IU-Automaton/autofile-scaffolding-file-rename">scaffolding-file-rename</a>: Rename files by replacing placeholders found in their names</li>
 </ul>
 <h3>Miscellaneous</h3>
 <ul>
-<li><strong>run:</strong> Run a shell command</li>
-<li><strong>init:</strong> Initialise an empty autofile</li>
+<li><a href="https://github.com/IU-Automaton/autofile-run">run</a>: Run a shell command</li>
+<li><a href="https://github.com/IU-Automaton/autofile-init.git">init</a>: Initialise an empty autofile</li>
 <li>uglify (soon)</li>
 <li>minify (soon)</li>
 <li>concat (soon)</li>
 </ul>
 <h2>Installing</h2>
-<p>You can simply install Automaton through NPM, by running <code>npm install -g automaton</code>. This will install Automaton globally, and you will be able to execute <code>automaton</code> in your terminal.
-
-</p>
-<p>If you only plan to use <code>automaton</code> programatically, you can just install it locally.
-
-
-</p>
+<p>You can simply install Automaton through NPM, by running <code>npm install -g automaton</code>. This will install Automaton globally, and you will be able to execute <code>automaton</code> in your terminal.</p>
+<p>If you only plan to use <code>automaton</code> programmatically, you can just install it locally.</p>
 <h2>Creating a task</h2>
-<p>An automaton task is a simple object, describing what the task will do.
-
-</p>
+<p>An automaton task is a simple object, describing what the task will do.</p>
 <h3>Simple task</h3>
-<p>For illustration purposes, here&#39;s a simple <code>autofile</code> that just creates a folder and copies a file into it:
-
-</p>
-<pre><code class="lang-js">var myTask = {
-    tasks: [
-        {
-            task: &#39;mkdir&#39;,
-            description: &#39;Create the project root folder&#39;,
-            options: {
-                dirs: [&#39;some_dir&#39;]
-            }
-        },
-        {
-            task: &#39;cp&#39;,
-            description: &#39;Copy some file&#39;,
-            options: {
-                files: {
-                    &#39;some_file&#39;: &#39;some_dir/dest_file&#39;
-                }
+<p>For illustration purposes, here&#39;s a simple <code>autofile</code> that just creates a folder and copies a file into it:</p>
+<pre><code class="lang-js">module.exports = function (task) {
+    task
+    .id(&#39;my-task&#39;)
+    .name(&#39;My task&#39;)
+    .do(&#39;mkdir&#39;, {
+        description: &#39;Create the project root folder&#39;,
+        options: {
+            dirs: [&#39;some_dir&#39;]
+        }
+    })
+    .do(&#39;cp&#39;, {
+        description: &#39;Copy some file&#39;,
+        options: {
+            files: {
+                &#39;some_file&#39;: &#39;some_dir/dest_file&#39;
             }
         }
-    ]
-};
-
-module.exports = myTask;</code></pre>
+    });
+};</code></pre>
 <h3>More complete task</h3>
-<p>To illustrate most of the capabilities of <code>automaton</code>, here&#39;s a complete <code>autofile</code> with comments along the file:
+<p>To illustrate most of the capabilities of <code>automaton</code>, here&#39;s a complete <code>autofile</code> with comments along the file:</p>
+<pre><code class="lang-js">module.exports = function (task) {
+    // Everything bellow is optional
+    task
+    // Allows to reference this task by id
+    .id(&#39;example_task&#39;)
+    // A user friendly name
+    .name(&#39;Example task&#39;)
+    // The task author
+    .author(&#39;IndigoUnited&#39;)
+    // The task description
+    .description(&#39;My example task&#39;)
 
-</p>
-<pre><code class="lang-js">var task = {
-    // This id is not mandatory but,
-    // if you want to use this task in other tasks,
-    // must be provided and should be unique.
-    id: &#39;example_task&#39;,
+    // Options definition: name, description, default value
+    .option(&#39;dir1&#39;, &#39;The name of the folder&#39;)
+    .option(&#39;dir2&#39;, &#39;Another folder name&#39;, &#39;automaton&#39;)
+    .option(&#39;run_all&#39;, &#39;Run everything&#39;, false)
+    .option(&#39;debug&#39;, &#39;Enable/disable&#39;, false)
 
-    // A user friendly name,
-    // just for reference, not mandatory.
-    name: &#39;Example task&#39;,
-
-    // Also not mandatory
-    author: &#39;Indigo United&#39;,
-
-    // Description is not mandatory,
-    // but can be used to give a base description for the task.
-    description: &#39;My example task&#39;,
-
-    // Filter is not mandatory,
-    // but can be used to perform some operation
-    // on the options before running the subtasks.
-    filter: function (options, next) {
-        // You can change existing options.
+    // Function to run before everything
+    .setup(function (options, ctx, next) {
+        // You can change existing options
         options.dir2 = options.dir2 + &#39;_indigo&#39;;
 
-        // and even define additional options.
-        // In this case we&#39;re defining
-        // a `dir3` option,
+        // And even define additional options; in this case we&#39;re defining a &#39;dir3&#39; option,
         // which will be used by one of the subtasks.
         options.dir3 = &#39;united&#39;;
 
         next();
-    },
+    })
 
-    // This is also optional,
-    // but useful if you want the automaton
-    // to automatically check for required options,
-    // and some additional features
-    // Check below for more info.
-    options: {
-        dir1: {
-            // Option description is not mandatory
-            description : &#39;The name of the folder &#39; +
-                          &#39;that will hold &#39; +
-                          &#39;all the subfolders&#39;
-        },
-        dir2: {
-            // This option will not be required,
-            // since it has a default value.
-            // Check the second subtask.
-            &#39;default&#39;: &#39;automaton&#39;
-        },
-        // This option is used below, for skipping
-        // subtasks.
-        run_all: {
-            &#39;default&#39;: false
-        }
-    },
+    // Function to run afterwards
+    // Note that this function will run, even if some of the substask failed
+    .teardown(function (options, ctx, next) {
+        // do something afterwards (e.g.: cleanup something)
+        next();
+    })
 
     // A list of subtasks that will run
-    // when the example_task runs.
-    tasks: [
-        {
-            task: &#39;mkdir&#39;,
-            description: &#39;Create the root and second folder&#39;,
-            options: {
-                // the option below
-                // will have its placeholders replaced by
-                // the value that it receives.
-                dirs: [&#39;{{dir1}}/{{dir2}}&#39;]
-            }
-        },
-        {
-            task: &#39;mkdir&#39;,
-            // This &#39;on&#39; attributes allows you to
-            // enable/disable a subtask just by setting it
-            // to a falsy value.
-            // In this case, we even used a placeholder,
-            // allowing us to skip this subtask depending
-            // on the run_all option. Of course, you have
-            // just setted it to something like `false`.
-            on: &#39;{{run_all}}&#39;,
-            description: &#39;Creating other folder&#39;,
-            options: {
-                dirs: [&#39;{{dir1}}/{{dir2}}/{{dir3}}&#39;]
-            }
-        },
-        {
-            // If you find yourself looking
-            // for something a bit more custom,
-            // you can just provide a function as the task.
-            // More details about inline functions below
-            // in the &quot;Inline functions&quot; section.
-            task : function (opt, ctx, next) {
-                // opt is a list of the options
-                // provided to the task.
-
-                // ctx.log gives you access to the Logger.
-                // The Logger should be used to perform any
-                // logging information, and is preferred to
-                // any console.* methods, as this gives additional
-                // control. More information on ctx in the
-                // &quot;Inline Functions&quot; section.
-                ctx.log.infoln(&#39;I can do whatever I want&#39;, opt);
-
-                // When the task is done,
-                // you just call next(),
-                // not like the MTV show, though…
-                // (- -&#39;)
-                next();
-            },
-            // The &#39;on&#39; attribute can also be a function
-            // for more complex cases.
-            on: function (opt) {
-                return !!opt.run_all;
-            }
+    .do(&#39;mkdir&#39;, {
+        description: &#39;Create the root and second folder&#39;,
+        options: {
+            // the option below
+            // will have its placeholders replaced by
+            // the value that it receives.
+            dirs: [&#39;{{dir1}}/{{dir2}}&#39;]
         }
-    ]
-};
+    })
+    .do(&#39;mkdir&#39;, {
+        // Description messages can be generated according to the options
+        // by using a string with placeholders or a function.
+        description: function (opt) {
+            return &#39;Creating &#39; + opt.dir1 + &#39;/&#39; + opt.dir2 + &#39;/&#39; + opt.dir3
+        },
+        options: {
+            dirs: [&#39;{{dir1}}/{{dir2}}/{{dir3}}&#39;]
+        },
+        // This &#39;on&#39; attributes allows you to enable/disable a subtask just by
+        // setting it to a falsy value.
+        // In this case, we even used a placeholder, allowing us tto skip this subtask
+        // depending on the run_all option.
+        // Of course, you have can set it to something like &#39;false&#39;.
+        on: &#39;{{run_all}}&#39;,
+        // This &#39;fatal&#39; attribute allows to bypass tasks that fail, just by setting
+        // it to a falsy value.
+        // In this case, we even used a placeholder, allowing us to skip this subtask depending
+        // on the debug option.
+        fatal: &#39;{{debug}}&#39;,
+        // This &#39;mute&#39; attribute allows you to completely mute log calls made inside
+        // this task as well its subtasks.
+        // In this case, we used &#39;false&#39; but it could have been a placeholder.
+        mute: false
+    })
+    // If you find yourself looking for something a bit more custom,
+    // you can just provide a function as the task.
+    // More details about inline functions below in the &quot;Inline functions&quot; section.
+    .do(function (options, ctx, next) {
+        // &#39;options&#39; is a list of the options provided to the task.
 
-module.exports = task;</code></pre>
+        // ctx.log gives you access to the Logger.
+        // The Logger should be used to perform any logging information, and is
+        // preferred to any console.* methods, as this gives additional control.
+        // More information on ctx in the &quot;Inline Functions&quot; section.
+        ctx.log.writeln(&#39;I can do whatever I want&#39;, &#39;even works with multiple args&#39;);
+
+        // When the task is done, you just call next()
+        // not like the MTV show, though…
+        // (- -&#39;)
+        next();
+    });
+};</code></pre>
 <p>Note that placeholders can be escaped with backslashes:
-<code>&#39;\\{\\{dir1\\}\\}&#39;</code>
-
-</p>
+<code>&#39;\\{\\{dir1\\}\\}&#39;</code></p>
 <h3>Inline functions</h3>
-<p>If you find yourself trying to do something that is not supported by the existing tasks, you can just provide a function, instead of the task name, and it will be used as the task.
-
-</p>
-<p>This task will receive 3 arguments, an options object (the options that were provided to the subtask), a context object (more on this later), and a callback that must be called once the subtask is over, giving you full flexibility, since your function can do whatever you like.
-
-</p>
-<p>The second argument, the context, is used to provide you with a tool belt that will aid you while developing <code>automaton</code> tasks. It currently provides you a <code>log</code> object, which is an instance of <a href="https://github.com/IndigoUnited/automaton/blob/master/lib/Logger.js">Logger</a>, and can be used to handle logging. Using the <code>automaton</code> logger is preferred to using the traditional <code>console.*</code> methods, since it gives additional control over logging to whoever is running the task.
-
-</p>
-<p>The <code>Logger</code> provides the following methods:
-
-</p>
+<p>If you find yourself trying to do something that is not supported by the existing tasks, you can just provide a function, instead of the task name, and it will be used as the task.</p>
+<p>This task will receive 3 arguments, an options object (the options that were provided to the subtask), a context object (more on this later), and a callback that must be called once the subtask is over, giving you full flexibility, since your function can do whatever you like.</p>
+<p>The second argument, the context, is used to provide you with a tool belt that will aid you while developing <code>automaton</code> tasks. It currently provides you a <code>log</code> object, which is an instance of <a href="https://github.com/IndigoUnited/automaton/blob/master/lib/Logger.js">Logger</a>, and can be used to handle logging. Using the <code>automaton</code> logger is preferred to using the traditional <code>console.*</code> methods, since it gives additional control over logging to whoever is running the task.</p>
+<p>The <code>Logger</code> provides the following methods:</p>
 <ul>
+<li>Normal logging: <code>write()</code>, <code>writeln()</code></li>
 <li>Information logging: <code>info()</code>, <code>infoln()</code></li>
 <li>Warnings logging: <code>warn()</code>, <code>warnln()</code></li>
 <li>Error logging: <code>error()</code>, <code>errorln()</code></li>
 <li>Success logging: <code>success()</code>, <code>successln()</code></li>
 <li>Debug logging: <code>debug()</code>, <code>debugln()</code> (These will only be outputted when in debug mode)</li>
 </ul>
-<p>The <em>ln</em> variants of each method output a new line (<code>\n</code>) in the end. Note that these methods work just like your typical <code>console.*</code> methods, so you can pass multiple arguments, and they will all get logged.
+<p>The <em>ln</em> variants of each method output a new line (<code>\n</code>) in the end. Note that these methods work just like your typical <code>console.*</code> methods, so you can pass multiple arguments, and they will all get logged.</p>
+<p>Here&#39;s an example usage:</p>
+<pre><code class="lang-js">var inspect = require(&#39;util&#39;).inspect;
 
-</p>
-<p>Here&#39;s an example usage:
+module.exports = function (task) {
+    task
+    .id(&#39;bogus&#39;)
+    .do(function (options, ctx, next) {
+        ctx.log.writeln(
+            &#39;hello,&#39;,
+            &#39;here\&#39;s the process&#39;,
+            inspect(process)
+        );
 
-</p>
-<pre><code class="lang-js">&#39;use strict&#39;;
-
-var inspect = require(&#39;util&#39;).inspect;
-
-var task = {
-    id: &#39;bogus&#39;,
-    tasks: [
-        {
-            task: function (opt, ctx, next) {
-                ctx.log.infoln(
-                    &#39;hello,&#39;,
-                    &#39;here\&#39;s the process&#39;,
-                    inspect(process)
-                );
-
-                next();
+        next();
+    });
+};</code></pre>
+<h3>Grunt tasks</h3>
+<p>You are able to run <code>grunt</code> tasks in <code>automaton</code>. It&#39;s actually very simple:</p>
+<pre><code class="lang-js">module.exports = function (task) {
+    task
+    .id(&#39;bogus&#39;)
+    .do(&#39;mincss&#39;, {
+        grunt: true,
+        options: {
+            files: {
+                &#39;path/to/output.css&#39;: &#39;path/to/input.css&#39;
             }
         }
-    ]
-};
-
-module.exports = task;</code></pre>
+    });
+};</code></pre>
+<p>By default, <code>automaton</code> autoload tasks located in <code>tasks/</code> and npm tasks (that start with grunt-).
+If your task lives in a different folder, you can specify it in the <code>grunt</code> config. Other grunt options like
+<code>force</code> and <code>verbose</code> can also be specified:</p>
+<pre><code class="lang-js">module.exports = function (task) {
+    task
+    .id(&#39;bogus&#39;)
+    .do(&#39;some-grunt-task&#39;, {
+        grunt: {
+            // array of folders to load tasks from
+            tasks: [&#39;lib/tasks/&#39;],
+            force: true,
+            verbose: true
+            // other grunt config goes here
+        },
+        options: {
+            some: &#39;option&#39;
+        }
+    });
+};</code></pre>
 <h3>Loading tasks</h3>
-<p>Once you start building your own tasks, you will probably find yourself wanting to use some custom task within another task you&#39;re working on. In order to do this, you have a few options, depending on how you are using automaton.
-
-</p>
-<p>If you are using <code>automaton</code> in the CLI, you have the <code>--task-dir</code>. This tells automaton to load all the tasks in that folder, making them available to you, just like the built-in tasks.
-
-</p>
-<p>If you are using <code>automaton</code> programatically, you have a bigger range of possibilities:
-
-</p>
+<p>Once you start building your own tasks, you will probably find yourself wanting to use some custom task within another task you&#39;re working on. In order to do this, you have a few options, depending on how you are using automaton.</p>
+<p>If you are using <code>automaton</code> in the CLI, you have the <code>--task-dir</code>. This tells automaton to load all the tasks in that folder, making them available to you, just like the built-in tasks.</p>
+<p>If you are using <code>automaton</code> programmatically, you have a bigger range of possibilities:</p>
 <ol>
 <li><p>Run <code>automaton.loadTasks(/some/folder/with/tasks)</code>. This is the equivalent to what you would to in the CLI, with the exception that you can call this multiple times, loading multiple folders.</p>
 </li>
@@ -281,16 +228,10 @@ module.exports = task;</code></pre>
 </ol>
 <h2>Usage</h2>
 <h3>CLI</h3>
-<p>All you need to use the CLI can be found by executing <code>automaton -h</code>. This will show you how to use <code>automaton</code>, and any of the loaded tasks.
-
-</p>
-<p>In order to run an <code>autofile</code>, you simply run <code>automaton</code>. This will look for <code>autofile.js</code> in the current working dir. Instead, you can also run <code>automaton some_dir/my_autofile.js</code>, enabling you to specify what <code>autofile</code> you want to run.
-
-</p>
+<p>All you need to use the CLI can be found by executing <code>automaton -h</code>. This will show you how to use <code>automaton</code>, and any of the loaded tasks.</p>
+<p>In order to run an <code>autofile</code>, you simply run <code>automaton</code>. This will look for <code>autofile.js</code> in the current working dir. Instead, you can also run <code>automaton some_dir/my_autofile.js</code>, enabling you to specify what <code>autofile</code> you want to run.</p>
 <h3>Node.js</h3>
-<p><code>automaton</code> can also be used programatically as a node module. Here&#39;s a quick example of its usage:
-
-</p>
+<p><code>automaton</code> can also be used programmatically as a node module. Here&#39;s a quick example of its usage:</p>
 <pre><code class="lang-js">var automaton = require(&#39;automaton&#39;).create(/*options go here*/);
 
 // Since autofiles are node modules themselves,
@@ -304,7 +245,7 @@ var myTask = require(&#39;my_autofile&#39;);
 // Instead, you can load the task using loadTask(), and then simply
 // pass its id (a string), as the first argument of run. You can find an
 // example of this below, in the Logging section.
-automaton.run(myTask, { &#39;some_opt&#39;: &#39;that is handy&#39; }, function (err) {
+automaton.run(myTask, { &#39;some_option&#39;: &#39;that is handy&#39; }, function (err) {
     if (err) {
         console.log(&#39;Something went wrong: &#39; + err.message);
     } else {
@@ -312,12 +253,8 @@ automaton.run(myTask, { &#39;some_opt&#39;: &#39;that is handy&#39; }, function 
     }
 });</code></pre>
 <h4>Logging</h4>
-<p><code>automaton.run()</code> returns a readable stream that is used for outputting log information. The depth of this log can be controlled by a <code>verbosity</code> option, provided upon instantiation.
-
-</p>
-<p>There are also a few other options. Here&#39;s a full list:
-
-</p>
+<p><code>automaton.run()</code> returns a readable stream that is used for outputting log information. The depth of this log can be controlled by a <code>verbosity</code> option, provided upon instantiation.</p>
+<p>There are also a few other options. Here&#39;s a full list:</p>
 <ul>
 <li><strong>verbosity:</strong> Controls the depth of the log. Remember the box in a box analogy? This controls how many boxes deep you want to go, regarding logging information.<ul>
 <li><strong>0:</strong> no logging</li>
@@ -329,9 +266,7 @@ automaton.run(myTask, { &#39;some_opt&#39;: &#39;that is handy&#39; }, function 
 <li><strong>debug:</strong> If you want to receive debug logging messages. <code>false</code> by default.</li>
 <li><strong>color:</strong> If you want the logging information to contain colors. <code>true</code> by default.</li>
 </ul>
-<p>Here&#39;s an example of the usage of the stream, with custom options:
-
-</p>
+<p>Here&#39;s an example of the usage of the stream, with custom options:</p>
 <pre><code class="lang-js">var automaton = require(&#39;automaton&#39;).create({
     verbosity: 3, // show me 3 level deep logging info
     debug: true,  // show me debug logging
@@ -340,34 +275,19 @@ automaton.run(myTask, { &#39;some_opt&#39;: &#39;that is handy&#39; }, function 
 
 // run some task
 automaton
-    .run(&#39;run&#39;, { cmd: &#39;echo SUCCESS!&#39; })
-    .pipe(process.stdout);</code></pre>
-<p>As you can see, we&#39;ve tweaked all the <code>automaton</code> options, and even piped the logging information to <code>STDOUT</code>. What you do exactly with the stream, it&#39;s completely up to you.
-
-
-</p>
+.run(&#39;run&#39;, { cmd: &#39;echo SUCCESS!&#39; })
+.pipe(process.stdout);</code></pre>
+<p>As you can see, we&#39;ve tweaked all the <code>automaton</code> options, and even piped the logging information to <code>STDOUT</code>. What you do exactly with the stream, it&#39;s completely up to you.</p>
 <h2>Acknowledgements</h2>
-<p>Should be noted that this tool was inspired by already existing tools, and you should definitely take a look at them before deciding what is the right tool for the job at hand:
-
-</p>
+<p>Should be noted that this tool was inspired by already existing tools, and you should definitely take a look at them before deciding what is the right tool for the job at hand:</p>
 <ul>
 <li><a href="http://www.initializr.com/">Initializr</a>, by <a href="https://twitter.com/verekia">Jonathan Verrecchia</a></li>
 <li><a href="http://gruntjs.com/">Gruntjs</a>, by <a href="https://twitter.com/cowboy">Ben Alman</a></li>
 </ul>
-<p>To these guys, a big thanks for their work.
-
-</p>
-<p>Also, big thanks to <a href="http://designer-freelancer.com/">Ricardo Pereira</a>, for his awesome work with the mascot.
-
-</p>
+<p>To these guys, a big thanks for their work.</p>
+<p>Also, big thanks to <a href="http://designer-freelancer.com/">Ricardo Pereira</a>, for his awesome work with the mascot.</p>
 <h2>Contributing</h2>
-<p>Should be noted that Automaton is an open source project, and also work in progress. Feel free to contribute to the project, either with questions, ideas, or solutions. Don&#39;t forget to check out the issues page, as there are some improvements planned.
-
-</p>
-<p>Thanks, and happy automation!
-
-
-</p>
+<p>Should be noted that Automaton is an open source project, and also work in progress. Feel free to contribute to the project, either with questions, ideas, or solutions. Don&#39;t forget to check out the issues page, as there are some improvements planned.</p>
+<p>Thanks, and happy automation!</p>
 <h2>License</h2>
-<p>Released under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT License</a>.
-</p>
+<p>Released under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT License</a>.</p>

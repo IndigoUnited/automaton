@@ -1,9 +1,14 @@
 {
   "name": "automaton",
   "version": "0.0.0",
-  "siteVersion": 35,
+  "siteVersion": 36,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/IndigoUnited/automaton.git"
+  },
   "devDependencies": {
     "marked": "~0.2.5",
+    "grunt": "~0.3.0",
     "grunt-contrib-requirejs": "~0.3.3",
     "grunt-contrib-mincss": "~0.3.2",
     "grunt-contrib-clean": "~0.3.1",
