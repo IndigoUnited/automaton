@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 
-function isFile(file) {
+function isDir(file) {
     var stat;
 
     try {
@@ -14,4 +14,4 @@ function isFile(file) {
     return stat.isDirectory();
 }
 
-module.exports = isFile;
+module.exports = isDir;

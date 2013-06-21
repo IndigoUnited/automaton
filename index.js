@@ -529,7 +529,7 @@ Automaton.prototype._isTaskEnabled = function (def) {
 /**
  * Check if a task is muted.
  * Muted tasks do not log messages.
-
+ *
  * @param {Object} def The task definition
  *
  * @return {Boolean} True if muted, false otherwise
