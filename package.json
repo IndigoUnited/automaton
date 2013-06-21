@@ -38,13 +38,11 @@
   "license": "MIT",
   "dependencies": {
     "async": "~0.2.5",
-    "dejavu": "~0.3.1",
     "mout": "~0.3.0",
     "colors": "~0.6.0-1",
     "optimist": "~0.3.5",
     "glob": "3.1.15",
     "update-notifier": "~0.1.2",
-    "promptly": "~0.1.0",
     "autofile-chmod": "~0.0.0",
     "autofile-cp": "~0.0.0",
     "autofile-init": "~0.0.0",
@@ -65,7 +63,8 @@
     "mocha": "~1.7.3",
     "grunt": "~0.4.0",
     "grunt-contrib-copy": "~0.4.0",
-    "grunt-contrib-jshint": "~0.1.1"
+    "grunt-contrib-jshint": "~0.1.1",
+    "mkdirp": "~0.3.5"
   },
   "preferGlobal": true,
   "bin": {

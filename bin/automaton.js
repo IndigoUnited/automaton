@@ -2,61 +2,60 @@
 
 'use strict';
 
-var utils          = require('mout'),
-    fs             = require('fs'),
-    path           = require('path'),
-    argv           = require('optimist').argv,
-    pkg            = require('../package.json'),
-    updateNotifier = require('update-notifier'),
-    validate       = require('../lib/validate_task'),
-    Automaton      = require('../index'),
-    Tabular        = require('tabular'),
-    notifier
-;
+var mout           = require('mout');
+var fs             = require('fs');
+var path           = require('path');
+var argv           = require('optimist').argv;
+var pkg            = require('../package.json');
+var updateNotifier = require('update-notifier');
+var validate       = require('../lib/TaskBuilder').validateTask;
+var Automaton      = require('../index');
+var Tabular        = require('tabular');
+var notifier;
 
 // ----------------------------- USAGE PARAMETERS ------------------------------
 
 var commands = [
-        {
-            cmd: '[autofile]',
-            desc: 'Run an autofile. Defaults to "autofile.js".'
-        },
-        {
-            cmd: 'init [autofile]',
-            desc: 'Create a blank autofile. Defaults to "autofile.js".'
-        },
-        {
-            cmd: 'find [some task]',
-            desc: 'Find tasks on NPM registry. Option --grunt also includes grunt tasks in result. Force the cache to update with --clear-cache.'
-        }
-    ],
-    automatonOptions = [
-        {
-            opt: '--help, -h [task]',
-            desc: 'Get help. If you specify a task, you\'ll be given the task usage.'
-        },
-        {
-            opt: '--task-dir, -d <dir>',
-            desc: 'Task include dir. All the tasks within the folder will be loaded.'
-        },
-        {
-            opt: '--verbosity, -V <depth>',
-            desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
-        },
-        {
-            opt: '--debug, -D',
-            desc: 'Enables debug mode'
-        },
-        {
-            opt: '--no-color',
-            desc: 'Disable colors'
-        },
-        {
-            opt: '--version, -v',
-            desc: 'Get version'
-        }
-    ]
-;
+    {
+        cmd: '[autofile]',
+        desc: 'Run an autofile. Defaults to "autofile.js".'
+    },
+    {
+        cmd: 'init [autofile]',
+        desc: 'Create a blank autofile. Defaults to "autofile.js".'
+    },
+    {
+        cmd: 'find [some task]',
+        desc: 'Find tasks on NPM registry. Option --grunt also includes grunt tasks in result. Force the cache to update with --clear-cache.'
+    }
+];
+
+var automatonOptions = [
+    {
+        opt: '--help, -h [task]',
+        desc: 'Get help. If you specify a task, you\'ll be given the task usage.'
+    },
+    {
+        opt: '--task-dir, -d <dir>',
+        desc: 'Task include dir. All the tasks within the folder will be loaded.'
+    },
+    {
+        opt: '--verbosity, -V <depth>',
+        desc: 'Set the verbosity depth. Defaults to 1, and stands for how deep the feedback should go.'
+    },
+    {
+        opt: '--debug, -D',
+        desc: 'Enables debug mode'
+    },
+    {
+        opt: '--no-color',
+        desc: 'Disable colors'
+    },
+    {
+        opt: '--version, -v',
+        desc: 'Get version'
+    }
+];
 
 // ---------------------------------- BOOT -------------------------------------
 
@@ -84,7 +83,7 @@ try {
 }
 
 // if task directory includes were defined, load the tasks
-var taskDir = (utils.lang.isString(argv['task-dir']) ? argv['task-dir'] : null) || (utils.lang.isString(argv.d) ? argv.d : null);
+var taskDir = (mout.lang.isString(argv['task-dir']) ? argv['task-dir'] : null) || (mout.lang.isString(argv.d) ? argv.d : null);
 var loadTaskErrors;
 if (taskDir) {
     // if task dir exists, load tasks
@@ -189,10 +188,7 @@ else if (argv._.length) {
     }
 }
 
-
-
 // ---------------------------- HELPER FUNCTIONS -------------------------------
-
 
 function showUsage() {
     console.log('\n  Usage: ' + argv.$0.cyan, '[command]', '[options]'.grey);
@@ -219,8 +215,9 @@ function showCommands() {
 }
 
 function showOptions() {
+    var i;
     var tab = getTab();
-    var i, totalOptions = automatonOptions.length, opt;
+    var totalOptions = automatonOptions.length, opt;
 
     console.log('\n  Options:\n');
 
@@ -233,9 +230,9 @@ function showOptions() {
 }
 
 function showTasks() {
-    var i,
-        tasks = automaton.getTasks(),
-        tab = getTab();
+    var i;
+    var tasks = automaton.getTasks();
+    var tab = getTab();
 
     console.log('\n  Tasks:\n');
 
@@ -250,11 +247,10 @@ function showTasks() {
 }
 
 function showTaskUsage(task) {
-    var optionName,
-        option,
-        leftCol,
-        tab = getTab()
-    ;
+    var optionName;
+    var option;
+    var leftCol;
+    var tab = getTab();
 
     validate(task);
 
@@ -295,7 +291,7 @@ function getTaskFromFile(file) {
     var autofile = path.resolve(process.cwd(), file || 'autofile.js');
 
     // add ".js" if it is not there
-    if (!/\.js/i.test(autofile)) {
+    if (!/\.js$/i.test(autofile)) {
         autofile = autofile + '.js';
     }
 
@@ -303,21 +299,26 @@ function getTaskFromFile(file) {
         return false;
     }
 
-    return Automaton.getTaskDefinition(require(autofile));
+    try {
+        return Automaton.getTaskDefinition(require(autofile));
+    } catch (e) {
+        console.error(e.message.automaton_error);
+        process.exit(1);
+    }
 }
 
 function runTask(task, taskOpts) {
     automaton
-        .run(task, taskOpts, function (err) {
-            if (err) {
-                // if debug is on, throw the error (to make the stack visible)
-                if (options.debug) {
-                    throw err;
-                }
-                process.exit(1);
+    .run(task, taskOpts, function (err) {
+        if (err) {
+            // if debug is on, throw the error (to make the stack visible)
+            if (options.debug) {
+                throw err;
             }
-        })
-        .pipe(process.stdout);
+            process.exit(1);
+        }
+    })
+    .pipe(process.stdout);
 }
 
 function getTab() {

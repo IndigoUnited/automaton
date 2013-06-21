@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 
-module.exports = function (file) {
+function isFile(file) {
     var stat;
 
     try {
@@ -12,4 +12,6 @@ module.exports = function (file) {
     }
 
     return stat.isFile();
-};
+}
+
+module.exports = isFile;

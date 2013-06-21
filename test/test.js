@@ -1,15 +1,15 @@
 'use strict';
 
-var Automaton   = require('../index'),
-    fs          = require('fs'),
-    rimraf      = require('rimraf'),
-    core        = require('./core'),
-    grunt       = require('./grunt'),
-    logging     = require('./logging'),
-    prompting   = require('./prompt'),
-    cli         = require('./cli'),
-    taskBuilder = require('./task_builder'),
-    automaton;
+var Automaton   = require('../');
+var fs          = require('fs');
+var rimraf      = require('rimraf');
+var core        = require('./core');
+var grunt       = require('./grunt');
+var logging     = require('./logging');
+var cli         = require('./cli');
+var taskBuilder = require('./task_builder');
+
+var automaton;
 
 function cleanUpTmp(done) {
     rimraf(__dirname + '/tmp', done);
@@ -39,7 +39,6 @@ describe('Automaton', function () {
 
     core(automaton);
     logging(automaton);
-    prompting(automaton);
     cli(automaton);
     grunt(automaton);
     taskBuilder(automaton);

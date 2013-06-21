@@ -1,12 +1,11 @@
 'use strict';
 
-var expect       = require('expect.js'),
-    fs           = require('fs'),
-    async        = require('async'),
-    isDir        = require('./helpers/util/is-dir'),
-    callbackTask = require('./helpers/tasks/callback'),
-    removeColors = require('../lib/Logger').removeColors
-;
+var expect       = require('expect.js');
+var fs           = require('fs');
+var async        = require('async');
+var isDir        = require('./helpers/util/isDir');
+var callbackTask = require('./helpers/tasks/callback');
+var removeColors = require('../lib/Logger').removeColors;
 
 module.exports = function (automaton) {
     describe('Engine', function () {
@@ -767,8 +766,8 @@ module.exports = function (automaton) {
 
         // test if options are shared
         it('should run tasks in an isolated way', function (done) {
-            var counter = 0,
-                shared;
+            var shared;
+            var counter = 0;
 
             shared = {
                 task: 'callback',
@@ -1193,8 +1192,8 @@ module.exports = function (automaton) {
         });
 
         it('should execute setup before their respective tasks', function (done) {
-            var setup = false,
-                wrong = false;
+            var setup = false;
+            var wrong = false;
 
             automaton.run({
                 tasks: [
@@ -1226,8 +1225,8 @@ module.exports = function (automaton) {
         });
 
         it('should execute teardown after their respective tasks', function (done) {
-            var callback = false,
-                wrong = false;
+            var callback = false;
+            var wrong = false;
 
             automaton.run({
                 tasks: [
@@ -1481,24 +1480,6 @@ module.exports = function (automaton) {
 
                     done();
                 });
-            });
-
-            it('should provide a prompt interface', function () {
-                automaton
-                    .run({
-                        tasks: [
-                            {
-                                task: function (opts, ctx, next) {
-                                    expect(ctx.prompt).to.be.an('object');
-                                    expect(ctx.prompt.prompt).to.be.a('function');
-                                    expect(ctx.prompt.choose).to.be.a('function');
-                                    expect(ctx.prompt.password).to.be.a('function');
-                                    expect(ctx.prompt.confirm).to.be.a('function');
-                                    next();
-                                }
-                            }
-                        ]
-                    });
             });
         });
     });

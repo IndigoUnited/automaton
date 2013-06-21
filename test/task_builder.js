@@ -1,13 +1,12 @@
 'use strict';
 
-var TaskBuilder  = require('../lib/TaskBuilder'),
-    expect       = require('expect.js'),
-    taskBuilder,
-    callbackTask = require('./helpers/tasks/callback-builder')
-;
+var TaskBuilder  = require('../lib/TaskBuilder');
+var expect       = require('expect.js');
+var callbackTask = require('./helpers/tasks/callback-builder');
+
+var taskBuilder;
 
 module.exports = function (automaton) {
-
     beforeEach(function () {
         taskBuilder = new TaskBuilder();
     });
@@ -64,7 +63,7 @@ module.exports = function (automaton) {
             it('should create a task with an option that have a description and a default', function () {
                 var task = taskBuilder.option('option1', 'description of option1', false).toObject();
 
-                expect(task).to.be.eql({ tasks: [], options: { option1: { description: 'description of option1', default: false } } });
+                expect(task).to.be.eql({ tasks: [], options: { option1: { default: false, description: 'description of option1' } } });
             });
 
             it('should create a task with a replaced option', function () {
@@ -72,7 +71,7 @@ module.exports = function (automaton) {
                                         .option('option1', 'another description for option1', true)
                                         .toObject();
 
-                expect(task).to.be.eql({ tasks: [], options: { option1: { description: 'another description for option1', default: true } } });
+                expect(task).to.be.eql({ tasks: [], options: { option1: { default: true, description: 'another description for option1' } } });
             });
 
             it('should create a task with setup', function () {
@@ -121,8 +120,8 @@ module.exports = function (automaton) {
                         author: 'task author',
                         options: {
                             option1: {
+                                default: false,
                                 description: 'option description',
-                                default: false
                             }
                         },
                         setup: setupFunc,

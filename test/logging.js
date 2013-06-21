@@ -1,12 +1,11 @@
 'use strict';
 
-var Automaton    = require('../index'),
-    removeColors = require('../lib/Logger').removeColors,
-    callbackTask = require('./helpers/tasks/callback'),
-    utils        = require('mout'),
-    expect       = require('expect.js'),
-    Stream       = require('stream')
-;
+var Automaton    = require('../');
+var removeColors = require('../lib/Logger').removeColors;
+var callbackTask = require('./helpers/tasks/callback');
+var utils        = require('mout');
+var expect       = require('expect.js');
+var Stream       = require('stream');
 
 function arrow(msg, depth) {
     return utils.string.repeat('  ', depth - 1) + '> ' + msg + '\n';
@@ -257,8 +256,8 @@ module.exports = function (automaton) {
         });
 
         it('should log every arguments passed', function (done) {
-            var log = '',
-                automaton = new Automaton({ debug: true });
+            var log = '';
+            var automaton = new Automaton({ debug: true });
 
             automaton
                 .run({
@@ -589,6 +588,8 @@ module.exports = function (automaton) {
                         }
                     ]
                 }, null, function (err) {
+                    var automaton;
+
                     if (err) {
                         throw err;
                     }
@@ -601,7 +602,7 @@ module.exports = function (automaton) {
                     );
 
                     log = '';
-                    var automaton = new Automaton({ debug: true });
+                    automaton = new Automaton({ debug: true });
 
                     automaton
                         .run({
@@ -641,8 +642,8 @@ module.exports = function (automaton) {
         });
 
         it('should not log messages lower than the verbosity level', function (done) {
-            var log = '',
-                automaton = new Automaton({ verbosity: 1 });
+            var log = '';
+            var automaton = new Automaton({ verbosity: 1 });
 
             automaton
                 .run({
@@ -720,8 +721,8 @@ module.exports = function (automaton) {
         });
 
         it('should remove colors if color option is set to false', function (done) {
-            var log = '',
-                automaton = new Automaton({ color: false });
+            var log = '';
+            var automaton = new Automaton({ color: false });
 
             automaton
                 .run({
