@@ -2,6 +2,7 @@
 
 Task automation tool built in JavaScript.
 
+
 ![Automaton](http://indigounited.github.com/automaton/img/stamp.png)
 
 
