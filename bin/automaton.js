@@ -8,7 +8,7 @@ var path           = require('path');
 var argv           = require('optimist').argv;
 var pkg            = require('../package.json');
 var updateNotifier = require('update-notifier');
-var validate       = require('../lib/TaskBuilder').validateTask;
+var validate       = require('../lib/TaskBuilder').validate;
 var Automaton      = require('../index');
 var Tabular        = require('tabular');
 var notifier;
@@ -251,9 +251,9 @@ function showTaskUsage(task) {
     var option;
     var leftCol;
     var tab = getTab();
-
+console.log('coiso');
     validate(task);
-
+console.log('coiso2');
     if (task.description) {
         console.log('\n  ' + task.description.green);
     }
