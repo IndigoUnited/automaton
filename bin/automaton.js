@@ -251,9 +251,9 @@ function showTaskUsage(task) {
     var option;
     var leftCol;
     var tab = getTab();
-console.log('coiso');
+
     validate(task);
-console.log('coiso2');
+
     if (task.description) {
         console.log('\n  ' + task.description.green);
     }
