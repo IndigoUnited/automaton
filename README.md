@@ -1,4 +1,4 @@
-# Automaton [![Build Status](https://secure.travis-ci.org/IndigoUnited/automaton.png)](http://travis-ci.org/IndigoUnited/automaton)
+# Automaton [![Build Status](https://secure.travis-ci.org/IndigoUnited/automaton.png)](http://travis-ci.org/IndigoUnited/automaton) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/IndigoUnited/automaton/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 Task automation tool built in JavaScript.
 
