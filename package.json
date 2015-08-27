@@ -1,6 +1,6 @@
 {
   "name": "automaton",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Task automation tool",
   "main": "index.js",
   "scripts": {
@@ -47,7 +47,7 @@
     "autofile-cp": "~0.0.0",
     "autofile-init": "~0.0.0",
     "autofile-mkdir": "~0.0.0",
-    "autofile-mv": "~0.0.0",
+    "autofile-mv": "~0.0.2",
     "autofile-rm": "~0.0.0",
     "autofile-run": "~0.0.0",
     "autofile-scaffolding-append": "~0.0.0",
