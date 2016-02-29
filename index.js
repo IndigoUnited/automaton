@@ -27,6 +27,7 @@ var GruntRunner = require('./lib/grunt/Runner');
 function Automaton(options) {
     var dirs;
     var dirname = __dirname;
+    var rootDir = path.resolve('/');
 
     this._tasks = [];
     this._options = options;
@@ -35,7 +36,7 @@ function Automaton(options) {
     dirs = glob.sync(dirname + '/node_modules/autofile-*');
 
     // find up autofile's directory because latest npm >=v4 have node_modules tree flattened
-    while (dirname !== path.resolve('/') && dirs.length === 0) {
+    while (dirname !== rootDir && dirs.length === 0) {
         dirname = path.resolve(dirname, '..');
         dirs = glob.sync(dirname + '/autofile-*');
     }
