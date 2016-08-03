@@ -368,3 +368,7 @@ Thanks, and happy automation!
 ## License
 
 Released under the [MIT License](http://www.opensource.org/licenses/mit-license.php).
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/IndigoUnited/automaton/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
