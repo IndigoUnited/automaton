@@ -37,12 +37,12 @@
   "author": "Indigo United",
   "license": "MIT",
   "dependencies": {
-    "async": "~0.2.5",
-    "mout": "~0.6.0",
-    "colors": "~0.6.0-1",
-    "optimist": "~0.5.2",
-    "glob": "~3.2.1",
-    "update-notifier": "~0.1.2",
+    "async": "~2.1.4",
+    "mout": "~1.0.0",
+    "colors": "~1.1.2",
+    "optimist": "~0.6.1",
+    "glob": "~7.1.1",
+    "update-notifier": "~1.0.3",
     "autofile-chmod": "~0.0.0",
     "autofile-cp": "~0.0.0",
     "autofile-init": "~0.0.0",
@@ -58,13 +58,13 @@
     "tabular": "~0.0.2"
   },
   "devDependencies": {
-    "rimraf": "~2.1.4",
-    "expect.js": "~0.2.0",
-    "mocha": "~1.11.0",
-    "grunt": "~0.4.0",
-    "grunt-contrib-copy": "~0.4.0",
-    "grunt-contrib-jshint": "~0.6.0",
-    "mkdirp": "~0.3.5"
+    "rimraf": "~2.5.4",
+    "expect.js": "~0.3.1",
+    "mocha": "~3.2.0",
+    "grunt": "~1.0.1",
+    "grunt-contrib-copy": "~1.0.0",
+    "grunt-contrib-jshint": "~1.1.0",
+    "mkdirp": "~0.5.1"
   },
   "preferGlobal": true,
   "bin": {
